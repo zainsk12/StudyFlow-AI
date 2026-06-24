@@ -129,7 +129,7 @@ export default function LoginPage({ onSwitch }) {
       const { res, data } = await apiFetch('/api/auth/reset-password', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email: fpEmail, newPassword: fpNewPass }),
+        body:    JSON.stringify({ email: fpEmail, otp: fpOtp, newPassword: fpNewPass }),
       });
       if (!res.ok) { setFpError(data.message || 'Reset failed.'); return; }
       setScreen('forgot_done');

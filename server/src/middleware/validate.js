@@ -102,6 +102,7 @@ export const rules = {
 
   resetPassword: {
     email:       [r.required('Email'),        r.email()],
+    otp:         [r.required('OTP'),          r.string('OTP')],
     newPassword: [r.required('New password'), r.password('New password')],
   },
 

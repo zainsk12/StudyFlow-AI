@@ -242,8 +242,9 @@ export const verifyOtp = async (req, res, next) => {
 
 export const resetPassword = async (req, res, next) => {
   try {
-    const { email, newPassword } = req.body;
+    const { email, otp, newPassword } = req.body;
     if (!email || !newPassword) return res.status(400).json({ message: "Email and new password are required." });
+    if (!otp) return res.status(400).json({ message: "Verification code is required." });
     if (!EMAIL_REGEX.test(email)) return res.status(400).json({ message: "Please enter a valid email address." });
     if (newPassword.length < 8) return res.status(400).json({ message: "Password must be at least 8 characters." });
     if (!/[A-Z]/.test(newPassword)) return res.status(400).json({ message: "Password must contain at least one uppercase letter." });
@@ -251,8 +252,15 @@ export const resetPassword = async (req, res, next) => {
 
     const normalizedEmail = email.trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
-    if (!user || !user.resetVerified) return res.status(400).json({ message: "OTP not verified. Please complete verification first." });
+    if (!user || !user.resetVerified || !user.resetOtp) return res.status(400).json({ message: "OTP not verified. Please complete verification first." });
     if (!user.resetOtpExpiry || new Date() > user.resetOtpExpiry) return res.status(400).json({ message: "Reset session expired. Please start over." });
+
+    // Bind the reset to possession of the OTP. The `resetVerified` flag alone is
+    // keyed only by email (not a secret), so anyone who knows the email could
+    // otherwise complete the reset during the verified window. Requiring the OTP
+    // again here ensures only the party who received the emailed code can reset.
+    const otpMatch = await bcrypt.compare(String(otp).trim(), user.resetOtp);
+    if (!otpMatch) return res.status(400).json({ message: "Incorrect verification code." });
 
     user.password       = await bcrypt.hash(newPassword, 10);
     user.resetOtp       = null;
