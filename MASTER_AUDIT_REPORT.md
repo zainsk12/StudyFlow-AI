@@ -16,7 +16,7 @@ StudyFlow AI is a well-built **study planner** wrapped in an **incomplete, partl
 | # | Issue | Ref |
 |---|---|---|
 | C1 | **Live secrets committed in `server/.env`** (MongoDB creds, Groq, Mistral, Gmail app password, Razorpay key secret, JWT secret, admin secret). Rotate ALL; remove env files; use a secrets manager. | SECURITY §1 |
-| C2 | **Weak JWT secret & admin secret** (`studyflow_ai_super_secret_2026…`, `StudyFlow-AI@123`) — forgeable sessions / guessable full-admin access. | SECURITY §1 |
+| C2 | **Weak JWT secret & admin secret** (low-entropy, guessable patterns — values redacted) — forgeable sessions / guessable full-admin access. | SECURITY §1 |
 | C3 | **Razorpay webhook non-functional** (placeholder `RAZORPAY_WEBHOOK_SECRET`) → paid users can fail to get Pro. Webhook also returns 200 on error, so Razorpay never retries. | BUG-1, BUG-2 |
 | C4 | **No responsive design (0 `@media`)** → app overflows/breaks on phones; header packs metrics+timer+avatar in one non-wrapping row. Blocker for a student product. | BUG-19, PROD §11 |
 | C5 | **Prod misconfig shipped**: `NODE_ENV=development` → permissive CORS (`origin:'null'`, `localhost:*`) + stack traces leaked to clients. | PROD §1, SEC §6/§8 |

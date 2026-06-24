@@ -17,13 +17,13 @@ The single most serious issue is **a fully populated `server/.env` containing li
 
 | Secret | Location | Exposure |
 |---|---|---|
-| MongoDB Atlas connection w/ username+password (`shaikhzain242_db_user:StudyFlow_123`) | `server/.env:11` | **Full DB read/write/delete** to all user, payment, coupon data |
+| MongoDB Atlas connection w/ username+password (value redacted) | `server/.env:11` | **Full DB read/write/delete** to all user, payment, coupon data |
 | Groq API key (`gsk_…`) | `server/.env:5` | Billable AI usage |
 | Mistral API key | `server/.env:8` | Billable AI usage |
-| Gmail address + app password (`qcbxxahouwiagrjq`) | `server/.env:20-21` | **Send mail as your support address**, account takeover risk |
+| Gmail address + app password (value redacted) | `server/.env:20-21` | **Send mail as your support address**, account takeover risk |
 | Razorpay key id + **key secret** | `server/.env:25-26` | Create/verify payments, read transactions (test keys here, but same pattern in prod) |
 | JWT secret | `server/.env:17` | **Forge any user's session token** |
-| Admin secret (`StudyFlow-AI@123`) | `server/.env:41` | **Full admin panel access** |
+| Admin secret (value redacted) | `server/.env:41` | **Full admin panel access** |
 
 **Actions (do all):**
 1. Rotate **every** secret above (new DB user+password, new Groq/Mistral keys, new Gmail app password, new Razorpay keys, new JWT secret, new admin secret).
@@ -32,8 +32,8 @@ The single most serious issue is **a fully populated `server/.env` containing li
 4. Move production secrets to a secrets manager / platform env vars, never a file in the repo.
 
 Additional notes:
-- 🟠 **Weak JWT secret**: `studyflow_ai_super_secret_2026_secure_key` is a guessable, low-entropy passphrase. Use a 256-bit random value. With a weak secret, an attacker who guesses it can mint admin/any-user JWTs.
-- 🟠 **Weak admin secret**: `StudyFlow-AI@123` (15 chars, dictionary+pattern) guards the **entire** admin API. Use a long random string.
+- 🟠 **Weak JWT secret**: a guessable, low-entropy passphrase (value redacted). Use a 256-bit random value. With a weak secret, an attacker who guesses it can mint admin/any-user JWTs.
+- 🟠 **Weak admin secret**: ~15 chars, dictionary+pattern (value redacted) guards the **entire** admin API. Use a long random string.
 - 🟢 Client-side: `client/.env` is empty of secrets (good — pricing is server-driven, no `VITE_` secrets), and Razorpay `keyId` (public, by design) is returned from the server.
 
 ---
