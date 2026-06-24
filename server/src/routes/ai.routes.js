@@ -10,6 +10,6 @@ const router = express.Router();
 const aiUserLimiter = userRateLimiter(20, 15);
 
 router.post('/chat',         protect, requirePro, aiRateLimiter, aiUserLimiter, chatWithAI);
-router.post('/regen-advice', protect, aiRateLimiter, aiUserLimiter, regenAdvice);
+router.post('/regen-advice', protect, requirePro, aiRateLimiter, aiUserLimiter, regenAdvice);
 
 export default router;
