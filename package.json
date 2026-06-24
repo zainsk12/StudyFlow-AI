@@ -1,0 +1,15 @@
+{
+  "name": "studyflow-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered smart study planner — mono-repo root",
+  "scripts": {
+    "client": "cd client && npm run dev",
+    "server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run client\" \"npm run server\"",
+    "install:all": "npm i && cd client && npm i && cd ../server && npm i"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

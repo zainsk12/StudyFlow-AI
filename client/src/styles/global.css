@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-base:      #0d1117;
+  --bg-card:      #1c2030;
+  --bg-deep:      #111827;
+  --bg-header:    #13192a;
+  --border-card:  #252d42;
+  --border-mid:   #1e293b;
+  --text-primary: #e2e8f0;
+  --text-muted:   #94a3b8;
+  --text-dim:     #64748b;
+  --text-dimmer:  #475569;
+  --text-dimmest: #334155;
+  --accent:       #f59e0b;
+  --accent-dark:  #d97706;
+  --indigo:       #818cf8;
+  --green:        #34d399;
+  --red:          #f87171;
+  --modal-bg:     #111827;
+  --input-bg:     #1c2030;
+  --section-bg:   #13192a;
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --bg-base:      #f1f5f9;
+  --bg-card:      #ffffff;
+  --bg-deep:      #f8fafc;
+  --bg-header:    #ffffff;
+  --border-card:  #e2e8f0;
+  --border-mid:   #cbd5e1;
+  --text-primary: #0f172a;
+  --text-muted:   #475569;
+  --text-dim:     #64748b;
+  --text-dimmer:  #94a3b8;
+  --text-dimmest: #cbd5e1;
+  --modal-bg:     #ffffff;
+  --input-bg:     #f8fafc;
+  --section-bg:   #f1f5f9;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: #151c2c; }
+::-webkit-scrollbar-thumb { background: #2d3a55; border-radius: 2px; }
+
+/* Hide horizontal scrollbar on day strip */
+::-webkit-scrollbar:horizontal { height: 0; }
+
+/* Form resets */
+input, select, button, textarea {
+  font-family: inherit;
+  outline: none;
+}
+
+input[type="range"] { accent-color: var(--accent); }
+
+/* ── Tab button ──────────────────────────────────────────────────────────── */
+.tab-btn            { transition: color 0.15s; }
+.tab-btn:hover      { color: var(--text-muted) !important; }
+.tab-btn.active     { color: var(--accent) !important; border-bottom: 2px solid var(--accent) !important; }
+
+/* ── Hover utilities ─────────────────────────────────────────────────────── */
+.hover-row:hover    { background: rgba(255,255,255,0.03) !important; cursor: pointer; }
+.rm-btn             { opacity: 0; transition: opacity 0.15s; }
+.parent-row:hover .rm-btn { opacity: 1; }
+.chip-btn:hover     { background: rgba(245,158,11,0.15) !important; }
+
+/* ── Generate / primary CTA button ──────────────────────────────────────── */
+.gen-btn { transition: transform 0.2s, box-shadow 0.2s, opacity 0.15s; }
+.gen-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(245,158,11,0.3);
+}
+.gen-btn:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+.gen-btn:disabled { cursor: not-allowed !important; }
+
+/* ── Generic action buttons (secondary, ghost) ───────────────────────────── */
+button:not(:disabled) { transition: opacity 0.15s, background 0.15s, border-color 0.15s, transform 0.1s; }
+button:not(:disabled):active { transform: scale(0.97); }
+button:disabled { cursor: not-allowed !important; opacity: 0.45 !important; }
+
+/* ── Day pill ────────────────────────────────────────────────────────────── */
+.day-pill:hover     { border-color: rgba(245,158,11,0.3) !important; color: var(--text-primary) !important; }
+.day-pill:active    { transform: scale(0.96); }
+
+/* ── Chat message fade-in ────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.msg-in { animation: fadeIn 0.2s ease; }
+
+/* ── Loading spinner ─────────────────────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin { animation: spin 0.8s linear infinite; }
+
+/* ── Typing dots ─────────────────────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1; }
+}
+
+@keyframes sfTyping {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%            { transform: translateY(-4px); opacity: 1; }
+}
