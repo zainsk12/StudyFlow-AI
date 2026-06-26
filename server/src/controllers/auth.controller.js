@@ -8,6 +8,11 @@ import { invalidateUserCache } from "../middleware/auth.middleware.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Pre-computed bcrypt hash used as a constant-time decoy when an account does
+// not exist, so login / forgot-password timing doesn't reveal whether an email
+// is registered (task 3.4). Computed once at module load.
+const DUMMY_BCRYPT_HASH = bcrypt.hashSync('sf_dummy_password_for_constant_timing', 10);
+
 function validateSignupInput({ name, email, password }) {
   if (!name || !email || !password) return "All fields are required.";
   if (typeof name !== 'string' || name.trim().length < 2) return "Name must be at least 2 characters.";
@@ -69,10 +74,12 @@ export const login = async (req, res, next) => {
 
     const normalizedEmail = email.trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
-    if (!user) return res.status(400).json({ message: "Invalid credentials." });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials." });
+    // Constant-time decoy: always run a bcrypt comparison (against a dummy hash
+    // when the account doesn't exist) so response timing doesn't reveal whether
+    // the email is registered (task 3.4). The error message is already uniform.
+    const isMatch = await bcrypt.compare(password, user ? user.password : DUMMY_BCRYPT_HASH);
+    if (!user || !isMatch) return res.status(400).json({ message: "Invalid credentials." });
 
     const token = signToken(user);
     res.cookie(COOKIE_NAME, token, cookieOptions);
@@ -210,17 +217,30 @@ export const forgotPassword = async (req, res, next) => {
 
     const normalizedEmail = email.trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
-    if (!user) return res.status(200).json({ message: "If that email exists, a reset code has been sent." });
 
-    const otp       = crypto.randomInt(100000, 999999).toString();
-    const otpHashed = await bcrypt.hash(otp, 10);
-    const expiry    = new Date(Date.now() + 10 * 60 * 1000);
+    const GENERIC = "If that email exists, a reset code has been sent.";
 
-    await sendOtpEmail(normalizedEmail, otp);
+    if (user) {
+      const otp       = crypto.randomInt(100000, 999999).toString();
+      const otpHashed = await bcrypt.hash(otp, 10);
+      user.resetOtp       = otpHashed;
+      user.resetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+      user.resetVerified  = false;
+      await user.save();
 
-    user.resetOtp = otpHashed; user.resetOtpExpiry = expiry; user.resetVerified = false;
-    await user.save();
-    res.status(200).json({ message: "If that email exists, a reset code has been sent." });
+      // Fire-and-forget so the email send time/outcome can't leak account
+      // existence into the response (task 3.4). The user can re-request if it
+      // doesn't arrive.
+      sendOtpEmail(normalizedEmail, otp).catch((err) =>
+        console.error("forgotPassword email error:", err.message)
+      );
+    } else {
+      // Decoy bcrypt work so the no-account path costs roughly the same as the
+      // real one — keeps the response timing uniform regardless of existence.
+      await bcrypt.hash(crypto.randomInt(100000, 999999).toString(), 10);
+    }
+
+    return res.status(200).json({ message: GENERIC });
   } catch (error) {
     console.error("forgotPassword error:", error);
     res.status(500).json({ message: "Failed to send reset email. Please try again." });

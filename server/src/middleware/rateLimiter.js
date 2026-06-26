@@ -43,6 +43,29 @@ export const forgotPasswordLimiter = rateLimit({
   message: { message: 'Too many password reset requests, please try again in 15 minutes.' },
 });
 
+// Task 3.2: dedicated admin limiters (own buckets, separate from the global
+// limiter) so admin traffic is isolated and secret-guessing is bounded.
+//
+// adminApiLimiter — for /api/admin/*. Generous enough for the admin panel's
+// 30s dashboard polling plus actions, while still capping automated guessing.
+export const adminApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      200,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: { message: 'Too many admin requests, please slow down.' },
+});
+
+// adminPanelLimiter — for the HTTP-Basic /admin-panel page. Strict: legit
+// admins load it rarely, so this tightly throttles Basic-auth guessing.
+export const adminPanelLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      20,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: { message: 'Too many attempts, please try again later.' },
+});
+
 // Fix 6: user-ID based limiter factory — bypasses VPN/IP rotation
 // Use AFTER protect middleware so req.userId is set
 export function userRateLimiter(max = 30, windowMins = 15) {

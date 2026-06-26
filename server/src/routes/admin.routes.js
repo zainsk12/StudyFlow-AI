@@ -1,6 +1,7 @@
 // server/src/routes/admin.routes.js
 import { Router }     from 'express';
 import { adminGuard } from '../middleware/admin.middleware.js';
+import { adminApiLimiter } from '../middleware/rateLimiter.js';
 import {
   getStats,
   getCoupons, createCoupon, updateCoupon, deleteCoupon,
@@ -19,6 +20,9 @@ import {
 
 const router = Router();
 
+// Dedicated admin rate limit (task 3.2) runs before the guard so unauthenticated
+// secret-guessing is throttled too.
+router.use(adminApiLimiter);
 router.use(adminGuard);
 
 router.get('/stats', getStats);

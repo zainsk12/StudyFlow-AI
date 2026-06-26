@@ -5,7 +5,6 @@ import cors     from "cors";
 import helmet   from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import { fileURLToPath } from "url";
-import { timingSafeEqual } from "crypto";
 import { dirname, join }       from "path";
 import { readFileSync, existsSync }  from "fs";
 import { connectDB }     from "../config/db.js";
@@ -18,6 +17,8 @@ import syllabusRoutes      from "./routes/syllabus.routes.js";
 import paymentRoutes       from "./routes/payment.routes.js";
 import { validatePaymentConfig } from "./controllers/payment.controller.js";
 import adminRoutes         from "./routes/admin.routes.js";
+import { matchAdminSecret, hasAdminConfig } from "./middleware/admin.middleware.js";
+import { adminPanelLimiter } from "./middleware/rateLimiter.js";
 import cancellationRoutes  from "./routes/cancellation.routes.js";
 import { errorHandler }    from "./middleware/errorHandler.js";
 import { rateLimiter }     from "./middleware/rateLimiter.js";
@@ -65,6 +66,7 @@ if (!isDev) {
 }
 
 function getAllowedOrigins() {
+  // An explicit allowlist always wins — this is the production path (task 3.1).
   if (process.env.ALLOWED_ORIGINS) {
     return process.env.ALLOWED_ORIGINS
       .split(',')
@@ -72,10 +74,15 @@ function getAllowedOrigins() {
       .filter(Boolean);
   }
 
-  const origins = new Set([
-    'http://localhost:3000',
-    'http://localhost:5000',
-  ]);
+  // No explicit list configured. The localhost dev defaults are added ONLY in
+  // development so production never silently trusts localhost; in production an
+  // unset ALLOWED_ORIGINS yields just CLIENT_URL/ADMIN_PANEL_URL (if provided),
+  // and the startup env check above already warns when it's missing.
+  const origins = new Set();
+  if (isDev) {
+    origins.add('http://localhost:3000');
+    origins.add('http://localhost:5000');
+  }
 
   if (process.env.CLIENT_URL)      origins.add(process.env.CLIENT_URL);
   if (process.env.ADMIN_PANEL_URL) origins.add(process.env.ADMIN_PANEL_URL);
@@ -164,12 +171,13 @@ try {
   console.warn('[AdminPanel] admin-panel.html not found — /admin-panel route will return 404.');
 }
 
-app.get('/admin-panel', (req, res) => {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return res.status(404).send('Not found.');
+app.get('/admin-panel', adminPanelLimiter, (req, res) => {
+  if (!hasAdminConfig()) return res.status(404).send('Not found.');
 
   // Read secret from HTTP Basic Auth (Authorization: Basic base64(user:password))
-  // The admin enters any username + the ADMIN_SECRET as the password.
+  // The admin enters any username + a configured admin secret as the password.
+  // matchAdminSecret performs a constant-time check against all configured
+  // admin credentials (single ADMIN_SECRET and/or per-admin ADMIN_SECRETS).
   const authHeader = req.headers.authorization ?? '';
   let authorized = false;
   if (authHeader.startsWith('Basic ')) {
@@ -177,9 +185,7 @@ app.get('/admin-panel', (req, res) => {
       const decoded  = Buffer.from(authHeader.slice(6), 'base64').toString('utf8');
       // username:password — everything after the first colon is the password
       const password = decoded.slice(decoded.indexOf(':') + 1);
-      const sBuf = Buffer.from(secret);
-      const pBuf = Buffer.from(password);
-      authorized = sBuf.length === pBuf.length && timingSafeEqual(sBuf, pBuf);
+      authorized = matchAdminSecret(password) !== null;
     } catch { authorized = false; }
   }
 

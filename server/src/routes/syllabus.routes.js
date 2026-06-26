@@ -4,8 +4,15 @@ import multer  from 'multer';
 import { importSyllabus }  from '../controllers/syllabus.controller.js';
 import { protect }         from '../middleware/auth.middleware.js';
 import { requirePro }      from '../middleware/requirePro.middleware.js';
+import { aiRateLimiter, userRateLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
+
+// Task 3.3: PDF import calls the Mistral API and buffers the whole file in
+// memory, so it carries the same cost/abuse protection as the AI chat routes —
+// an IP limiter plus a per-user limiter. PDF imports are infrequent, so the
+// per-user budget is tighter than chat (10 / 15 min).
+const syllabusUserLimiter = userRateLimiter(10, 15);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -48,8 +55,19 @@ function verifyPDFMagicBytes(req, res, next) {
   next();
 }
 
-// protect → requirePro → parse PDF → verify real bytes → controller
+// protect → requirePro → rate limits → parse PDF → verify real bytes → controller
 // A free user hitting this directly gets 403 before any AI cost is incurred.
-router.post('/import', protect, requirePro, upload.single('pdf'), verifyPDFMagicBytes, importSyllabus);
+// Rate limits run before Multer so an over-limit request is rejected before the
+// file is buffered into memory.
+router.post(
+  '/import',
+  protect,
+  requirePro,
+  aiRateLimiter,
+  syllabusUserLimiter,
+  upload.single('pdf'),
+  verifyPDFMagicBytes,
+  importSyllabus,
+);
 
 export default router;
