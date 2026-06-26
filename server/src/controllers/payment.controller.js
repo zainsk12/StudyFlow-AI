@@ -7,6 +7,7 @@ import Pricing   from '../models/Pricing.js';
 import CancellationRequest from '../models/CancellationRequest.js';
 import { sendPurchaseConfirmationEmail } from '../utils/email.js';
 import { PRICING_DEFAULTS } from '../../config/pricingDefaults.js';
+import { invalidateUserCache } from '../middleware/auth.middleware.js';
 
 // Calculate subscription expiry date from DB-stored durationDays.
 // Returns null for lifetime (never expires), or a Date N days from now.
@@ -217,6 +218,7 @@ export async function createOrder(req, res, next) {
         { new: true }
       );
       const finalUser = updatedUser || await User.findById(user._id);
+      invalidateUserCache(user._id);
 
       sendPurchaseConfirmationEmail(
         finalUser.email, finalUser.name, 0, code,
@@ -307,6 +309,7 @@ export async function verifyPayment(req, res, next) {
       { new: true }
     );
     const user = updatedUser || await User.findById(req.userId);
+    invalidateUserCache(req.userId);
 
     sendPurchaseConfirmationEmail(
       user.email, user.name, paymentRecord.amountPaise, code || null,
@@ -390,6 +393,8 @@ export async function handleWebhook(req, res) {
         { new: true }
       ) || await User.findById(record.userId);
 
+      invalidateUserCache(record.userId);
+
       if (user) {
         sendPurchaseConfirmationEmail(
           user.email, user.name, record.amountPaise, record.couponCode || null,
@@ -455,6 +460,7 @@ export async function cancelSubscription(req, res, next) {
     user.cancelOtp             = null;
     user.cancelOtpExpiry       = null;
     await user.save();
+    invalidateUserCache(req.userId);
 
     res.status(200).json({ message: 'Subscription cancelled successfully.' });
   } catch (err) {

@@ -5,6 +5,7 @@ import StudyPlan from '../models/StudyPlan.js';
 import Payment  from '../models/Payment.js';
 import CancellationRequest from '../models/CancellationRequest.js';
 import { sendOtpEmail }    from '../utils/email.js';
+import { invalidateUserCache } from '../middleware/auth.middleware.js';
 
 // ── POST /api/cancellation/send-otp ──────────────────────────────────────
 export async function sendCancelOtp(req, res, next) {
@@ -156,6 +157,7 @@ export async function adminApprove(req, res, next) {
       user.planType              = null;
       user.subscriptionExpiresAt = null;
       await user.save();
+      invalidateUserCache(user._id);
     }
 
     request.status = 'approved';

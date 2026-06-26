@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema({
 
   cancelOtp:       { type: String, default: null },
   cancelOtpExpiry: { type: Date,   default: null },
+
+  // Dedicated OTP for the authenticated "change password" flow. Kept separate
+  // from the forgot-password reset* fields so the two flows cannot overwrite
+  // each other's codes when run concurrently (roadmap task 2.3).
+  pwdChangeOtp:       { type: String, default: null },
+  pwdChangeOtpExpiry: { type: Date,   default: null },
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

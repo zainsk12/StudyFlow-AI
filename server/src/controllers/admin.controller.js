@@ -3,6 +3,7 @@ import Payment   from '../models/Payment.js';
 import User      from '../models/User.js';
 import StudyPlan from '../models/StudyPlan.js';
 import nodemailer from 'nodemailer';
+import { invalidateUserCache } from '../middleware/auth.middleware.js';
 
 // ── GET /api/admin/stats ──────────────────────────────────────────────────
 export async function getStats(req, res, next) {
@@ -104,6 +105,8 @@ export async function updateCoupon(req, res, next) {
           { _id: { $in: userIds }, paymentId: `FREE_COUPON_${coupon.code}` },
           { isPro: false, paidAt: null, paymentId: null }
         );
+        // Evict affected users so the revoked Pro status is seen immediately (task 2.2).
+        userIds.forEach((id) => invalidateUserCache(id));
       }
     }
     res.json(coupon);
@@ -241,6 +244,7 @@ export async function grantPro(req, res, next) {
       { new: true }
     ).select('-password -tokenVersion -resetOtp -resetOtpExpiry -resetVerified');
     if (!user) return res.status(404).json({ message: 'User not found.' });
+    invalidateUserCache(req.params.id);
     res.json(user);
   } catch (err) { next(err); }
 }
@@ -254,6 +258,7 @@ export async function revokePro(req, res, next) {
       { new: true }
     ).select('-password -tokenVersion -resetOtp -resetOtpExpiry -resetVerified');
     if (!user) return res.status(404).json({ message: 'User not found.' });
+    invalidateUserCache(req.params.id);
     res.json(user);
   } catch (err) { next(err); }
 }
@@ -287,6 +292,7 @@ export async function extendSubscription(req, res, next) {
       { new: true }
     ).select('-password -tokenVersion -resetOtp -resetOtpExpiry -resetVerified');
 
+    invalidateUserCache(req.params.id);
     res.json(updated);
   } catch (err) { next(err); }
 }
@@ -300,6 +306,7 @@ export async function downgradeUser(req, res, next) {
       { new: true }
     ).select('-password -tokenVersion -resetOtp -resetOtpExpiry -resetVerified');
     if (!user) return res.status(404).json({ message: 'User not found.' });
+    invalidateUserCache(req.params.id);
     res.json(user);
   } catch (err) { next(err); }
 }
@@ -314,6 +321,7 @@ export async function deleteUser(req, res, next) {
       Payment.deleteMany({ userId: req.params.id }),
     ]);
     await User.findByIdAndDelete(req.params.id);
+    invalidateUserCache(req.params.id);
     console.log(`[ADMIN] Deleted user ${user.email} — ${spResult.deletedCount} study plans, ${payResult.deletedCount} payments cascaded.`);
     res.json({
       message: `User "${user.email}" deleted.`,

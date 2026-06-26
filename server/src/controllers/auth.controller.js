@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt    from "jsonwebtoken";
 import crypto from "crypto";
 import { sendOtpEmail } from "../utils/email.js";
+import { invalidateUserCache } from "../middleware/auth.middleware.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -55,7 +56,7 @@ export const signup = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ name: name.trim(), email: normalizedEmail, password: hashedPassword });
 
-    const { password: _pw, tokenVersion: _tv, resetOtp: _ro, resetOtpExpiry: _roe, resetVerified: _rv, ...safeUser } = user.toObject();
+    const { password: _pw, tokenVersion: _tv, resetOtp: _ro, resetOtpExpiry: _roe, resetVerified: _rv, pwdChangeOtp: _po, pwdChangeOtpExpiry: _poe, ...safeUser } = user.toObject();
     res.status(201).json({ message: "Account created successfully", user: safeUser });
   } catch (error) { next(error); }
 };
@@ -84,6 +85,7 @@ export const login = async (req, res, next) => {
 export const logout = async (req, res, next) => {
   try {
     await User.findByIdAndUpdate(req.userId, { $inc: { tokenVersion: 1 } });
+    invalidateUserCache(req.userId);
     res.clearCookie(COOKIE_NAME, { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) { next(error); }
@@ -92,6 +94,7 @@ export const logout = async (req, res, next) => {
 export const logoutAll = async (req, res, next) => {
   try {
     await User.findByIdAndUpdate(req.userId, { $inc: { tokenVersion: 1 } });
+    invalidateUserCache(req.userId);
     res.clearCookie(COOKIE_NAME, { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' });
     res.status(200).json({ message: 'All sessions revoked.' });
   } catch (error) { next(error); }
@@ -100,7 +103,7 @@ export const logoutAll = async (req, res, next) => {
 export const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.userId).select(
-      '-password -tokenVersion -resetOtp -resetOtpExpiry -resetVerified -cancelOtp -cancelOtpExpiry'
+      '-password -tokenVersion -resetOtp -resetOtpExpiry -resetVerified -cancelOtp -cancelOtpExpiry -pwdChangeOtp -pwdChangeOtpExpiry'
     );
     if (!user) return res.status(404).json({ message: "User not found." });
     res.status(200).json({ user });
@@ -142,9 +145,10 @@ export const sendPwdChangeOtp = async (req, res, next) => {
 
     await sendOtpEmail(user.email, otp, 'pwdChange');
 
-    user.resetOtp       = otpHashed;
-    user.resetOtpExpiry = expiry;
-    user.resetVerified  = false;
+    // Use the dedicated password-change OTP fields (task 2.3) so this can't
+    // collide with an in-flight forgot-password reset.
+    user.pwdChangeOtp       = otpHashed;
+    user.pwdChangeOtpExpiry = expiry;
     await user.save();
 
     res.status(200).json({ message: 'Verification code sent to your email.' });
@@ -172,21 +176,24 @@ export const changePassword = async (req, res, next) => {
     const match = await bcrypt.compare(currentPassword, user.password);
     if (!match) return res.status(400).json({ message: 'Current password is incorrect.' });
 
-    // Verify OTP
-    if (!user.resetOtp || !user.resetOtpExpiry)
+    // Verify OTP against the dedicated password-change fields (task 2.3).
+    if (!user.pwdChangeOtp || !user.pwdChangeOtpExpiry)
       return res.status(400).json({ message: 'No verification code found. Please request a new one.' });
-    if (new Date() > user.resetOtpExpiry)
+    if (new Date() > user.pwdChangeOtpExpiry)
       return res.status(400).json({ message: 'Verification code expired. Please request a new one.' });
 
-    const otpMatch = await bcrypt.compare(String(otp).trim(), user.resetOtp);
+    const otpMatch = await bcrypt.compare(String(otp).trim(), user.pwdChangeOtp);
     if (!otpMatch) return res.status(400).json({ message: 'Incorrect verification code.' });
 
-    user.password       = await bcrypt.hash(newPassword, 10);
-    user.tokenVersion   = (user.tokenVersion || 0) + 1;
-    user.resetOtp       = null;
-    user.resetOtpExpiry = null;
-    user.resetVerified  = false;
+    user.password           = await bcrypt.hash(newPassword, 10);
+    user.tokenVersion       = (user.tokenVersion || 0) + 1;
+    user.pwdChangeOtp       = null;
+    user.pwdChangeOtpExpiry = null;
     await user.save();
+
+    // Evict the auth cache so the bumped tokenVersion is seen immediately and
+    // the re-issued cookie below isn't treated as a stale session (task 2.2).
+    invalidateUserCache(user._id);
 
     // Re-issue cookie so user stays logged in on this device
     const token = signToken(user);
@@ -268,6 +275,7 @@ export const resetPassword = async (req, res, next) => {
     user.resetVerified  = false;
     user.tokenVersion   = (user.tokenVersion || 0) + 1;
     await user.save();
+    invalidateUserCache(user._id);
     res.status(200).json({ message: "Password reset successfully. You can now sign in." });
   } catch (error) { next(error); }
 };

@@ -79,6 +79,18 @@ async function pushFullPlan(payload) {
 // (it's the authoritative store), UNLESS the local copy has a timestamp
 // and the server copy doesn't — that means the local copy was saved after
 // the last successful server push, so we prefer local.
+//
+// KNOWN LIMITATION — cross-device sync is last-write-wins (roadmap task 2.4):
+// The whole planner state is persisted as one snapshot, and reconciliation
+// picks the newer snapshot wholesale rather than merging field-by-field. This
+// is correct and lossless for the single-device case this app targets (the
+// beforeunload flush + debounce keep the server current), but if the SAME
+// account edits on TWO devices concurrently, the device that saves last
+// overwrites the other's unsynced changes. A per-topic merge would be needed
+// to eliminate this; it is intentionally deferred because topic status is not
+// monotonic (un-marking is a supported action), so a naive union would
+// resurrect intentionally-cleared progress. Treat this as documented expected
+// behaviour, not a regression.
 function pickNewerSource(serverData, localData) {
   if (!serverData && !localData) return null;
   if (!serverData) return localData;
