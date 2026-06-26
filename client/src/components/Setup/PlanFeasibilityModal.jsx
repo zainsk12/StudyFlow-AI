@@ -128,23 +128,23 @@ export default function PlanFeasibilityModal({
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
           <div style={styles.iconBox}><AlertTriangle size={22} color="#f59e0b" /></div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 4 }}>
               Not enough time for all topics
             </div>
-            <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5 }}>
               {/* Use liveOverflowCount (computed from current settings) instead of
                   the stale overflowCount prop so the header always reflects the
                   actual gap given current dailyHours and examDate.              */}
               <span style={{ color: '#f87171', fontWeight: 600 }}>
                 ~{liveOverflowCount} topic{liveOverflowCount !== 1 ? 's' : ''}
               </span>{' '}
-              won't fit before your exam. Adjust below, then click <strong style={{ color: '#f1f5f9' }}>Generate New Plan</strong>.
+              won't fit before your exam. Adjust below, then click <strong style={{ color: 'var(--text-bright)' }}>Generate New Plan</strong>.
             </div>
           </div>
         </div>
 
         {/* Summary bar */}
-        <div style={styles.summaryRow}>
+        <div className="sf-grid-4" style={styles.summaryRow}>
           {[
             { label: 'Days left',     value: `${daysLeft}d`,       color: '#f59e0b' },
             { label: 'Hrs available', value: `${availableHours}h`, color: '#60a5fa' },
@@ -153,7 +153,7 @@ export default function PlanFeasibilityModal({
           ].map(i => (
             <div key={i.label} style={styles.summaryCell}>
               <div style={{ fontSize: 16, fontWeight: 800, color: i.color }}>{i.value}</div>
-              <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{i.label}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-dimmer)', marginTop: 2 }}>{i.label}</div>
             </div>
           ))}
         </div>
@@ -190,7 +190,7 @@ export default function PlanFeasibilityModal({
               color: newHours >= (requiredDailyHours ?? 0) ? '#34d399' : '#f59e0b',
             }}>{newHours}h</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#334155', marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-dimmest)', marginBottom: 10 }}>
             <span>1h</span><span>6h</span><span>12h</span>
           </div>
           {newHours >= (requiredDailyHours ?? 0)
@@ -216,7 +216,7 @@ export default function PlanFeasibilityModal({
             <b style={{ color: '#34d399' }}>{suggestedDate}</b> or later.
           </p>
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Choose new date</div>
+            <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 6 }}>Choose new date</div>
             <input type="date" value={newDate}
               min={dateStrFromToday(daysNeeded ?? 1)}
               onChange={e => setNewDate(e.target.value)}
@@ -240,7 +240,7 @@ export default function PlanFeasibilityModal({
           badgeColor="#f87171"
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, color: '#475569' }}>{toRemove.size} selected · {fmt(hoursFreed)}h freed</span>
+            <span style={{ fontSize: 12, color: 'var(--text-dimmer)' }}>{toRemove.size} selected · {fmt(hoursFreed)}h freed</span>
             <span style={{ fontSize: 12, fontWeight: 700, color: removalSolvesGap ? '#34d399' : '#f59e0b' }}>
               {removalSolvesGap ? '✓ Gap closed!' : `${fmt(hoursShortfall - hoursFreed)}h still needed`}
             </span>
@@ -252,19 +252,19 @@ export default function PlanFeasibilityModal({
               return (
                 <label key={`${t.subjectId}-${t.id}`} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  background: checked ? 'rgba(248,113,113,0.08)' : '#111827',
-                  border: checked ? '1px solid rgba(248,113,113,0.3)' : '1px solid #1e293b',
+                  background: checked ? 'rgba(248,113,113,0.08)' : 'var(--bg-deep)',
+                  border: checked ? '1px solid rgba(248,113,113,0.3)' : '1px solid var(--border-mid)',
                   borderRadius: 8, padding: '8px 11px', cursor: 'pointer',
                 }}>
                   <input type="checkbox" checked={checked} onChange={() => toggleRemove(t)}
                     style={{ accentColor: '#f87171', width: 14, height: 14, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 13, color: checked ? '#64748b' : '#e2e8f0',
+                      fontSize: 13, color: checked ? 'var(--text-dim)' : 'var(--text-primary)',
                       textDecoration: checked ? 'line-through' : 'none',
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     }}>{t.name}</div>
-                    <div style={{ fontSize: 11, color: '#334155' }}>{t.subjectName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-dimmest)' }}>{t.subjectName}</div>
                   </div>
                   <span style={{
                     fontSize: 11, fontWeight: 700, color: clr,
@@ -279,7 +279,7 @@ export default function PlanFeasibilityModal({
             style={{
               ...styles.actionBtn,
               background: toRemove.size > 0 ? 'linear-gradient(135deg,#f87171,#ef4444)' : '#1a2235',
-              color: toRemove.size > 0 ? '#fff' : '#334155',
+              color: toRemove.size > 0 ? '#fff' : 'var(--text-dimmest)',
               cursor: toRemove.size > 0 ? 'pointer' : 'not-allowed',
             }}>
             Remove {toRemove.size > 0 ? `${toRemove.size} Topic${toRemove.size !== 1 ? 's' : ''}` : 'Topics'}
@@ -287,14 +287,14 @@ export default function PlanFeasibilityModal({
         </Accordion>
 
         {/* Footer */}
-        <div style={{ display: 'flex', gap: 10, marginTop: 10, paddingTop: 16, borderTop: '1px solid #1e293b' }}>
+        <div style={{ display: 'flex', gap: 10, marginTop: 10, paddingTop: 16, borderTop: '1px solid var(--border-mid)' }}>
           <button onClick={onGenerateNew} style={{
             flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: hasChanges
               ? 'linear-gradient(135deg,#34d399,#10b981)'
               : 'linear-gradient(135deg,#f59e0b,#d97706)',
             border: 'none', borderRadius: 9, padding: '12px 16px',
-            color: '#0d1117', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+            color: 'var(--bg-base)', fontSize: 14, fontWeight: 700, cursor: 'pointer',
           }}>
             <RefreshCw size={14} />
             {hasChanges ? 'Generate New Plan' : 'Generate Plan'}
@@ -304,14 +304,14 @@ export default function PlanFeasibilityModal({
             flex: 1, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center', gap: 2,
             background: 'transparent',
-            border: '1px solid #252d42', borderRadius: 9, padding: '10px 12px',
-            color: '#64748b', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            border: '1px solid var(--border-card)', borderRadius: 9, padding: '10px 12px',
+            color: 'var(--text-dim)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <Zap size={13} /> Generate Anyway
             </div>
             {/* Use liveOverflowCount so this reflects current settings */}
-            <span style={{ fontSize: 10, color: '#334155' }}>(~{liveOverflowCount} topics skipped)</span>
+            <span style={{ fontSize: 10, color: 'var(--text-dimmest)' }}>(~{liveOverflowCount} topics skipped)</span>
           </button>
         </div>
       </div>
@@ -325,9 +325,9 @@ function Accordion({ id, expanded, setExpanded, icon, label, badge, badgeColor, 
   const open = expanded === id;
   return (
     <div style={{
-      border: `1px solid ${open ? '#252d42' : '#1a2235'}`,
+      border: `1px solid ${open ? 'var(--border-card)' : '#1a2235'}`,
       borderRadius: 10, marginBottom: 8, overflow: 'hidden',
-      background: open ? '#141924' : '#111827',
+      background: open ? '#141924' : 'var(--bg-deep)',
     }}>
       <button onClick={() => setExpanded(open ? null : id)} style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 10,
@@ -339,7 +339,7 @@ function Accordion({ id, expanded, setExpanded, icon, label, badge, badgeColor, 
           background: 'rgba(255,255,255,0.04)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>{icon}</div>
-        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{label}</span>
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
         {badge && (
           <span style={{
             fontSize: 11, fontWeight: 700, color: badgeColor,
@@ -347,7 +347,7 @@ function Accordion({ id, expanded, setExpanded, icon, label, badge, badgeColor, 
             borderRadius: 5, padding: '2px 7px', flexShrink: 0,
           }}>{badge}</span>
         )}
-        <span style={{ color: '#334155', flexShrink: 0 }}>
+        <span style={{ color: 'var(--text-dimmest)', flexShrink: 0 }}>
           {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </span>
       </button>
@@ -365,14 +365,14 @@ const styles = {
     zIndex: 3000, padding: 20,
   },
   modal: {
-    background: '#1c2030', border: '1px solid #252d42',
+    background: 'var(--bg-card)', border: '1px solid var(--border-card)',
     borderRadius: 18, padding: '26px 22px',
     width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto',
     position: 'relative',
   },
   closeBtn: {
     position: 'absolute', top: 14, right: 14,
-    background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer',
+    background: 'transparent', border: 'none', color: 'var(--text-dimmer)', cursor: 'pointer',
   },
   iconBox: {
     width: 44, height: 44, borderRadius: 13, flexShrink: 0,
@@ -381,7 +381,7 @@ const styles = {
   },
   summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 16 },
   summaryCell: {
-    background: '#111827', border: '1px solid #1e293b',
+    background: 'var(--bg-deep)', border: '1px solid var(--border-mid)',
     borderRadius: 9, padding: '9px 10px', textAlign: 'center',
   },
   successBanner: {
@@ -389,7 +389,7 @@ const styles = {
     background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.22)',
     borderRadius: 8, padding: '10px 13px', marginBottom: 12,
   },
-  hint: { fontSize: 13, color: '#64748b', lineHeight: 1.5, marginBottom: 12, marginTop: 0 },
+  hint: { fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5, marginBottom: 12, marginTop: 0 },
   hintGreen: {
     fontSize: 12, color: '#34d399', background: 'rgba(52,211,153,0.07)',
     border: '1px solid rgba(52,211,153,0.18)', borderRadius: 6, padding: '6px 10px', marginBottom: 10,
@@ -403,7 +403,7 @@ const styles = {
     padding: '10px 16px', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
   },
   dateInput: {
-    width: '100%', background: '#111827', border: '1px solid #252d42',
-    borderRadius: 8, padding: '10px 12px', color: '#e2e8f0', fontSize: 14, boxSizing: 'border-box',
+    width: '100%', background: 'var(--bg-deep)', border: '1px solid var(--border-card)',
+    borderRadius: 8, padding: '10px 12px', color: 'var(--text-primary)', fontSize: 14, boxSizing: 'border-box',
   },
 };

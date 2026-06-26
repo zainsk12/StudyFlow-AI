@@ -222,10 +222,10 @@ export default function Header({
         background: 'var(--bg-header, #13192a)',
         borderBottom: '1px solid var(--border-mid, #1a2035)',
       }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '18px 24px 0' }}>
+        <div className="sf-header-inner" style={{ maxWidth: 960, margin: '0 auto', padding: '18px 24px 0' }}>
 
           {/* ── Top row ── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+          <div className="sf-header-row" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
 
             {/* Logo */}
             <div style={{
@@ -244,7 +244,7 @@ export default function Header({
             </div>
 
             {/* Right cluster */}
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 18 }}>
+            <div className="sf-header-cluster" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 18 }}>
 
               {/* Live metrics */}
               {metrics.map(m => (
@@ -282,7 +282,7 @@ export default function Header({
           </div>
 
           {/* ── Tab bar ── */}
-          <div style={{ display: 'flex', gap: 0 }}>
+          <div className="sf-tabs" style={{ display: 'flex', gap: 0 }}>
             {TABS.map(t => (
               <button
                 key={t.id}

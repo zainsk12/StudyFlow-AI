@@ -43,7 +43,7 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
         plan. Are you sure you want to clear all subjects, topics, and your schedule?
         {pct > 0 && (
           <><br /><br />
-          <span style={{ color: '#475569', fontSize: 13 }}>
+          <span style={{ color: 'var(--text-dimmer)', fontSize: 13 }}>
             💡 Your progress will be permanently lost.
           </span></>
         )}
@@ -66,7 +66,7 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
       zIndex: 2000, padding: 20,
     }}>
       <div style={{
-        background: '#1c2030', border: '1px solid #252d42',
+        background: 'var(--bg-card)', border: '1px solid var(--border-card)',
         borderRadius: 16, width: '100%', maxWidth: 440,
         padding: '32px 28px', position: 'relative',
       }}>
@@ -81,18 +81,18 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
         </div>
 
         {/* Title */}
-        <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>
+        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 10 }}>
           {getTitle()}
         </div>
 
         {/* Message */}
-        <div style={{ fontSize: 14, color: '#64748b', lineHeight: 1.7, marginBottom: 28 }}>
+        <div style={{ fontSize: 14, color: 'var(--text-dim)', lineHeight: 1.7, marginBottom: 28 }}>
           {getMessage()}
           {/* Only show the permanent delete warning for exam_over and all_done */}
           {!isManual && (
             <>
               <br /><br />
-              <span style={{ color: '#475569', fontSize: 13 }}>
+              <span style={{ color: 'var(--text-dimmer)', fontSize: 13 }}>
                 ⚠️ This will permanently delete all subjects, topics, and your schedule.
               </span>
             </>
@@ -105,8 +105,8 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
             onClick={onDismiss}
             style={{
               flex: 1, background: 'transparent',
-              border: '1px solid #252d42', borderRadius: 8,
-              padding: 11, color: '#64748b',
+              border: '1px solid var(--border-card)', borderRadius: 8,
+              padding: 11, color: 'var(--text-dim)',
               cursor: 'pointer', fontSize: 14, fontWeight: 500,
             }}
           >
@@ -133,7 +133,7 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
           style={{
             position: 'absolute', top: 16, right: 16,
             background: 'transparent', border: 'none',
-            color: '#334155', cursor: 'pointer', padding: 4,
+            color: 'var(--text-dimmest)', cursor: 'pointer', padding: 4,
           }}
         >
           <X size={16} />

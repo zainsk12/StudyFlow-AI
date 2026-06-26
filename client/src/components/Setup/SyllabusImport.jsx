@@ -196,7 +196,7 @@ export default function SyllabusImport({ onImport, isPro }) {
           zIndex: 1000, padding: 20,
         }}>
           <div style={{
-            background: '#1c2030', border: '1px solid #252d42',
+            background: 'var(--bg-card)', border: '1px solid var(--border-card)',
             borderRadius: 16, width: '100%', maxWidth: 560,
             maxHeight: '85vh', display: 'flex', flexDirection: 'column',
             overflow: 'hidden',
@@ -205,7 +205,7 @@ export default function SyllabusImport({ onImport, isPro }) {
             {/* Header */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '20px 24px', borderBottom: '1px solid #252d42',
+              padding: '20px 24px', borderBottom: '1px solid var(--border-card)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
@@ -218,11 +218,11 @@ export default function SyllabusImport({ onImport, isPro }) {
                   <FileText size={16} color="#818cf8" />
                 </div>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9' }}>Import Syllabus</div>
-                  <div style={{ fontSize: 11, color: '#475569' }}>AI extracts subjects &amp; topics from your PDF</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-bright)' }}>Import Syllabus</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-dimmer)' }}>AI extracts subjects &amp; topics from your PDF</div>
                 </div>
               </div>
-              <button onClick={close} style={{ background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', padding: 4 }}>
+              <button onClick={close} style={{ background: 'transparent', border: 'none', color: 'var(--text-dimmer)', cursor: 'pointer', padding: 4 }}>
                 <X size={18} />
               </button>
             </div>
@@ -238,18 +238,18 @@ export default function SyllabusImport({ onImport, isPro }) {
                   onDrop={e => { e.preventDefault(); setDragging(false); processFile(e.dataTransfer.files[0]); }}
                   onClick={() => fileRef.current.click()}
                   style={{
-                    border: `2px dashed ${dragging ? '#818cf8' : '#252d42'}`,
+                    border: `2px dashed ${dragging ? '#818cf8' : 'var(--border-card)'}`,
                     borderRadius: 12, padding: '48px 24px',
                     textAlign: 'center', cursor: 'pointer',
                     transition: 'all 0.2s',
                     background: dragging ? 'rgba(129,140,248,0.04)' : 'transparent',
                   }}
                 >
-                  <FileUp size={36} color={dragging ? '#818cf8' : '#334155'} style={{ margin: '0 auto 14px' }} />
-                  <div style={{ fontSize: 15, fontWeight: 600, color: '#94a3b8', marginBottom: 6 }}>
+                  <FileUp size={36} color={dragging ? '#818cf8' : 'var(--text-dimmest)'} style={{ margin: '0 auto 14px' }} />
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
                     {dragging ? 'Drop your PDF here' : 'Drop your syllabus PDF here'}
                   </div>
-                  <div style={{ fontSize: 12, color: '#475569', marginBottom: 16 }}>or click to browse</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-dimmer)', marginBottom: 16 }}>or click to browse</div>
                   <div style={{ display: 'inline-block', background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.2)', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: '#818cf8' }}>
                     PDF up to 10 MB
                   </div>
@@ -264,22 +264,22 @@ export default function SyllabusImport({ onImport, isPro }) {
                   <div style={{ textAlign: 'center', marginBottom: 28 }}>
                     <div style={{
                       width: 56, height: 56, borderRadius: '50%',
-                      border: '3px solid #1e293b',
+                      border: '3px solid var(--border-mid)',
                       borderTop: '3px solid #818cf8',
                       margin: '0 auto 16px',
                       animation: 'spin 0.9s linear infinite',
                     }} />
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#94a3b8', marginBottom: 4 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>
                       {progMsg || 'Analyzing your syllabus…'}
                     </div>
                     {chunkInfo.total > 1 && (
-                      <div style={{ fontSize: 12, color: '#475569' }}>
+                      <div style={{ fontSize: 12, color: 'var(--text-dimmer)' }}>
                         Section {chunkInfo.current} of {chunkInfo.total}
                       </div>
                     )}
                   </div>
 
-                  <div style={{ background: '#111827', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
+                  <div style={{ background: 'var(--bg-deep)', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
                     <div style={{
                       height: '100%',
                       width: `${progress}%`,
@@ -289,14 +289,14 @@ export default function SyllabusImport({ onImport, isPro }) {
                     }} />
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#334155' }}>
-                    <span style={{ color: progress >=  5 ? '#818cf8' : '#334155' }}>Reading PDF</span>
-                    <span style={{ color: progress >= 20 ? '#818cf8' : '#334155' }}>Extracting text</span>
-                    <span style={{ color: progress >= 70 ? '#818cf8' : '#334155' }}>AI analysis</span>
-                    <span style={{ color: progress >= 93 ? '#818cf8' : '#334155' }}>Merging results</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-dimmest)' }}>
+                    <span style={{ color: progress >=  5 ? '#818cf8' : 'var(--text-dimmest)' }}>Reading PDF</span>
+                    <span style={{ color: progress >= 20 ? '#818cf8' : 'var(--text-dimmest)' }}>Extracting text</span>
+                    <span style={{ color: progress >= 70 ? '#818cf8' : 'var(--text-dimmest)' }}>AI analysis</span>
+                    <span style={{ color: progress >= 93 ? '#818cf8' : 'var(--text-dimmest)' }}>Merging results</span>
                   </div>
 
-                  <div style={{ textAlign: 'right', fontSize: 11, color: '#475569', marginTop: 6 }}>
+                  <div style={{ textAlign: 'right', fontSize: 11, color: 'var(--text-dimmer)', marginTop: 6 }}>
                     {progress}%
                   </div>
 
@@ -309,7 +309,7 @@ export default function SyllabusImport({ onImport, isPro }) {
                 <div style={{ textAlign: 'center', padding: '32px 24px' }}>
                   <AlertCircle size={36} color="#f87171" style={{ margin: '0 auto 14px' }} />
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#f87171', marginBottom: 8 }}>Something went wrong</div>
-                  <div style={{ fontSize: 13, color: '#64748b', marginBottom: 24 }}>{error}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 24 }}>{error}</div>
                   <button onClick={reset} style={{
                     background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.2)',
                     borderRadius: 8, padding: '8px 20px', color: '#818cf8', cursor: 'pointer', fontSize: 13,
@@ -322,7 +322,7 @@ export default function SyllabusImport({ onImport, isPro }) {
               {/* PREVIEW */}
               {status === 'preview' && (
                 <div>
-                  <div style={{ fontSize: 12, color: '#64748b', marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 14 }}>
                     AI found <span style={{ color: '#818cf8', fontWeight: 600 }}>{subjects.length} subjects</span> — select what to import
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -330,8 +330,8 @@ export default function SyllabusImport({ onImport, isPro }) {
                       const allOn = s.topics.every((_, ti) => selected[si]?.[ti]);
                       return (
                         <div key={si} style={{
-                          background: '#111827',
-                          border: `1px solid ${allOn ? 'rgba(129,140,248,0.25)' : '#1e293b'}`,
+                          background: 'var(--bg-deep)',
+                          border: `1px solid ${allOn ? 'rgba(129,140,248,0.25)' : 'var(--border-mid)'}`,
                           borderLeft: `3px solid ${COLORS[si % COLORS.length]}`,
                           borderRadius: 10, padding: '12px 14px',
                         }}>
@@ -341,9 +341,9 @@ export default function SyllabusImport({ onImport, isPro }) {
                           >
                             {allOn
                               ? <CheckCircle2 size={16} color="#818cf8" />
-                              : <Circle       size={16} color="#334155" />}
-                            <span style={{ fontSize: 14, fontWeight: 600, color: '#f1f5f9', flex: 1 }}>{s.name}</span>
-                            <span style={{ fontSize: 11, color: '#475569' }}>{s.topics.length} topics</span>
+                              : <Circle       size={16} color="var(--text-dimmest)" />}
+                            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-bright)', flex: 1 }}>{s.name}</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-dimmer)' }}>{s.topics.length} topics</span>
                           </div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingLeft: 26 }}>
                             {s.topics.map((t, ti) => (
@@ -354,10 +354,10 @@ export default function SyllabusImport({ onImport, isPro }) {
                               >
                                 {selected[si]?.[ti]
                                   ? <CheckCircle2 size={13} color="#34d399" />
-                                  : <Circle       size={13} color="#1e293b" />}
+                                  : <Circle       size={13} color="var(--border-mid)" />}
                                 <span style={{
                                   fontSize: 12, flex: 1,
-                                  color: selected[si]?.[ti] ? '#cbd5e1' : '#334155',
+                                  color: selected[si]?.[ti] ? 'var(--text-soft)' : 'var(--text-dimmest)',
                                 }}>
                                   {t.name}
                                 </span>
@@ -383,17 +383,17 @@ export default function SyllabusImport({ onImport, isPro }) {
             {/* Footer — only on preview */}
             {status === 'preview' && (
               <div style={{
-                padding: '16px 24px', borderTop: '1px solid #252d42',
+                padding: '16px 24px', borderTop: '1px solid var(--border-card)',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
-                <span style={{ fontSize: 12, color: '#475569' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-dimmer)' }}>
                   <span style={{ color: '#818cf8', fontWeight: 600 }}>{totalSelected}</span> topics selected
                 </span>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={close} style={{
-                    background: 'transparent', border: '1px solid #252d42',
+                    background: 'transparent', border: '1px solid var(--border-card)',
                     borderRadius: 8, padding: '8px 18px',
-                    color: '#64748b', cursor: 'pointer', fontSize: 13,
+                    color: 'var(--text-dim)', cursor: 'pointer', fontSize: 13,
                   }}>
                     Cancel
                   </button>
@@ -403,9 +403,9 @@ export default function SyllabusImport({ onImport, isPro }) {
                     style={{
                       background: totalSelected > 0
                         ? 'linear-gradient(135deg,#818cf8,#6366f1)'
-                        : '#1e293b',
+                        : 'var(--border-mid)',
                       border: 'none', borderRadius: 8, padding: '8px 20px',
-                      color: totalSelected > 0 ? '#fff' : '#334155',
+                      color: totalSelected > 0 ? '#fff' : 'var(--text-dimmest)',
                       cursor: totalSelected > 0 ? 'pointer' : 'not-allowed',
                       fontSize: 13, fontWeight: 600,
                     }}

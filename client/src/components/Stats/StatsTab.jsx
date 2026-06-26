@@ -8,11 +8,11 @@ import { SecLabel, MetricCard, Pill } from '../common/index.jsx';
 import { DIFF_CLR, DIFF_HRS } from '../../constants';
 
 const TOOLTIP_STYLE = {
-  background:   '#1c2030',
-  border:       '1px solid #252d42',
+  background:   'var(--bg-card)',
+  border:       '1px solid var(--border-card)',
   borderRadius: 6,
   fontSize:     12,
-  color:        '#e2e8f0',
+  color:        'var(--text-primary)',
 };
 
 export default function StatsTab({ subjects, stats, dailyHours }) {
@@ -20,7 +20,7 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       {/* ── Metric cards ────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+      <div className="sf-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
         <MetricCard label="Days Left"   value={stats.daysLeft}         sub="until exam"  color="#f87171" />
         <MetricCard label="Completion"  value={`${stats.pct}%`}         sub="topics done" color="#34d399" />
         <MetricCard label="Study Hours" value={`${stats.totalHours}h`}  sub="total needed" color="#818cf8" />
@@ -28,7 +28,7 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
       </div>
 
       {/* ── Charts row ──────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="sf-charts" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
 
         {/* Donut – hours per subject */}
         <Card>
@@ -50,7 +50,7 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
             {stats.pieData.map((e, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.color, flexShrink: 0 }} />
-                <span style={{ flex: 1, color: '#94a3b8' }}>{e.name}</span>
+                <span style={{ flex: 1, color: 'var(--text-muted)' }}>{e.name}</span>
                 <span style={{ color: e.color, fontWeight: 600 }}>{e.value}h</span>
               </div>
             ))}
@@ -62,13 +62,13 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
           <SecLabel icon={<Target size={13} />}>Topics Progress</SecLabel>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={stats.barData} barSize={18} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-              <XAxis dataKey="name" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <XAxis dataKey="name" tick={{ fill: 'var(--text-dimmer)', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'var(--text-dimmer)', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Bar dataKey="Done" stackId="a" radius={[0, 0, 0, 0]}>
                 {stats.barData.map((e, i) => <Cell key={i} fill={e.color} />)}
               </Bar>
-              <Bar dataKey="Pending" stackId="a" fill="#1e293b" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Pending" stackId="a" fill="var(--border-mid)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -87,10 +87,10 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
             const pct    = s.topics.length ? Math.round((done / s.topics.length) * 100) : 0;
 
             return (
-              <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: '#111827', borderRadius: 8 }}>
+              <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--bg-deep)', borderRadius: 8 }}>
                 <div style={{ width: 3, height: 38, borderRadius: 2, background: s.color, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0', marginBottom: 4 }}>{s.name}</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>{s.name}</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {hard   > 0 && <Pill label={`${hard} hard`}   color="#f87171" />}
                     {medium > 0 && <Pill label={`${medium} med`}  color="#f59e0b" />}
@@ -99,7 +99,7 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 15, fontWeight: 700, color: s.color }}>{hours.toFixed(1)}h</div>
-                  <div style={{ fontSize: 11, color: '#475569' }}>{pct}% done</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-dimmer)' }}>{pct}% done</div>
                 </div>
               </div>
             );
@@ -110,7 +110,7 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
       {/* ── Difficulty distribution ──────────── */}
       <Card>
         <SecLabel icon={<AlertTriangle size={13} />}>Difficulty Distribution</SecLabel>
-        <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+        <div className="sf-row-wrap" style={{ display: 'flex', gap: 12, marginTop: 4 }}>
           {['hard', 'medium', 'easy'].map(d => {
             const count = subjects.reduce((a, s) => a + s.topics.filter(t => t.difficulty === d).length, 0);
             const total = subjects.reduce((a, s) => a + s.topics.length, 0);
@@ -120,15 +120,15 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
                 key={d}
                 style={{
                   flex:        1,
-                  background:  '#111827',
+                  background:  'var(--bg-deep)',
                   borderRadius: 8,
                   padding:     '12px 14px',
                   borderTop:   `2px solid ${DIFF_CLR[d]}`,
                 }}
               >
                 <div style={{ fontSize: 22, fontWeight: 700, color: DIFF_CLR[d] }}>{count}</div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2, textTransform: 'capitalize' }}>{d} topics</div>
-                <div style={{ fontSize: 11, color: '#475569' }}>{pct}% of plan</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, textTransform: 'capitalize' }}>{d} topics</div>
+                <div style={{ fontSize: 11, color: 'var(--text-dimmer)' }}>{pct}% of plan</div>
               </div>
             );
           })}

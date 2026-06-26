@@ -146,7 +146,7 @@ useEffect(() => {
       />
 
       {/* Single-column content — full 960 px restored */}
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 24px 48px' }}>
+      <div className="sf-content" style={{ maxWidth: 960, margin: '0 auto', padding: '24px 24px 48px' }}>
 
         {streak > 0 && (
           <div style={{ textAlign: 'center', marginBottom: 12 }}>

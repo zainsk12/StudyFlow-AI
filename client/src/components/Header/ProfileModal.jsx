@@ -229,7 +229,7 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim, #475569)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
               Study Overview
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div className="sf-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {[
                 { icon: <Target size={16} />,     label: 'Days Left',   value: daysLeft,                      color: '#f87171' },
                 { icon: <TrendingUp size={16} />, label: 'Completion',  value: `${pct}%`,                     color: '#34d399' },

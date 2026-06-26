@@ -18,6 +18,8 @@
   --text-dim:     #64748b;
   --text-dimmer:  #475569;
   --text-dimmest: #334155;
+  --text-bright:  #f1f5f9;
+  --text-soft:    #cbd5e1;
   --accent:       #f59e0b;
   --accent-dark:  #d97706;
   --indigo:       #818cf8;
@@ -41,6 +43,8 @@
   --text-dim:     #64748b;
   --text-dimmer:  #94a3b8;
   --text-dimmest: #cbd5e1;
+  --text-bright:  #0f172a;
+  --text-soft:    #334155;
   --modal-bg:     #ffffff;
   --input-bg:     #f8fafc;
   --section-bg:   #f1f5f9;
@@ -128,4 +132,122 @@ button:disabled { cursor: not-allowed !important; opacity: 0.45 !important; }
 @keyframes sfTyping {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30%            { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE FOUNDATION (roadmap task 2.1)
+
+   Goal: usable layout from 320px upward with NO horizontal page scroll, while
+   leaving the desktop (> 768px) appearance completely unchanged. All rules are
+   either globally safe guards or gated behind max-width media queries, so they
+   never fire on desktop.
+
+   Breakpoints:
+     768px  → tablet (portrait) and below
+     480px  → large phones (~375px)
+     360px  → small phones (down to 320px)
+
+   Component-level reflow (inner grids, modals, dropdown repositioning) is
+   intentionally OUT OF SCOPE here — that is roadmap task 2.2.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Global guard: a stray wide element must never create horizontal page scroll. */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* Replaced/media elements should never exceed their container. */
+img, svg, canvas, video { max-width: 100%; }
+
+/* ── Tablet (portrait) and below ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Tighter page gutters on the main content + header containers */
+  .sf-content,
+  .sf-header-inner {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Header top row: let the metrics/timer/avatar cluster wrap onto its own line
+     beneath the logo instead of overflowing the viewport. */
+  .sf-header-row { flex-wrap: wrap; }
+  .sf-header-cluster {
+    margin-left: 0 !important;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 14px !important;
+  }
+
+  /* Tab bar: scroll horizontally instead of overflowing the page. */
+  .sf-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sf-tabs::-webkit-scrollbar { height: 0; }
+  .sf-tabs > button { flex-shrink: 0; }
+}
+
+/* ── Large phones (≤480px, e.g. 375px) ────────────────────────────────────── */
+@media (max-width: 480px) {
+  .sf-content {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    padding-top: 16px !important;
+  }
+  .sf-header-inner {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .sf-header-cluster { gap: 12px !important; }
+}
+
+/* ── Small phones (≤360px, down to 320px) ─────────────────────────────────── */
+@media (max-width: 360px) {
+  .sf-content,
+  .sf-header-inner {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  .sf-header-cluster { gap: 10px !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENT REFLOW (roadmap task 2.2)
+   Collapse fixed grids, stack the settings layout, and keep the Pomodoro
+   dropdown on-screen. Desktop (> 768px) is untouched — all rules are gated.
+   `!important` is required only to override the components' inline grid/style.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Fixed grids → fewer columns */
+  .sf-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  .sf-grid-2 { grid-template-columns: 1fr !important; }
+  .sf-charts { grid-template-columns: 1fr !important; }
+  .sf-row-wrap { flex-wrap: wrap !important; }
+
+  /* Settings modal: stack the sidebar above the content as a scroll strip */
+  .sf-settings { flex-direction: column !important; }
+  .sf-settings-nav {
+    width: 100% !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-mid) !important;
+    scrollbar-width: none;
+  }
+  .sf-settings-nav::-webkit-scrollbar { height: 0; }
+  .sf-settings-nav > button { flex-shrink: 0; }
+
+  /* Header Pomodoro dropdown: anchor to the right edge instead of a fixed
+     desktop offset so it stays fully on-screen down to 320px. */
+  .sf-pomo-panel {
+    right: 8px !important;
+    left: auto !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+}
+
+/* Difficulty cards (3-up) stay readable on the narrowest phones */
+@media (max-width: 360px) {
+  .sf-grid-4 { grid-template-columns: 1fr !important; }
 }

@@ -8,7 +8,7 @@ export function SecLabel({ children, icon }) {
         gap:           8,
         fontSize:      11,
         fontWeight:    600,
-        color:         '#64748b',
+        color:         'var(--text-dim)',
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
         marginBottom:  14,
@@ -42,7 +42,7 @@ export function Pill({ label, color, bg }) {
 /* ── Progress Bar ────────────────────────────────────────── */
 export function ProgressBar({ pct, color = '#f59e0b', height = 6 }) {
   return (
-    <div style={{ height, background: '#111827', borderRadius: height, overflow: 'hidden' }}>
+    <div style={{ height, background: 'var(--bg-deep)', borderRadius: height, overflow: 'hidden' }}>
       <div
         style={{
           height:     '100%',
@@ -61,8 +61,8 @@ export function MetricCard({ label, value, sub, color }) {
   return (
     <div
       style={{
-        background:   '#111827',
-        border:       '1px solid #1e293b',
+        background:   'var(--bg-deep)',
+        border:       '1px solid var(--border-mid)',
         borderRadius: 10,
         padding:      '14px 16px',
         textAlign:    'center',
@@ -71,8 +71,8 @@ export function MetricCard({ label, value, sub, color }) {
       <div style={{ fontSize: 26, fontWeight: 700, color, fontFamily: "'Georgia', serif", lineHeight: 1 }}>
         {value}
       </div>
-      <div style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', marginTop: 6 }}>{label}</div>
-      <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{sub}</div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginTop: 6 }}>{label}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-dimmer)', marginTop: 2 }}>{sub}</div>
     </div>
   );
 }
@@ -82,7 +82,7 @@ export function EmptyState({ emoji, msg, action, onAction }) {
   return (
     <div style={{ textAlign: 'center', padding: '60px 20px' }}>
       <div style={{ fontSize: 36, marginBottom: 12 }}>{emoji}</div>
-      <div style={{ fontSize: 14, color: '#64748b', marginBottom: 16 }}>{msg}</div>
+      <div style={{ fontSize: 14, color: 'var(--text-dim)', marginBottom: 16 }}>{msg}</div>
       {action && (
         <button
           onClick={onAction}

@@ -241,7 +241,7 @@ export default function PomodoroTimer({
 
       {/* ── Dropdown panel ── */}
       {open && (
-        <div style={{
+        <div className="sf-pomo-panel" style={{
           position:     'fixed',
           top:          72,
           right:        136,

@@ -59,12 +59,12 @@ export default function SmartRegenBanner({
             Schedule Regenerated ✓
           </div>
           {aiMessage && (
-            <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>{aiMessage}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5 }}>{aiMessage}</div>
           )}
         </div>
         <button
           onClick={() => setDismissed(true)}
-          style={{ background: 'transparent', border: 'none', color: '#334155', cursor: 'pointer', padding: 2 }}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-dimmest)', cursor: 'pointer', padding: 2 }}
         >
           <X size={14} />
         </button>
@@ -83,7 +83,7 @@ export default function SmartRegenBanner({
           <div style={{ fontSize: 14, fontWeight: 700, color: '#f87171', marginBottom: 4 }}>
             You're behind schedule
           </div>
-          <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 12, lineHeight: 1.5 }}>
             <span style={{ color: '#f87171', fontWeight: 600 }}>{behindCount} topic{behindCount > 1 ? 's' : ''}</span> should
             have been completed by now but {behindCount > 1 ? 'are' : 'is'} still pending.
             AI can rebuild your plan to fit everything into the remaining{' '}
@@ -95,9 +95,9 @@ export default function SmartRegenBanner({
               disabled={loading}
               style={{
                 display: 'flex', alignItems: 'center', gap: 7,
-                background: loading ? '#1e293b' : 'linear-gradient(135deg,#f87171,#ef4444)',
+                background: loading ? 'var(--border-mid)' : 'linear-gradient(135deg,#f87171,#ef4444)',
                 border: 'none', borderRadius: 8, padding: '8px 16px',
-                color: loading ? '#475569' : '#fff',
+                color: loading ? 'var(--text-dimmer)' : '#fff',
                 fontSize: 13, fontWeight: 600,
                 transition: 'opacity 0.15s, background 0.15s',
               }}
@@ -112,9 +112,9 @@ export default function SmartRegenBanner({
               onClick={() => setDismissed(true)}
               disabled={loading}
               style={{
-                background: 'transparent', border: '1px solid #1e293b',
+                background: 'transparent', border: '1px solid var(--border-mid)',
                 borderRadius: 8, padding: '8px 14px',
-                color: '#475569', fontSize: 13,
+                color: 'var(--text-dimmer)', fontSize: 13,
               }}
             >
               Dismiss
@@ -123,7 +123,7 @@ export default function SmartRegenBanner({
         </div>
         <button
           onClick={() => setDismissed(true)}
-          style={{ background: 'transparent', border: 'none', color: '#334155', cursor: 'pointer', padding: 2, flexShrink: 0 }}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-dimmest)', cursor: 'pointer', padding: 2, flexShrink: 0 }}
         >
           <X size={14} />
         </button>

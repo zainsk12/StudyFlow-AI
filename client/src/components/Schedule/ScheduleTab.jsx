@@ -17,11 +17,11 @@ function DayPill({ day, index, active, onClick }) {
       onClick={() => onClick(index)}
       style={{
         minWidth: 60, padding: '9px 6px',
-        background:   active ? 'rgba(245,158,11,0.1)' : '#1c2030',
-        border:       active ? '1px solid #f59e0b' : '1px solid #252d42',
+        background:   active ? 'rgba(245,158,11,0.1)' : 'var(--bg-card)',
+        border:       active ? '1px solid #f59e0b' : '1px solid var(--border-card)',
         borderRadius: 9, cursor: 'pointer',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-        color: active ? '#f59e0b' : '#475569',
+        color: active ? '#f59e0b' : 'var(--text-dimmer)',
         transition: 'all 0.18s ease',
         flexShrink: 0,
       }}
@@ -29,15 +29,15 @@ function DayPill({ day, index, active, onClick }) {
       <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.03em' }}>
         {d.toLocaleDateString('en', { weekday: 'short' })}
       </div>
-      <div style={{ fontSize: 17, fontWeight: 700, color: active ? '#f59e0b' : '#94a3b8', lineHeight: 1.1 }}>
+      <div style={{ fontSize: 17, fontWeight: 700, color: active ? '#f59e0b' : 'var(--text-muted)', lineHeight: 1.1 }}>
         {d.getDate()}
       </div>
-      <div style={{ fontSize: 9, color: active ? 'rgba(245,158,11,0.7)' : '#334155' }}>
+      <div style={{ fontSize: 9, color: active ? 'rgba(245,158,11,0.7)' : 'var(--text-dimmest)' }}>
         {d.toLocaleDateString('en', { month: 'short' })}
       </div>
       <div style={{
         fontSize: 10, marginTop: 2, fontWeight: 600,
-        color: active ? '#f59e0b' : '#334155',
+        color: active ? '#f59e0b' : 'var(--text-dimmest)',
       }}>
         {totalH.toFixed(1)}h
       </div>
@@ -107,11 +107,11 @@ export default function ScheduleTab({
   const isLastDay     = dayIdx === schedule.length - 1;
 
   const navBtnBase = {
-    background: '#111827',
-    border: '1px solid #252d42',
+    background: 'var(--bg-deep)',
+    border: '1px solid var(--border-card)',
     borderRadius: 7,
     padding: '7px 11px',
-    color: '#64748b',
+    color: 'var(--text-dim)',
     cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     transition: 'all 0.15s ease',
@@ -141,10 +141,10 @@ export default function ScheduleTab({
             onClick={scrollToToday}
             style={{
               minWidth: 52, padding: '8px 10px', flexShrink: 0, alignSelf: 'center',
-              background: isTodayActive ? 'rgba(52,211,153,0.1)' : '#1c2030',
-              border: `1px solid ${isTodayActive ? '#34d399' : '#252d42'}`,
+              background: isTodayActive ? 'rgba(52,211,153,0.1)' : 'var(--bg-card)',
+              border: `1px solid ${isTodayActive ? '#34d399' : 'var(--border-card)'}`,
               borderRadius: 8, cursor: 'pointer',
-              color: isTodayActive ? '#34d399' : '#64748b',
+              color: isTodayActive ? '#34d399' : 'var(--text-dim)',
               fontSize: 11, fontWeight: 600,
               transition: 'all 0.18s ease',
             }}
@@ -166,14 +166,14 @@ export default function ScheduleTab({
         }}>
           <div>
             <div style={{
-              fontSize: 19, fontWeight: 700, color: '#f1f5f9',
+              fontSize: 19, fontWeight: 700, color: 'var(--text-bright)',
               fontFamily: 'Georgia, serif', lineHeight: 1.3,
             }}>
               {date.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })}
             </div>
-            <div style={{ fontSize: 12, color: '#475569', marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-dimmer)', marginTop: 4 }}>
               Day {dayIdx + 1} of {schedule.length}
-              <span style={{ margin: '0 6px', color: '#252d42' }}>·</span>
+              <span style={{ margin: '0 6px', color: 'var(--border-card)' }}>·</span>
               <span style={{ color: '#f59e0b', fontWeight: 600 }}>{total.toFixed(1)}h</span> total
             </div>
           </div>
@@ -212,20 +212,20 @@ export default function ScheduleTab({
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '13px 15px',
-                background: '#111827', borderRadius: 9,
+                background: 'var(--bg-deep)', borderRadius: 9,
                 borderLeft: `3px solid ${s.color}`,
                 transition: 'background 0.15s ease',
               }}
             >
-              <Clock size={13} color="#334155" style={{ flexShrink: 0 }} />
+              <Clock size={13} color="var(--text-dimmest)" style={{ flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  fontSize: 14, fontWeight: 500, color: '#e2e8f0',
+                  fontSize: 14, fontWeight: 500, color: 'var(--text-primary)',
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                 }}>
                   {s.topicName}
                 </div>
-                <div style={{ fontSize: 11, color: '#475569', marginTop: 3 }}>{s.subjectName}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-dimmer)', marginTop: 3 }}>{s.subjectName}</div>
               </div>
               {s.difficulty && (
                 <Pill label={DIFF_LBL[s.difficulty]} color={DIFF_CLR[s.difficulty]} />

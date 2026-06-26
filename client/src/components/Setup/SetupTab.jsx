@@ -11,7 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 function InlineInput({
   value, onChange, placeholder,
   autoFocus = false,
-  fontSize = 14, fontWeight = 600, color = '#f1f5f9',
+  fontSize = 14, fontWeight = 600, color = 'var(--text-bright)',
 }) {
   const ref = useRef(null);
   useEffect(() => { if (autoFocus && ref.current) ref.current.focus(); }, [autoFocus]);
@@ -60,23 +60,23 @@ function ConfirmRegenDialog({ onConfirm, onCancel }) {
       zIndex: 2000, padding: 20,
     }}>
       <div style={{
-        background: '#1c2030', border: '1px solid #252d42',
+        background: 'var(--bg-card)', border: '1px solid var(--border-card)',
         borderRadius: 14, padding: '28px 28px 24px', maxWidth: 400, width: '100%',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
           <AlertTriangle size={20} color="#f59e0b" />
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9' }}>Overwrite schedule?</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-bright)' }}>Overwrite schedule?</div>
         </div>
-        <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.65, marginBottom: 24 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.65, marginBottom: 24 }}>
           This will overwrite your current schedule and reset your progress. This cannot be undone.
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
           <button
             onClick={onCancel}
             style={{
-              background: 'transparent', border: '1px solid #252d42',
+              background: 'transparent', border: '1px solid var(--border-card)',
               borderRadius: 8, padding: '8px 20px',
-              color: '#64748b', cursor: 'pointer', fontSize: 13,
+              color: 'var(--text-dim)', cursor: 'pointer', fontSize: 13,
             }}
           >
             Cancel
@@ -86,7 +86,7 @@ function ConfirmRegenDialog({ onConfirm, onCancel }) {
             style={{
               background: 'linear-gradient(135deg,#f59e0b,#d97706)',
               border: 'none', borderRadius: 8, padding: '8px 20px',
-              color: '#0d1117', fontWeight: 700, cursor: 'pointer', fontSize: 13,
+              color: 'var(--bg-base)', fontWeight: 700, cursor: 'pointer', fontSize: 13,
             }}
           >
             Yes, regenerate
@@ -189,21 +189,21 @@ export default function SetupTab({
       {/* ── Exam Config ─────────────────────────────────────────────── */}
       <Card>
         <SecLabel icon={<Clock size={13} />}>Exam Configuration</SecLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="sf-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Exam Date</div>
+            <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 6 }}>Exam Date</div>
             <input type="date" value={examDate} onChange={e => setExamDate(e.target.value)}
-              style={{ width: '100%', background: '#111827', border: '1px solid #252d42', borderRadius: 8, padding: '10px 12px', color: '#e2e8f0', fontSize: 14 }} />
+              style={{ width: '100%', background: 'var(--bg-deep)', border: '1px solid var(--border-card)', borderRadius: 8, padding: '10px 12px', color: 'var(--text-primary)', fontSize: 14 }} />
           </div>
           <div>
-            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 6 }}>
               Daily Study Hours —{' '}
               <span style={{ color: '#f59e0b', fontWeight: 600 }}>{dailyHours}h/day</span>
             </div>
             <input type="range" min={1} max={12} step={0.5} value={dailyHours}
               onChange={e => setDailyHours(+e.target.value)}
               style={{ width: '100%', marginTop: 10 }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#334155', marginTop: 3 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-dimmest)', marginTop: 3 }}>
               <span>1h</span><span>6h</span><span>12h</span>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function SetupTab({
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <SecLabel icon={<Plus size={13} />}>Subjects &amp; Topics</SecLabel>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="sf-row-wrap" style={{ display: 'flex', gap: 8 }}>
             <SyllabusImport isPro={isPro} onImport={handleImportSubjects} />
             <button onClick={addSubject} style={{
               display: 'flex', alignItems: 'center', gap: 6,
@@ -239,7 +239,7 @@ export default function SetupTab({
           {subjects.length === 0 && (
             <div style={{
               textAlign: 'center', padding: '36px 24px',
-              border: '1px dashed #1e293b', borderRadius: 12, color: '#334155', fontSize: 13,
+              border: '1px dashed var(--border-mid)', borderRadius: 12, color: 'var(--text-dimmest)', fontSize: 13,
             }}>
               No subjects yet — add one manually or import from a PDF syllabus
             </div>
@@ -250,12 +250,12 @@ export default function SetupTab({
             const isNewSubject = s.id === lastAddedSubjectId;
             return (
               <div key={s.id} style={{
-                background: '#1c2030', border: '1px solid #252d42',
+                background: 'var(--bg-card)', border: '1px solid var(--border-card)',
                 borderLeft: `3px solid ${s.color}`, borderRadius: 10, padding: '14px 16px',
               }}>
                 <div className="parent-row" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <InlineInput value={s.name} onChange={val => updateSubject(s.id, 'name', val)}
-                    placeholder="Subject name…" autoFocus={isNewSubject} fontSize={14} fontWeight={600} color="#f1f5f9" />
+                    placeholder="Subject name…" autoFocus={isNewSubject} fontSize={14} fontWeight={600} color="var(--text-bright)" />
                   <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
                     {COLORS.map(c => (
                       <button
@@ -273,11 +273,11 @@ export default function SetupTab({
                       />
                     ))}
                   </div>
-                  <span style={{ fontSize: 11, color: '#475569', background: '#111827', padding: '3px 8px', borderRadius: 4, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-dimmer)', background: 'var(--bg-deep)', padding: '3px 8px', borderRadius: 4, whiteSpace: 'nowrap' }}>
                     {s.topics.length} topics · {totalH.toFixed(1)}h
                   </span>
                   <button className="rm-btn" onClick={() => removeSubject(s.id)}
-                    style={{ background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', padding: 3 }}>
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-dimmer)', cursor: 'pointer', padding: 3 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -289,13 +289,13 @@ export default function SetupTab({
                       <div key={t.id} className="parent-row hover-row"
                         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 6px', borderRadius: 6 }}>
                         <InlineInput value={t.name} onChange={val => updateTopic(s.id, t.id, 'name', val)}
-                          placeholder="Topic name…" autoFocus={isNewTopic} fontSize={13} fontWeight={400} color="#cbd5e1" />
+                          placeholder="Topic name…" autoFocus={isNewTopic} fontSize={13} fontWeight={400} color="var(--text-soft)" />
                         <DiffSelect value={t.difficulty} onChange={val => updateTopic(s.id, t.id, 'difficulty', val)} />
-                        <span style={{ fontSize: 11, color: '#475569', minWidth: 24, textAlign: 'right' }}>
+                        <span style={{ fontSize: 11, color: 'var(--text-dimmer)', minWidth: 24, textAlign: 'right' }}>
                           {DIFF_HRS[t.difficulty]}h
                         </span>
                         <button className="rm-btn" onClick={() => removeTopic(s.id, t.id)}
-                          style={{ background: 'transparent', border: 'none', color: '#334155', cursor: 'pointer' }}>
+                          style={{ background: 'transparent', border: 'none', color: 'var(--text-dimmest)', cursor: 'pointer' }}>
                           <Trash2 size={11} />
                         </button>
                       </div>
@@ -304,8 +304,8 @@ export default function SetupTab({
                 </div>
 
                 <button onClick={() => addTopic(s.id)} style={{
-                  marginTop: 8, background: 'transparent', border: '1px dashed #252d42',
-                  borderRadius: 6, padding: '6px 12px', color: '#475569', cursor: 'pointer', fontSize: 12, width: '100%',
+                  marginTop: 8, background: 'transparent', border: '1px dashed var(--border-card)',
+                  borderRadius: 6, padding: '6px 12px', color: 'var(--text-dimmer)', cursor: 'pointer', fontSize: 12, width: '100%',
                 }}>+ Add Topic</button>
               </div>
             );
@@ -325,7 +325,7 @@ export default function SetupTab({
             <div style={{ fontSize: 13, fontWeight: 700, color: '#f87171', marginBottom: 4 }}>
               ~{estTopicsOver} topic{estTopicsOver !== 1 ? 's' : ''} won't fit before your exam
             </div>
-            <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.6 }}>
               Your current plan has{' '}
               <span style={{ color: '#f59e0b', fontWeight: 600 }}>{stats.daysLeft} days</span> ×{' '}
               <span style={{ color: '#f59e0b', fontWeight: 600 }}>{dailyHours}h/day</span> ={' '}
@@ -343,10 +343,10 @@ export default function SetupTab({
 
       {/* ── Summary + Generate ──────────────────────────────────────── */}
       <div ref={generateCardRef}>
-        <Card style={{ background: 'linear-gradient(135deg,#1c2030,#192035)', borderColor: '#252d42' }}>
+        <Card style={{ background: 'linear-gradient(135deg,var(--bg-card),#192035)', borderColor: 'var(--border-card)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <div>
-              <div style={{ fontSize: 12, color: '#475569', marginBottom: 8 }}>Plan Summary</div>
+              <div style={{ fontSize: 12, color: 'var(--text-dimmer)', marginBottom: 8 }}>Plan Summary</div>
               <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
                 {[
                   { label: 'subjects',    value: subjects.length,        color: '#f59e0b' },
@@ -356,7 +356,7 @@ export default function SetupTab({
                 ].map(i => (
                   <span key={i.label} style={{ fontSize: 13 }}>
                     <span style={{ color: i.color, fontWeight: 700 }}>{i.value}</span>
-                    <span style={{ color: '#475569' }}> {i.label}</span>
+                    <span style={{ color: 'var(--text-dimmer)' }}> {i.label}</span>
                   </span>
                 ))}
               </div>
@@ -378,13 +378,13 @@ export default function SetupTab({
                       display: 'flex', alignItems: 'center', gap: 8,
                       background: 'linear-gradient(135deg,#f59e0b,#d97706)',
                       border: 'none', borderRadius: 10, padding: '11px 22px',
-                      color: '#0d1117', fontWeight: 700, cursor: 'pointer',
+                      color: 'var(--bg-base)', fontWeight: 700, cursor: 'pointer',
                       fontSize: 14,
                     }}
                   >
                     <Wrench size={15} /> Fix &amp; Generate
                   </button>
-                  <span style={{ fontSize: 11, color: '#334155', textAlign: 'right' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-dimmest)', textAlign: 'right' }}>
                     ~{estTopicsOver} topics won't fit at current settings
                   </span>
                 </div>
@@ -400,7 +400,7 @@ export default function SetupTab({
                     style={{
                       background: 'linear-gradient(135deg,#f59e0b,#d97706)',
                       border: 'none', borderRadius: 10, padding: '11px 22px',
-                      color: '#0d1117',
+                      color: 'var(--bg-base)',
                       fontWeight: 700, cursor: 'pointer',
                       fontSize: 14, display: 'flex', alignItems: 'center', gap: 8,
                     }}

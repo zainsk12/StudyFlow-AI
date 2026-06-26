@@ -1,419 +1,293 @@
-# Deployment Roadmap — StudyFlow AI
+# StudyFlow AI — Deployment Roadmap
 
-> Derived from `MASTER_AUDIT_REPORT.md` (audit 2026-06-24). Groups every finding into 7 phases.
-> **No code has been modified.** This is a sequencing plan only.
->
-> Effort scale: **S** ≤ ½ day · **M** ½–2 days · **L** 3–5 days · **XL** > 1 week.
-> Risk = chance a change breaks existing behaviour if done carelessly.
+**Generated:** 2026-06-26
+**Status:** Single source of truth. Supersedes all prior audit documents.
+**Scope:** Fresh audit of the current codebase. Completed work (security fixes, secret rotation, `.env.example`, JWT/admin hardening, OTP-bound password reset, AI Pro gating, responsive/theme overhaul, MongoDB DNS fix) has been verified and is **excluded** from this list.
 
 ---
 
-## How to read this roadmap (safe-ordering principle)
+## How to read this
 
-Tasks are ordered so each one is **non-breaking given the ones before it**:
+Each task carries: Priority, Why, Files, Effort, Risk, Dependencies, **Blocks deployment?**, and **Optional after launch?**
 
-1. **Phase 1 (Security)** leads with secret rotation and config — these are mostly *operational* (no app-logic change) and must happen before anything touches the repo or ships. Code-level security fixes here are **additive guards** (adding `requirePro`, binding reset to OTP) that don't alter the happy path.
-2. **Phase 2 (Mobile/UI)** is pure presentation — isolated from backend, safe after security.
-3. **Phase 3 (Payments)** fixes revenue-critical flows; done before AI so money works first.
-4. **Phase 4 (AI)** improves the paid feature payload (additive context).
-5. **Phase 5 (Dead-code removal)** comes *after* 1–4 so we never delete something a fix still depended on; each deletion is verified-unused first.
-6. **Phase 6 (Production hardening)** adds observability, tests, scaling, reliability — built on a now-stable codebase.
-7. **Phase 7 (Deployment)** is last: it depends on everything above being in place.
+- **Effort:** S (<1h), M (half-day), L (1–2 days), XL (3+ days)
+- **Risk:** chance the change breaks something else if done carelessly.
+- A task that **blocks deployment** must be resolved before the first production release.
 
-> ⚠️ Recommended global pre-req: **convert this folder into a git repository with a feature-branch workflow** before changing code, so each task is reversible. (`Is a git repository: false` today.)
-
----
-
-# PHASE 1 — Security Fixes
-
-Goal: eliminate the existential risks. Most tasks are operational or additive — they do not change the success path of existing features.
-
-### 1.1 Rotate ALL leaked secrets *(operational, do first)*
-- **Priority:** 🔴 Critical (C1)
-- **Files affected:** `server/.env` (and the external services themselves: MongoDB Atlas, Groq, Mistral, Gmail, Razorpay)
-- **Estimated effort:** M
-- **Risk level:** Medium — rotating the Mongo password/JWT secret will **invalidate live sessions and break the running app until the new values are deployed**; coordinate with a maintenance window.
-- **Dependencies:** none (do before any commit/deploy)
-- **Deployment impact:** Requires redeploy with new env values; existing JWT cookies become invalid (users must re-login). Must precede 1.2.
-
-### 1.2 Remove env files from the repo; add `.env.example`; adopt a secrets manager
-- **Priority:** 🔴 Critical (C1)
-- **Files affected:** `server/.env`, `client/.env`, new `server/.env.example`, `client/.env.example`, `.gitignore` (already lists `.env`)
-- **Estimated effort:** S
-- **Risk level:** Low — config plumbing only.
-- **Dependencies:** 1.1 (rotate before exposing example placeholders)
-- **Deployment impact:** Secrets move to platform/secret-store env vars; deploy config must be updated.
-
-### 1.3 Generate high-entropy JWT secret & admin secret
-- **Priority:** 🔴 Critical (C2)
-- **Files affected:** `server/.env` (`JWT_SECRET`, `ADMIN_SECRET`); consumers `server/src/controllers/auth.controller.js`, `server/src/middleware/auth.middleware.js`, `server/src/middleware/admin.middleware.js`, `server/src/app.js`
-- **Estimated effort:** S
-- **Risk level:** Medium — new `JWT_SECRET` invalidates all sessions (re-login); admin panel users must re-enter the new secret.
-- **Dependencies:** 1.1 (part of the same rotation event)
-- **Deployment impact:** Re-login for all users; update admin panel credentials.
-
-### 1.4 Set `NODE_ENV=production` and lock CORS for prod
-- **Priority:** 🔴 Critical (C5)
-- **Files affected:** `server/.env`, `server/src/app.js` (`getAllowedOrigins`, `origin:'null'`/`localhost` dev branches), `server/src/middleware/errorHandler.js` (stack-trace gating already keyed off `isDev`)
-- **Estimated effort:** S
-- **Risk level:** Medium — if `ALLOWED_ORIGINS`/`CLIENT_URL` aren't set correctly, prod CORS will block the real frontend. Test the exact production origin first.
-- **Dependencies:** none
-- **Deployment impact:** Stops stack-trace leakage and dev CORS leniency; the production client origin **must** be configured or the app breaks.
-
-### 1.5 Add `requirePro` to `/api/ai/regen-advice`
-- **Priority:** 🔴 Critical (C6)
-- **Files affected:** `server/src/routes/ai.routes.js`
-- **Estimated effort:** S
-- **Risk level:** Low — additive guard; UI already gates this for free users (`SmartRegenBanner.jsx`), so legitimate (Pro) flow is unchanged.
-- **Dependencies:** none
-- **Deployment impact:** Closes a paid-feature/cost-leak bypass; no impact on Pro users.
-
-### 1.6 Bind password reset to the OTP / one-time token
-- **Priority:** 🔴 Critical (C7)
-- **Files affected:** `server/src/controllers/auth.controller.js` (`verifyOtp`, `resetPassword`), `server/src/routes/auth.routes.js`, `client/src/pages/LoginPage.jsx` (carry OTP/token into the reset call)
-- **Estimated effort:** M
-- **Risk level:** Medium — touches the live reset flow; must keep the 3-step UX working. Test the full forgot→OTP→reset path.
-- **Dependencies:** none
-- **Deployment impact:** Closes account-takeover window; requires synchronized client+server deploy.
-
-### 1.7 Fix signup account enumeration; plan captcha
-- **Priority:** 🟠 High (H6)
-- **Files affected:** `server/src/controllers/auth.controller.js` (`signup`), `client/src/pages/SignupPage.jsx` (messaging); optional new captcha integration
-- **Estimated effort:** M
-- **Risk level:** Low–Medium — changing the duplicate-email response affects UX copy; keep it clear without revealing existence.
-- **Dependencies:** none
-- **Deployment impact:** Minor UX wording change; captcha (if added) needs a provider key.
-
-### 1.8 Extend `mongoSanitize` to payment routes
-- **Priority:** 🟠 High (H9)
-- **Files affected:** `server/src/app.js` (middleware ordering around `/api/payment`), `server/src/routes/payment.routes.js`
-- **Estimated effort:** S
-- **Risk level:** Medium — the payment router is mounted **before** `express.json()` to preserve the raw webhook body; reorder carefully so the webhook still receives a raw `Buffer` while JSON routes get sanitized. Test webhook signature verification after.
-- **Dependencies:** coordinate with 3.1 (same router/ordering area) to avoid two conflicting edits
-- **Deployment impact:** Hardening only; verify both webhook and JSON payment routes still work.
-
-### 1.9 Add Content-Security-Policy / SRI; escape admin `$regex` search
-- **Priority:** 🟡 Medium (M9, SEC §4)
-- **Files affected:** `server/src/app.js` (helmet CSP config), `client/index.html` (Razorpay/fonts origins, SRI), `server/src/controllers/admin.controller.js` (`getUsers` regex escaping)
-- **Estimated effort:** M
-- **Risk level:** Medium — an over-tight CSP can block Razorpay checkout, Google Fonts, or inline styles/`<style>` blocks the app injects; roll out in report-only mode first.
-- **Dependencies:** 1.4 (prod config)
-- **Deployment impact:** Stronger headers; must validate Razorpay popup + fonts still load.
-
-### 1.10 Reduce sensitive data exposure (paymentId in UI) + plan admin accounts/audit
-- **Priority:** 🟡 Medium / 🟠 High (L6, SEC §3)
-- **Files affected:** `client/src/components/Header/SettingsPanel.jsx` (hide/trim `paymentId`); design doc for replacing the single shared admin secret with per-admin accounts + audit log (future: `admin.middleware.js`, new auth + `audit` model)
-- **Estimated effort:** S (UI) / XL (admin accounts — defer to Phase 6 if needed)
-- **Risk level:** Low (UI) / High (admin auth rework)
-- **Dependencies:** none for UI; admin rework depends on having a real admin model
-- **Deployment impact:** UI tweak now; admin-account overhaul is a larger follow-up.
+### Verified-complete (do NOT re-do)
+- `requirePro` now guards both `/api/ai/chat` and `/api/ai/regen-advice` (`ai.routes.js`).
+- Password reset re-verifies the emailed OTP at the final step (`auth.controller.js → resetPassword`).
+- `server/.env.example` contains placeholders only; real `server/.env` is gitignored.
+- MongoDB SRV/`ECONNREFUSED` resolver guard is present in `server/config/db.js`.
+- Webhook uses raw-body HMAC verification and is mounted before `express.json()` (`payment.routes.js`).
+- Coupon `isValid`/`remainingUses` virtuals serialize correctly; PATCH validates `discountPct`.
 
 ---
 
-# PHASE 2 — Mobile Responsiveness & UI Correctness
+## Phase 0 — Deployment Architecture Blockers (do first)
 
-Goal: make the app usable on phones and fix the broken theme. Pure presentation — isolated from backend, safe after Phase 1.
+These are not bugs in isolation; they are the reason the app cannot currently run correctly anywhere except `localhost` with the Vite dev proxy.
 
-### 2.1 Introduce responsive breakpoints (global)
-- **Priority:** 🔴 Critical (C4 / BUG-19)
-- **Files affected:** `client/src/styles/global.css` (add `@media`), `client/src/components/Header/Header.jsx` (metrics+Pomodoro+avatar row), `client/src/App.jsx` (`maxWidth:960` container)
-- **Estimated effort:** L
-- **Risk level:** Medium — large visual surface; risk of regressions on desktop. Snapshot/visual-test desktop before/after.
-- **Dependencies:** ideally after 2.3 (theming refactor) if you migrate styles together; otherwise standalone
-- **Deployment impact:** Frontend-only; no API change. Major UX uplift for the mobile-majority audience.
+### Task 0.1 — Decide & wire the client→API connection model for production
+- **Priority:** Critical
+- **Why:** Every client request uses a **relative** path (`fetch('/api/...')`) and relies on the Vite dev proxy (`vite.config.js`), which exists **only in `npm run dev`**. A production build has no proxy. `client/.env.example` documents `VITE_API_BASE_URL`, but **no source file reads `import.meta.env.VITE_API_BASE_URL`** — so the variable is dead. Without a decision here, the deployed SPA cannot reach the API.
+- **Two viable models (pick one):**
+  - **(A) Same-origin:** Express serves the built SPA (see 0.2). Relative paths keep working; simplest; cookies stay first-party.
+  - **(B) Split hosting** (SPA on a static host, API on another domain): introduce a central `apiBase` helper reading `VITE_API_BASE_URL`, prefix all fetches, and complete tasks 0.3 + 3.1 (cross-site cookies + CORS).
+- **Files:** `client/src/**` (all `fetch` call sites or a new `src/lib/api.js`), `client/vite.config.js`, `client/.env.example`
+- **Effort:** M (A) / L (B) · **Risk:** Medium
+- **Dependencies:** none · **Blocks deployment:** ✅ Yes · **Optional after launch:** No
 
-### 2.2 Reflow fixed grids/modals for small screens
-- **Priority:** 🔴 Critical (C4)
-- **Files affected:** `client/src/components/Stats/StatsTab.jsx` (`repeat(4,1fr)`), `client/src/components/Header/ProfileModal.jsx`, `PaywallModal.jsx`, `Setup/*`, `Schedule/*`, `Progress/ProgressTab.jsx`
-- **Estimated effort:** L
-- **Risk level:** Medium — many inline-styled grids to adjust.
-- **Dependencies:** 2.1
-- **Deployment impact:** Frontend-only.
+### Task 0.2 — Serve the built React app from Express (only if Model A)
+- **Priority:** Critical (if 0.1 = A)
+- **Why:** `app.js` serves `admin-panel.html` but never serves the client `dist/`. Under same-origin hosting, the SPA must be served (with a history-API fallback to `index.html`) by Express.
+- **Files:** `server/src/app.js`, root deploy scripts/`package.json`
+- **Effort:** M · **Risk:** Medium (route ordering vs. `/api` and the 404 handler) · **Dependencies:** 0.1 · **Blocks deployment:** ✅ Yes (Model A) · **Optional after launch:** No
 
-### 2.3 Fix broken light theme (use CSS vars instead of hard-coded hex)
-- **Priority:** 🟠 High (H1 / BUG-20)
-- **Files affected:** nearly all `client/src/components/**` and `pages/**` using literal `#0d1117/#1c2030/#f1f5f9…`; `client/src/context/ThemeContext.jsx` (already provides vars)
-- **Estimated effort:** L
-- **Risk level:** Medium — sweeping find/replace of colors; risk of missed spots. Do per-component with visual checks in both themes.
-- **Dependencies:** best combined with 2.1/2.2 (same files)
-- **Deployment impact:** Frontend-only; makes the existing theme toggle actually work.
+### Task 0.3 — Set `trust proxy` and finalize cookie attributes for HTTPS/proxy
+- **Priority:** Critical
+- **Why:** In production the app runs behind a TLS-terminating proxy/load balancer. Express is not told to trust it (`app.set('trust proxy', …)` is absent), so `req.ip` becomes the proxy IP — **`express-rate-limit` then keys every user to the same bucket** (global throttle or effective bypass) and may emit validation errors. Auth cookies are `sameSite:'strict'`; that is fine for same-origin but **blocks the cookie entirely on a split-host setup** (Model B needs `sameSite:'none'; secure:true`). `secure` is already gated on `NODE_ENV==='production'`.
+- **Files:** `server/src/app.js`, `server/src/controllers/auth.controller.js` (`cookieOptions`)
+- **Effort:** S · **Risk:** Medium (wrong `trust proxy` value affects rate-limit correctness) · **Dependencies:** 0.1 · **Blocks deployment:** ✅ Yes · **Optional after launch:** No
 
-### 2.4 Accessibility pass (clickable divs, aria-labels, focus, keyboard shortcuts)
-- **Priority:** 🟡 Medium (M8 / BUG-21)
-- **Files affected:** `client/src/components/Progress/ProgressTab.jsx`, `Schedule/*`, icon buttons across components, `client/src/App.jsx` (numeric shortcut handler)
-- **Estimated effort:** M
-- **Risk level:** Low–Medium — converting divs to buttons may shift layout slightly.
-- **Dependencies:** after 2.1–2.3 (touch the same components once)
-- **Deployment impact:** Frontend-only; better a11y, fewer shortcut conflicts.
+### Task 0.4 — Confirm Helmet CSP does not break the SPA or admin panel
+- **Priority:** High
+- **Why:** `helmet()` runs with default CSP. The SPA and especially `admin-panel.html` (single-file, inline `<script>`/`<style>`) will be blocked by a strict default `script-src 'self'`. This must be validated and a tailored CSP (or a scoped relaxation for `/admin-panel`) applied.
+- **Files:** `server/src/app.js`, `server/admin-panel.html`
+- **Effort:** M · **Risk:** Medium · **Dependencies:** 0.2 · **Blocks deployment:** ✅ Yes · **Optional after launch:** No
 
----
+### Task 0.5 — Production environment & secret management
+- **Priority:** Critical
+- **Why:** `server/.env` currently holds **real, working credentials** (Mongo password, `JWT_SECRET`, Groq/Mistral keys, Gmail app password, Razorpay keys, `ADMIN_SECRET`). These have been viewed during troubleshooting sessions and must be treated as exposed. For production: rotate all of them again, inject via the platform secret manager (never ship a `.env`), set `NODE_ENV=production`, and set `ALLOWED_ORIGINS` to the real domain(s) — otherwise CORS falls back to `localhost` and the prod client is blocked.
+- **Files:** deployment platform config only (no code)
+- **Effort:** M · **Risk:** Low · **Dependencies:** 0.1 · **Blocks deployment:** ✅ Yes · **Optional after launch:** No
 
-# PHASE 3 — Payment & Subscription Fixes
-
-Goal: make money flow reliably and cancellations sane. Revenue-critical; do before AI polish.
-
-### 3.1 Configure Razorpay webhook secret + make webhook retry-safe
-- **Priority:** 🔴 Critical (C3 / BUG-1, BUG-2)
-- **Files affected:** `server/.env` (`RAZORPAY_WEBHOOK_SECRET`), `server/src/controllers/payment.controller.js` (`handleWebhook` — return 5xx on processing error so Razorpay retries), `server/src/app.js` (startup warning)
-- **Estimated effort:** M
-- **Risk level:** Medium — must keep raw-body HMAC verification intact; test with Razorpay's webhook test events. Coordinate with 1.8 (same router/ordering).
-- **Dependencies:** 1.1 (real webhook secret from Razorpay), 1.8 (middleware ordering)
-- **Deployment impact:** Restores automatic Pro-granting; requires the webhook URL to be registered in the Razorpay dashboard and reachable over HTTPS.
-
-### 3.2 Make coupon `usedCount` increment atomic
-- **Priority:** 🟡 Medium (M1 / BUG-4)
-- **Files affected:** `server/src/controllers/payment.controller.js` (`incrementUniqueUse`), `server/src/models/Coupon.js`
-- **Estimated effort:** M
-- **Risk level:** Medium — concurrency logic; test that limited coupons can't exceed `maxUses` under parallel redemptions.
-- **Dependencies:** 3.1 (webhook also calls this path)
-- **Deployment impact:** Prevents coupon over-redemption / revenue leakage.
-
-### 3.3 Validate imported syllabus size before charging the AI cost
-- **Priority:** 🟡 Medium (M6 / BUG-16)
-- **Files affected:** `server/src/controllers/syllabus.controller.js`, `client/src/components/Setup/SyllabusImport.jsx`, alignment with `server/src/controllers/schedule.controller.js` caps (50 subjects/200 topics)
-- **Estimated effort:** M
-- **Risk level:** Low — additive validation + clearer messaging.
-- **Dependencies:** none (but logically grouped with paid flows)
-- **Deployment impact:** Better UX; avoids "paid the AI call then 400 on save".
-
-### 3.4 Consolidate cancellation flows / self-serve plan
-- **Priority:** 🟠 High (H7 / BUG-3)
-- **Files affected:** `server/src/controllers/payment.controller.js` (`cancelSubscription`), `server/src/routes/payment.routes.js`, `server/src/controllers/cancellation.controller.js`, `client/src/components/Header/SettingsPanel.jsx`
-- **Estimated effort:** L
-- **Risk level:** Medium — decide on ONE flow (admin-approval vs instant self-serve) and remove the other; ensure no UI path calls the removed endpoint. (The instant `cancelSubscription` endpoint is currently unused — removal overlaps Phase 5.)
-- **Dependencies:** confirm-unused check (Phase 5 methodology); do the policy decision here, the deletion in 5.x
-- **Deployment impact:** Clearer, scalable cancellation; possible product/policy change (refund handling).
-
-### 3.5 Add indexes on `Payment` hot fields
-- **Priority:** 🟠 High (H8, partial)
-- **Files affected:** `server/src/models/Payment.js` (`razorpayOrderId`, `userId` indexes)
-- **Estimated effort:** S
-- **Risk level:** Low — additive index; build on a maintenance window if the collection is large.
-- **Dependencies:** none
-- **Deployment impact:** Faster verify/webhook/admin queries as payment volume grows.
+### Task 0.6 — Verify MongoDB SRV resolution on the production host
+- **Priority:** High
+- **Why:** The `db.js` DNS guard only overrides Node's resolver when it detects the broken `127.0.0.1` fallback (a local-Windows quirk). On a normal Linux host this is a no-op, which is correct — but it must be confirmed that the production host resolves the Atlas SRV record natively, and that the Atlas IP allowlist includes the production egress IP(s) (currently `0.0.0.0/0`, which should be tightened — see 3.5).
+- **Files:** `server/config/db.js` (review only), Atlas network config
+- **Effort:** S · **Risk:** Low · **Dependencies:** 0.5 · **Blocks deployment:** ✅ Yes · **Optional after launch:** No
 
 ---
 
-# PHASE 4 — AI Coach Improvements
+## Phase 1 — Payment Go-Live Blockers
 
-Goal: make the paid AI actually deliver its promise. Additive payload/persistence changes.
+### Task 1.1 — Configure the Razorpay webhook secret
+- **Priority:** Critical
+- **Why:** `RAZORPAY_WEBHOOK_SECRET` is the placeholder `<new-razorpay-webhook-secret>`. `handleWebhook` **rejects all events** when it is unset (returns 500 `misconfigured`). The webhook is the reliable path that auto-grants Pro after `payment.captured`; without it, Pro depends solely on the synchronous `/verify` call, which is lost if the user closes the tab mid-redirect. The startup log already warns about this.
+- **Files:** platform secret config; Razorpay dashboard (register endpoint + events `payment.captured`, `payment.failed`)
+- **Effort:** S · **Risk:** Low · **Dependencies:** 0.5 · **Blocks deployment:** ✅ Yes · **Optional after launch:** No
 
-### 4.1 Send real topic context to the AI coach
-- **Priority:** 🟠 High (H2 / BUG-18)
-- **Files affected:** `client/src/components/AICoach/AICoachTab.jsx` (include topic names/difficulty), `server/src/controllers/ai.controller.js` (`summarizeSubjects`/system prompt; mind token limits)
-- **Estimated effort:** M
-- **Risk level:** Low–Medium — larger prompts cost more tokens; cap/trim to stay within limits. No breaking change to the request contract if done carefully.
-- **Dependencies:** none
-- **Deployment impact:** Materially better coaching; slightly higher per-message AI cost — monitor spend.
+### Task 1.2 — Switch Razorpay from test to live keys
+- **Priority:** Critical
+- **Why:** `RAZORPAY_KEY_ID` is `rzp_test_*`. Real payments require `rzp_live_*` keys and a fresh live webhook secret. Test keys silently accept no real money.
+- **Files:** platform secret config; client picks `keyId` from the order response (no code change)
+- **Effort:** S · **Risk:** Low · **Dependencies:** 1.1 · **Blocks deployment:** ✅ Yes · **Optional after launch:** No
 
-### 4.2 Persist chat history server-side
-- **Priority:** 🟡 Medium (M10, partial)
-- **Files affected:** new model/route (e.g. `ChatMessage`/extend `StudyPlan`), `server/src/controllers/ai.controller.js`, `client/src/App.jsx` (chat state), `client/src/components/AICoach/AICoachTab.jsx`
-- **Estimated effort:** L
-- **Risk level:** Low–Medium — additive feature; ensure it doesn't bloat the `/schedule/full` payload (use a separate store).
-- **Dependencies:** 4.1
-- **Deployment impact:** Chat survives refresh/devices; new persistence surface to back up.
-
-### 4.3 Truthful AI branding + "Smart Regenerate" depth
-- **Priority:** 🟡 Medium (PRODUCT §6)
-- **Files affected:** `README.md`, `client/src/components/AICoach/AICoachTab.jsx` copy ("Groq" vs "Claude"), `server/src/controllers/ai.controller.js` (`regenAdvice`)
-- **Estimated effort:** S–M
-- **Risk level:** Low
-- **Dependencies:** none
-- **Deployment impact:** Honest messaging; optional smarter regen logic.
+### Task 1.3 — Fix purchase-confirmation email hardcoding "Lifetime Access"
+- **Priority:** High
+- **Why:** `sendPurchaseConfirmationEmail` always renders "Welcome to StudyFlow AI Pro — **Lifetime** Access", "Plan: Lifetime Access", and "lifetime access is now active" regardless of `planType`. Monthly/yearly buyers receive a factually wrong receipt — a support- and trust-impacting bug now that multi-plan pricing is live.
+- **Files:** `server/src/utils/email.js`; callers pass `planType` (`payment.controller.js`)
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No (fix in first patch) · **Optional after launch:** No
 
 ---
 
-# PHASE 5 — Dead Code Removal
+## Phase 2 — Functional Bugs & Correctness
 
-Goal: shrink the surface **after** all fixes land, so nothing live still depends on what we delete. Methodology for each: grep client+server for usage → confirm zero references → remove → run app + tests.
+### Task 2.1 — Resolve the `/api/schedule/generate` Pro-gate inconsistency
+- **Priority:** Medium
+- **Why:** Plan generation actually happens **client-side for free** (`useStudyPlanner.generatePlan` → local `buildSchedule`). The server's `POST /api/schedule/generate` is `requirePro`-gated but is **never called by the client** (client only uses `GET`/`PUT /full`). This is dead, contradictory surface area: either it's a paywalled feature that's being given away client-side, or the endpoint should be removed. Decide and align.
+- **Files:** `server/src/routes/schedule.routes.js`, `server/src/controllers/schedule.controller.js`, product decision on whether plan-generation is a Pro feature
+- **Effort:** S–M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-### 5.1 Remove unused subjects API + (decide on) Subject model
-- **Priority:** 🟡 Medium (Tech debt §6 / QUALITY A1)
-- **Files affected:** `server/src/routes/subject.routes.js`, `server/src/controllers/subject.controller.js`, `server/src/app.js` (route mount), and `validate.js` rules for subjects/topics; `server/src/models/Subject.js` (only if confirmed unused elsewhere)
-- **Estimated effort:** M
-- **Risk level:** Medium — **must verify** the client never calls `/api/subjects` (audit confirms it doesn't) before deleting; keep the `Subject` model if any migration/analytics depends on it.
-- **Dependencies:** Phases 1–4 complete (ensure no new fix started using these routes)
-- **Deployment impact:** Smaller API surface; no user-facing change.
+### Task 2.2 — Call `invalidateUserCache` after Pro state changes
+- **Priority:** Medium
+- **Why:** `auth.middleware.js` exports `invalidateUserCache`, but **nothing calls it.** Admin `grantPro`/`revokePro`/`downgrade`/`extend`, self-cancel, and cancellation approval all change `isPro`/`planType` without evicting the 60s `USER_CACHE`. Access control itself is safe (`requirePro` reads the DB live), but the cached `protect` entry can drive a stale auto-expiry decision for up to 60s. Wire the eviction into those write paths.
+- **Files:** `server/src/controllers/admin.controller.js`, `server/src/controllers/payment.controller.js`, `server/src/controllers/cancellation.controller.js`
+- **Effort:** S · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-### 5.2 Remove unused `/api/schedule/generate` + server `scheduler.js`
-- **Priority:** 🟡 Medium (QUALITY A2)
-- **Files affected:** `server/src/routes/schedule.routes.js` (`/generate`), `server/src/controllers/schedule.controller.js` (`generate`, possibly `getSchedule`), `server/src/utils/scheduler.js`
-- **Estimated effort:** S–M
-- **Risk level:** Medium — confirm client builds schedules locally (it does, `useStudyPlanner`/`utils/scheduler.js`) and uses only `/schedule/full`.
-- **Dependencies:** 5.1 methodology
-- **Deployment impact:** None user-facing.
+### Task 2.3 — Separate the shared OTP fields for "forgot password" vs "change password"
+- **Priority:** Medium
+- **Why:** `forgotPassword`, `sendPwdChangeOtp`, and `verifyOtp` all read/write the **same** `resetOtp`/`resetOtpExpiry`/`resetVerified` fields on the user. A user running an authenticated password change while a forgot-password email is outstanding (or vice-versa) can clobber one flow's code with the other's. Low frequency, but a real correctness edge. Give password-change its own OTP fields (mirroring the dedicated `cancelOtp` fields).
+- **Files:** `server/src/models/User.js`, `server/src/controllers/auth.controller.js`
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-### 5.3 Remove duplicate cancel endpoint + dead auth `sendCancelOtp`
-- **Priority:** 🟡 Medium (QUALITY A3)
-- **Files affected:** `server/src/controllers/auth.controller.js` (`sendCancelOtp`), `server/src/routes/auth.routes.js` (`/send-cancel-otp`), unused `payment.controller.cancelSubscription` + `payment.routes.js:/cancel`
-- **Estimated effort:** S
-- **Risk level:** Medium — only after 3.4 decides the canonical cancellation flow.
-- **Dependencies:** 3.4
-- **Deployment impact:** None user-facing.
-
-### 5.4 Remove unused deps and vestigial code
-- **Priority:** 🟡 Low (L4)
-- **Files affected:** `server/package.json` (`morgan`, `p-limit`), `client/src/hooks/useStudyPlanner.js` (`_token`), `server/src/middleware/auth.middleware.js` (dead `Bearer` path — keep only if a non-cookie client is planned)
-- **Estimated effort:** S
-- **Risk level:** Low — confirm no import before removing.
-- **Dependencies:** none
-- **Deployment impact:** Smaller install; cleaner code.
-
-### 5.5 De-duplicate shared helpers/constants
-- **Priority:** 🟡 Low (L3, L5)
-- **Files affected:** create shared difficulty/constants module; `client/src/utils/scheduler.js`, `constants/index.js`, `SyllabusImport.jsx`; consolidate `apiFetch` (`LoginPage`/`SignupPage`), date helpers, the duplicate `Card`, inline `@keyframes spin`
-- **Estimated effort:** M
-- **Risk level:** Low–Medium — refactor; rely on tests (Phase 6) to catch regressions.
-- **Dependencies:** ideally after Phase 6.1 (tests) for safety
-- **Deployment impact:** None user-facing.
-
-### 5.6 Split god modules (optional, maintainability)
-- **Priority:** 🟡 Low (QUALITY E)
-- **Files affected:** `client/src/components/Header/SettingsPanel.jsx` (751), `Progress/ProgressTab.jsx` (625), `server/src/controllers/admin.controller.js` (605, fix mid-file imports), `server/admin-panel.html` (1,670)
-- **Estimated effort:** L
-- **Risk level:** Medium — large refactors; do behind tests.
-- **Dependencies:** Phase 6.1 (tests)
-- **Deployment impact:** None user-facing.
+### Task 2.4 — Cross-device sync is last-write-wins by timestamp
+- **Priority:** Medium
+- **Why:** `useStudyPlanner` reconciles localStorage vs server via `pickNewerSource` (newest `savedAt` wins) and pushes the whole planner blob. Two devices editing concurrently → the later save silently overwrites the earlier one (lost topic toggles/edits). Acceptable for a single-device MVP; document the limitation and, if multi-device is a goal, move to field-level merge or server-authoritative writes.
+- **Files:** `client/src/hooks/useStudyPlanner.js`, `server/src/controllers/schedule.controller.js`
+- **Effort:** L · **Risk:** Medium · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
 ---
 
-# PHASE 6 — Production Readiness
+## Phase 3 — Security Hardening (remaining)
 
-Goal: observability, reliability, scaling, quality gates — on a now-stable, slimmer codebase.
+### Task 3.1 — Lock CORS to explicit production origins
+- **Priority:** High
+- **Why:** When `ALLOWED_ORIGINS` is unset, `getAllowedOrigins()` falls back to `localhost:3000/5000` and, in dev, reflexively allows any `localhost` origin and `origin: 'null'`. In production with `NODE_ENV=production` those dev branches are off, but the **must-set** `ALLOWED_ORIGINS` is the only thing standing between the credentialed cookie API and arbitrary origins. Tie this to 0.5 and verify it's enforced.
+- **Files:** `server/src/app.js`, platform env
+- **Effort:** S · **Risk:** Medium · **Dependencies:** 0.5 · **Blocks deployment:** ✅ Yes · **Optional after launch:** No
 
-### 6.1 Fix ESLint flat config + add tests + CI
-- **Priority:** 🟠 High (H4)
-- **Files affected:** new `client/eslint.config.js`, `client/package.json` (lint script already exists), new test setup (Vitest/Jest) + tests for auth/payment verify+webhook/scheduler/`requirePro`; new `.github/workflows/ci.yml`
-- **Estimated effort:** L
-- **Risk level:** Low — additive tooling; doesn't change runtime.
-- **Dependencies:** ideally before 5.5/5.6 refactors so they're protected
-- **Deployment impact:** Quality gate before deploys; no runtime change.
+### Task 3.2 — Harden the admin authentication model
+- **Priority:** Medium
+- **Why:** All `/api/admin/*` access is a single shared static secret in an `x-admin-secret` header (timing-safe compared — good), and `/admin-panel` uses HTTP Basic with the same secret. There are no per-admin identities, no audit trail, and no admin-specific brute-force limiter (only the global 100/15min applies; `/api/admin` is mounted after the global limiter so it does inherit it). For a payments/admin surface, consider per-admin accounts, an action audit log, and a stricter dedicated limiter.
+- **Files:** `server/src/middleware/admin.middleware.js`, `server/src/routes/admin.routes.js`, `server/src/app.js`
+- **Effort:** L · **Risk:** Medium · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-### 6.2 Add error tracking (Sentry) + structured log shipping + metrics
-- **Priority:** 🟠 High (H4 / PROD §3,§4)
-- **Files affected:** `client/src/components/common/ErrorBoundary.jsx`, `server/src/app.js`, `server/src/middleware/errorHandler.js`, `requestLogger.js`
-- **Estimated effort:** M
-- **Risk level:** Low — additive.
-- **Dependencies:** 1.4 (env), provider keys via secret store (1.2)
-- **Deployment impact:** Visibility into prod errors / payment success / AI spend.
+### Task 3.3 — Confirm rate limit + file-size cap on the syllabus upload path
+- **Priority:** Medium
+- **Why:** AI chat/regen are well-limited (IP + per-user, 20/15min, Pro-gated). Verify `/api/syllabus/import` (Mistral, up to 80k chars/call, multipart upload) carries an equivalent per-user limiter and a Multer file-size cap; an unbounded PDF upload path is both a cost and a memory risk.
+- **Files:** `server/src/routes/syllabus.routes.js`, `server/src/controllers/syllabus.controller.js`
+- **Effort:** S–M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-### 6.3 Externalise rate limiting & user cache to Redis
-- **Priority:** 🟠 High (H3)
-- **Files affected:** `server/src/middleware/rateLimiter.js`, `server/src/middleware/auth.middleware.js` (`USER_CACHE`, cache sweep), new Redis client/config
-- **Estimated effort:** M–L
-- **Risk level:** Medium — introduces a new infra dependency; ensure graceful degradation if Redis is down. Required for horizontal scaling.
-- **Dependencies:** infra provisioning (Phase 7 overlaps)
-- **Deployment impact:** Enables multi-instance scaling; adds a Redis service to the deployment.
+### Task 3.4 — Reduce login/forgot-password user-enumeration & timing signal
+- **Priority:** Low
+- **Why:** `forgotPassword` correctly returns a generic message, but only does bcrypt/email work when the user exists, leaving a timing oracle. `login` returns a uniform "Invalid credentials." (good). Optional: normalize timing on the forgot path.
+- **Files:** `server/src/controllers/auth.controller.js`
+- **Effort:** S · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-### 6.4 Make state model server-authoritative; restore StrictMode
-- **Priority:** 🟠 High (H5 / BUG-12)
-- **Files affected:** `client/src/hooks/useStudyPlanner.js` (drop `savedAt` localStorage reconciliation, optimistic UI), `client/src/main.jsx` (re-enable `React.StrictMode`), `server/src/controllers/schedule.controller.js`
-- **Estimated effort:** L
-- **Risk level:** **High** — this is the most behaviour-changing item; the current sync is fragile but works. Needs careful testing (multi-tab, multi-device, offline, refresh) and is best done behind tests (6.1).
-- **Dependencies:** 6.1 (tests)
-- **Deployment impact:** More reliable cross-device data; risk of regressions if rushed — stage carefully.
-
-### 6.5 DB reliability: connect retry/backoff + readiness probe
-- **Priority:** 🟠 High (H8)
-- **Files affected:** `server/config/db.js` (retry instead of `process.exit(1)`), `server/src/app.js` (`/health` → readiness that checks Mongo)
-- **Estimated effort:** M
-- **Risk level:** Low–Medium — ensure the process still fails fast if Mongo is truly unavailable (don't hang forever).
-- **Dependencies:** none
-- **Deployment impact:** Survives transient Atlas blips; orchestrators get a real readiness signal.
-
-### 6.6 Background queue for broadcast/reminder emails
-- **Priority:** 🟡 Medium (M3)
-- **Files affected:** `server/src/controllers/admin.controller.js` (`broadcastEmail`), new job/queue (e.g. BullMQ on the Phase 6.3 Redis), `server/src/utils/email.js`
-- **Estimated effort:** L
-- **Risk level:** Medium — moves work out of the request; test delivery + rate limits.
-- **Dependencies:** 6.3 (Redis)
-- **Deployment impact:** Non-blocking broadcasts; new worker process.
-
-### 6.7 Consistency & correctness cleanups
-- **Priority:** 🟡 Medium (M2, M5, M7, M4)
-- **Files affected:** unify error envelope across controllers (`subject`/`auth`/etc.) and `dailyHours` bounds (`validate.js`, `schedule.controller.js`, `StudyPlan.js`); exam-date `min` in `SetupTab.jsx`; `deleteUser` cascade `CancellationRequest` (`admin.controller.js`); reduce `AuthContext` poll frequency/backoff (`AuthContext.jsx`)
-- **Estimated effort:** M
-- **Risk level:** Low–Medium — broad but small edits; tests (6.1) help.
-- **Dependencies:** 6.1
-- **Deployment impact:** Cleaner API, fewer edge-case bugs, less idle load.
-
-### 6.8 Finish or remove fake features; minor UX fixes
-- **Priority:** 🟡 Low (L1, L2, M10 streak sync)
-- **Files affected:** `client/src/components/Header/SettingsPanel.jsx` (Notifications/Preferences are localStorage no-ops — wire to backend or remove), `client/src/pages/LoginPage.jsx` (real "Resend code"), streak sync (`useStudyPlanner.js`)
-- **Estimated effort:** M
-- **Risk level:** Low
-- **Dependencies:** 6.6 if reminders become real (needs the queue)
-- **Deployment impact:** Removes false promises; reminders (if built) add real retention value.
-
-### 6.9 Backup/DR runbook + data-retention policy + SEO surface
-- **Priority:** 🟡 Medium (PROD §8,§9)
-- **Files affected:** docs/runbook (Atlas backup verification, restore steps), data-retention/deletion policy doc, new marketing/landing page + meta/OG/robots/sitemap (currently `client/index.html` is a bare SPA shell)
-- **Estimated effort:** L
-- **Risk level:** Low
-- **Dependencies:** none
-- **Deployment impact:** Operational safety + a customer-acquisition surface.
+### Task 3.5 — Tighten the Atlas IP allowlist
+- **Priority:** Medium
+- **Why:** The cluster allows `0.0.0.0/0`. Restrict to the production egress IP/CIDR (and your own admin IP) once hosting is chosen.
+- **Files:** Atlas config (no code)
+- **Effort:** S · **Risk:** Low · **Dependencies:** 0.5 · **Blocks deployment:** ❌ No (strongly recommended pre-launch) · **Optional after launch:** Yes
 
 ---
 
-# PHASE 7 — Deployment
+## Phase 4 — Data Integrity & Reliability
 
-Goal: ship safely. Everything here depends on Phases 1–6.
+### Task 4.1 — Validate `StudyPlan.subjects` shape on write
+- **Priority:** Medium
+- **Why:** `subjects` is `Schema.Types.Mixed`. `saveFullPlan` checks array length/`name` presence but stores arbitrary nested topic objects untyped. A malformed client (or future bug) can persist junk that later breaks `behindCount`/stats math. Add server-side topic-shape validation (id, name, difficulty enum, status enum).
+- **Files:** `server/src/controllers/schedule.controller.js`, optionally `server/src/models/StudyPlan.js`
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-### 7.1 Production build & serving pipeline for the SPA
-- **Priority:** 🔴 Critical (PROD §1,§7)
-- **Files affected:** `client/vite.config.js` (build), static hosting/CDN config, reverse-proxy config mapping `/api` → Express (the current `/api` proxy is **dev-only**), or an absolute API base
-- **Estimated effort:** M
-- **Risk level:** Medium — misrouting `/api` in prod breaks the whole app; test end-to-end against the built bundle.
-- **Dependencies:** 1.4 (CORS/origins)
-- **Deployment impact:** Defines how users actually reach the app.
+### Task 4.2 — Reconcile orphaned `created` payments
+- **Priority:** Low
+- **Why:** Orders created but never captured remain `status:'created'` forever (abandoned checkouts). Not harmful, but they pollute admin queries/analytics. Add a periodic sweep or an admin "expire stale orders" action.
+- **Files:** `server/src/controllers/payment.controller.js` (or a small scheduled job)
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-### 7.2 Containerisation / process management
-- **Priority:** 🟠 High (PROD §7)
-- **Files affected:** new `Dockerfile`(s)/compose or platform config, `server/package.json` (add `engines`, confirm `start`), root scripts, process manager (PM2/systemd) or platform runtime
-- **Estimated effort:** M
-- **Risk level:** Low–Medium
-- **Dependencies:** 6.3 (Redis), 6.5 (readiness probe), 7.1
-- **Deployment impact:** Reproducible, restartable deployments; supports multi-instance (with 6.3).
-
-### 7.3 Configure all prod env/secrets in the platform + register webhooks
-- **Priority:** 🔴 Critical (C1, C3)
-- **Files affected:** platform secret store (from 1.2), Razorpay dashboard webhook registration (HTTPS URL), Mongo Atlas network/IP allowlist
-- **Estimated effort:** S–M
-- **Risk level:** Medium — missing/typo'd env var = broken app or broken payments.
-- **Dependencies:** 1.1–1.4, 3.1, 6.2/6.3 keys
-- **Deployment impact:** The actual go-live configuration.
-
-### 7.4 Pre-launch verification + staged rollout
-- **Priority:** 🔴 Critical
-- **Files affected:** none (process): smoke-test auth, schedule save/load, payment (test mode → live), webhook delivery, AI chat/import, mobile layout, light theme, health/readiness, error tracking, rate limits across instances
-- **Estimated effort:** M
-- **Risk level:** Low (it's the safety net)
-- **Dependencies:** all prior tasks
-- **Deployment impact:** Final gate; do a canary/staged rollout with the ability to roll back (git + container tags).
-
-### 7.5 Add `npm audit` / Dependabot to CI; ongoing security cadence
-- **Priority:** 🟡 Medium (SEC §10)
-- **Files affected:** `.github/` (Dependabot config), CI from 6.1
-- **Estimated effort:** S
-- **Risk level:** Low
-- **Dependencies:** 6.1
-- **Deployment impact:** Continuous dependency-risk monitoring post-launch.
+### Task 4.3 — Make the streak feature account-portable
+- **Priority:** Low
+- **Why:** Study streaks live only in `localStorage` (`sf_streak_<uid>`). They reset on a new device or cleared storage. If streaks are a retention feature, persist them server-side; otherwise document as device-local by design.
+- **Files:** `client/src/hooks/useStudyPlanner.js`, optionally a server field
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
 ---
 
-## Phase summary & gating
+## Phase 5 — AI Quality
 
-| Phase | Theme | Blocking for launch? | Hardest/riskiest task |
-|---|---|---|---|
-| 1 | Security fixes | **Yes** (C1–C2,C5–C7) | 1.6 reset binding, 1.9 CSP |
-| 2 | Mobile & UI | **Yes** (C4) | 2.1/2.3 responsive + theme sweep |
-| 3 | Payments | **Yes** (C3) | 3.1 webhook, 3.4 cancellation policy |
-| 4 | AI coach | No (but needed to charge confidently) | 4.2 chat persistence |
-| 5 | Dead-code removal | No | 5.1/5.2 verified deletions |
-| 6 | Production readiness | Partly (6.1–6.5 strongly advised) | **6.4 state model rewrite** |
-| 7 | Deployment | **Yes** | 7.1 SPA serving, 7.3 prod secrets |
+### Task 5.1 — Add resilience/fallback for AI provider outages
+- **Priority:** Low
+- **Why:** Chat/regen hardcode Groq `llama-3.3-70b-versatile`; syllabus uses Mistral `mistral-small-latest` (already has retry/repair). A provider outage surfaces as a generic 500. Consider a secondary model/provider or a clearer degraded-mode message, and centralize the model name in config.
+- **Files:** `server/src/controllers/ai.controller.js`, `server/src/controllers/syllabus.controller.js`
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-**Minimum viable launch path:** Phase 1 (all) → Phase 2 (2.1–2.3) → Phase 3 (3.1, 3.5) → Phase 6 (6.1, 6.2, 6.5) → Phase 7. Phases 4, 5, and the remainder of 6 can follow post-launch without blocking, **except** do not advertise/charge for AI features until 4.1 lands.
+### Task 5.2 — Bound the size of AI context payloads
+- **Priority:** Low
+- **Why:** `chatWithAI` interpolates the full subject summary into the system prompt; a very large plan inflates tokens/cost. Cap the number of subjects/topics summarized.
+- **Files:** `server/src/controllers/ai.controller.js`
+- **Effort:** S · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
 
-> Reminder: this roadmap is planning only — **no code has been changed.**
+---
+
+## Phase 6 — Performance & Scaling
+
+### Task 6.1 — Replace in-memory caches/limiters before horizontal scaling
+- **Priority:** Medium (only if running >1 instance)
+- **Why:** `USER_CACHE` (auth) and the default `express-rate-limit` store are per-process in-memory. With multiple instances behind a load balancer, the cache is inconsistent and rate limits are per-instance (N× the intended ceiling). Move to a shared store (e.g. Redis) when scaling out. Single instance: fine as-is.
+- **Files:** `server/src/middleware/auth.middleware.js`, `server/src/middleware/rateLimiter.js`
+- **Effort:** L · **Risk:** Medium · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+### Task 6.2 — Review indexes for admin query growth
+- **Priority:** Low
+- **Why:** Admin user search uses unanchored `$regex` on name/email (collection scan) and Payment aggregations scan by `status`/`planType`. Fine at small scale; add indexes (`status`, `planType`, `couponCode`) and reconsider search as data grows.
+- **Files:** `server/src/models/Payment.js`, `server/src/models/User.js`
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+---
+
+## Phase 7 — Code Quality & Cleanup
+
+### Task 7.1 — Remove superseded audit markdown files
+- **Priority:** Medium
+- **Why:** The repo root still contains `MASTER_AUDIT_REPORT.md`, `SECURITY_AUDIT.md`, `BUG_REPORT.md`, `CODE_QUALITY_AUDIT.md`, `PRODUCTION_READINESS.md`, `PRODUCT_REVIEW.md`, and `PROJECT_OVERVIEW.md`. They describe a stale state and contradict this single source of truth. Delete them (keep `README.md` and this file).
+- **Files:** repo-root `*.md` (deletion only)
+- **Effort:** S · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+### Task 7.2 — Remove dead/legacy server surface
+- **Priority:** Low
+- **Why:** `GET /api/schedule` and `POST /api/schedule/generate` are not consumed by the client (it persists via `/full`). The exported `invalidateUserCache` is unused (until 2.2 wires it). Trim or repurpose to reduce confusion and attack surface.
+- **Files:** `server/src/routes/schedule.routes.js`, `server/src/controllers/schedule.controller.js`, `server/src/middleware/auth.middleware.js`
+- **Effort:** S · **Risk:** Low · **Dependencies:** 2.1, 2.2 · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+### Task 7.3 — Gate operational `console.log` noise behind the logger/NODE_ENV
+- **Priority:** Low
+- **Why:** ~21 `console.log`/`console.error` calls across controllers/utils (webhook, admin actions, email "✅" lines). Useful, but unstructured and noisy in production. Route through a leveled logger and suppress success chatter when `NODE_ENV==='production'` (the `errorHandler` already does structured JSON — extend that pattern).
+- **Files:** `server/src/controllers/*`, `server/src/utils/email.js`, `server/src/middleware/requestLogger.js`
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+### Task 7.4 — Align auth-page inline colors with the theme tokens
+- **Priority:** Low
+- **Why:** Auth pages (`LoginPage.jsx`, `SignupPage.jsx`) still use hardcoded hex in their local `s` style objects (they predate the theme-token migration). They render only in dark mode, so they're consistent today, but if light-mode is ever extended to the auth screens they'll be wrong. Cosmetic debt, not a bug.
+- **Files:** `client/src/pages/LoginPage.jsx`, `client/src/pages/SignupPage.jsx`
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+---
+
+## Phase 8 — Nice-to-Have / Post-Launch
+
+### Task 8.1 — Introduce an automated test suite
+- **Priority:** Medium (process), Low (for first launch)
+- **Why:** There are zero automated tests. The highest-value targets are payment verify/webhook signature logic, coupon math, OTP flows, and `requirePro`/expiry. A thin integration suite would catch regressions in exactly the money/auth paths that matter most.
+- **Files:** new `server/test/**` (+ test runner in `server/package.json`)
+- **Effort:** XL · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+### Task 8.2 — Move transactional email off raw Gmail SMTP
+- **Priority:** Low
+- **Why:** Nodemailer→Gmail works but has low daily send caps and weaker deliverability (SPF/DKIM/DMARC) than a transactional provider. OTPs and receipts are deliverability-critical; the admin broadcast (capped at 500/call, batched 10) will hit Gmail limits as the user base grows.
+- **Files:** `server/src/utils/email.js`, `server/src/controllers/admin.controller.js`
+- **Effort:** M · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+### Task 8.3 — Add readiness wiring & basic uptime monitoring
+- **Priority:** Low
+- **Why:** `/health` exists (uptime only). For production, add a readiness check that reflects DB connectivity and wire an external uptime monitor + error alerting.
+- **Files:** `server/src/app.js`
+- **Effort:** S · **Risk:** Low · **Dependencies:** none · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+### Task 8.4 — CI/CD pipeline
+- **Priority:** Low
+- **Why:** No CI. A pipeline running lint + (eventually) tests + build on push prevents broken deploys.
+- **Files:** new CI config
+- **Effort:** M · **Risk:** Low · **Dependencies:** 8.1 · **Blocks deployment:** ❌ No · **Optional after launch:** Yes
+
+---
+
+## Deployment Blocker Summary
+
+The following must be green before the first production release:
+
+| Task | Title |
+|------|-------|
+| 0.1 | Wire client→API connection model |
+| 0.2 | Serve SPA from Express (if same-origin) |
+| 0.3 | `trust proxy` + cookie attributes for HTTPS/proxy |
+| 0.4 | Validate Helmet CSP against SPA + admin panel |
+| 0.5 | Production secrets + rotation + `ALLOWED_ORIGINS` + `NODE_ENV` |
+| 0.6 | Verify Atlas SRV resolution on prod host |
+| 1.1 | Razorpay webhook secret configured |
+| 1.2 | Razorpay live keys |
+| 3.1 | CORS locked to production origins |
+
+Everything else is a fast-follow patch (1.3, Phase 2) or post-launch improvement (Phases 3–8).
+
+---
+
+## Recommended Execution Order
+
+1. **Phase 0** end-to-end (the architecture decision unblocks everything else).
+2. **Phase 1** (payments must be real and reliable on day one — 1.1/1.2 block, 1.3 in the first patch).
+3. **Phase 2** functional bugs, then **Phase 3** remaining security hardening.
+4. **Phases 4–6** as data volume / multi-instance needs arrive.
+5. **Phases 7–8** continuously, with 7.1 (remove stale audit docs) done immediately so this file stands alone.

@@ -189,10 +189,10 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
         <div style={s.card}>
           <div style={{ textAlign: 'center', padding: '12px 0 4px' }}>
             <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 8 }}>
               You're now Pro!
             </div>
-            <div style={{ fontSize: 14, color: '#64748b', marginBottom: 28 }}>
+            <div style={{ fontSize: 14, color: 'var(--text-dim)', marginBottom: 28 }}>
               All features are unlocked. A confirmation email is on its way.
             </div>
             <button onClick={onClose} style={s.primaryBtn}>
@@ -217,8 +217,8 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <div style={s.iconBox}><Zap size={20} color="#f59e0b" /></div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9' }}>Unlock Pro Access</div>
-            <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-bright)' }}>Unlock Pro Access</div>
+            <div style={{ fontSize: 12, color: 'var(--text-dimmer)', marginTop: 2 }}>
               All AI features · No limits
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
         {featureName && (
           <div style={s.featureCallout}>
             <Lock size={13} color="#f59e0b" />
-            <span style={{ fontSize: 13, color: '#94a3b8' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
               <strong style={{ color: '#f59e0b' }}>{featureName}</strong> requires Pro access
             </span>
           </div>
@@ -239,8 +239,8 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
             <div key={f.label} style={s.featureRow}>
               <div style={s.featureIcon}>{f.icon}</div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{f.label}</div>
-                <div style={{ fontSize: 11, color: '#475569' }}>{f.desc}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{f.label}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-dimmer)' }}>{f.desc}</div>
               </div>
               <CheckCircle2 size={15} color="#34d399" style={{ marginLeft: 'auto', flexShrink: 0 }} />
             </div>
@@ -249,7 +249,7 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
 
         {/* Plan tabs */}
         {plansLoading ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#475569', fontSize: 13, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-dimmer)', fontSize: 13, marginBottom: 16 }}>
             <Loader size={13} style={{ animation: 'spin 1s linear infinite' }} /> Loading plans…
           </div>
         ) : plansError || plans.length === 0 ? (
@@ -269,19 +269,19 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
                     style={{ ...s.planTab, ...(isActive ? s.planTabActive : {}) }}
                   >
                     {plan.badge && <span style={s.badge}>{plan.badge}</span>}
-                    <div style={{ fontSize: 11, fontWeight: 600, color: isActive ? '#f59e0b' : '#94a3b8', marginBottom: 4 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: isActive ? '#f59e0b' : 'var(--text-muted)', marginBottom: 4 }}>
                       {plan.label}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, justifyContent: 'center' }}>
-                      <span style={{ fontSize: 18, fontWeight: 800, color: isActive ? '#f1f5f9' : '#64748b' }}>
+                      <span style={{ fontSize: 18, fontWeight: 800, color: isActive ? 'var(--text-bright)' : 'var(--text-dim)' }}>
                         {paise2inr(plan.pricePaise)}
                       </span>
                       {planPeriod && (
-                        <span style={{ fontSize: 10, color: '#475569' }}>{planPeriod}</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-dimmer)' }}>{planPeriod}</span>
                       )}
                     </div>
                     {plan.originalPricePaise && (
-                      <div style={{ fontSize: 9, color: '#475569', textDecoration: 'line-through' }}>
+                      <div style={{ fontSize: 9, color: 'var(--text-dimmer)', textDecoration: 'line-through' }}>
                         {paise2inr(plan.originalPricePaise)}
                       </div>
                     )}
@@ -290,7 +290,7 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
               })}
             </div>
             {selectedPlan?.description && (
-              <div style={{ fontSize: 11, color: '#475569', marginBottom: 14, textAlign: 'center' }}>
+              <div style={{ fontSize: 11, color: 'var(--text-dimmer)', marginBottom: 14, textAlign: 'center' }}>
                 {selectedPlan.description}
               </div>
             )}
@@ -299,7 +299,7 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
 
         {/* Coupon */}
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
             <Tag size={12} /> Have a coupon code?
           </div>
           {couponStatus === 'valid' ? (
@@ -338,9 +338,9 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
         {/* Price summary */}
         {!plansLoading && selectedPlan && (
           <div style={s.priceBox}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+            <div className="sf-row-wrap" style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
               {discountPct > 0 && (
-                <span style={{ fontSize: 16, color: '#475569', textDecoration: 'line-through' }}>
+                <span style={{ fontSize: 16, color: 'var(--text-dimmer)', textDecoration: 'line-through' }}>
                   {paise2inr(BASE_PRICE)}
                 </span>
               )}
@@ -348,13 +348,13 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
                 {isFree ? 'FREE' : paise2inr(finalPaise)}
               </span>
               {period && !isFree && (
-                <span style={{ fontSize: 13, color: '#475569' }}>{period}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-dimmer)' }}>{period}</span>
               )}
               {discountPct > 0 && !isFree && (
                 <span style={s.discountBadge}>-{discountPct}%</span>
               )}
             </div>
-            <div style={{ fontSize: 11, color: '#334155', marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-dimmest)', marginTop: 4 }}>
               {selectedPlan.planType === 'lifetime'
                 ? 'Lifetime · One-time · All future features included'
                 : selectedPlan.description || (selectedPlan.label + ' plan · All Pro features')}
@@ -375,7 +375,7 @@ export default function PaywallModal({ onClose, onSuccess, featureName }) {
           }
         </button>
 
-        <p style={{ fontSize: 11, color: '#334155', textAlign: 'center', marginTop: 12 }}>
+        <p style={{ fontSize: 11, color: 'var(--text-dimmest)', textAlign: 'center', marginTop: 12 }}>
           Secured by Razorpay · UPI, Cards, Netbanking accepted
         </p>
         <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
@@ -398,13 +398,13 @@ function Overlay({ children }) {
 
 const s = {
   card: {
-    background: '#1c2030', border: '1px solid #252d42', borderRadius: 18,
+    background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 18,
     padding: '32px 28px', width: '100%', maxWidth: 440, position: 'relative',
     maxHeight: '90vh', overflowY: 'auto',
   },
   closeBtn: {
     position: 'absolute', top: 16, right: 16,
-    background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer',
+    background: 'transparent', border: 'none', color: 'var(--text-dimmer)', cursor: 'pointer',
   },
   iconBox: {
     width: 42, height: 42, borderRadius: 12,
@@ -418,7 +418,7 @@ const s = {
   },
   featureRow: {
     display: 'flex', alignItems: 'center', gap: 12,
-    background: '#111827', border: '1px solid #1e293b',
+    background: 'var(--bg-deep)', border: '1px solid var(--border-mid)',
     borderRadius: 10, padding: '9px 14px',
   },
   featureIcon: {
@@ -431,7 +431,7 @@ const s = {
   },
   planTab: {
     flex: 1, position: 'relative',
-    background: '#111827', border: '1px solid #1e293b',
+    background: 'var(--bg-deep)', border: '1px solid var(--border-mid)',
     borderRadius: 10, padding: '12px 6px 10px', cursor: 'pointer',
     textAlign: 'center',
   },
@@ -447,8 +447,8 @@ const s = {
   },
   couponRow: { display: 'flex', gap: 8 },
   couponInput: {
-    flex: 1, background: '#111827', border: '1px solid #252d42',
-    borderRadius: 8, padding: '9px 12px', color: '#e2e8f0',
+    flex: 1, background: 'var(--bg-deep)', border: '1px solid var(--border-card)',
+    borderRadius: 8, padding: '9px 12px', color: 'var(--text-primary)',
     fontSize: 13, letterSpacing: '0.05em', fontFamily: 'monospace',
   },
   applyBtn: {
@@ -462,10 +462,10 @@ const s = {
     borderRadius: 8, padding: '9px 12px',
   },
   removeCouponBtn: {
-    background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', padding: 2,
+    background: 'transparent', border: 'none', color: 'var(--text-dimmer)', cursor: 'pointer', padding: 2,
   },
   priceBox: {
-    background: '#111827', border: '1px solid #1e293b',
+    background: 'var(--bg-deep)', border: '1px solid var(--border-mid)',
     borderRadius: 12, padding: '14px 18px', marginBottom: 14,
   },
   discountBadge: {

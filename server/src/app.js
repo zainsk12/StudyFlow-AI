@@ -7,7 +7,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import { fileURLToPath } from "url";
 import { timingSafeEqual } from "crypto";
 import { dirname, join }       from "path";
-import { readFileSync }  from "fs";
+import { readFileSync, existsSync }  from "fs";
 import { connectDB }     from "../config/db.js";
 
 import aiRoutes            from "./routes/ai.routes.js";
@@ -31,6 +31,38 @@ connectDB();
 const PORT = process.env.PORT || 5000;
 const isDev = process.env.NODE_ENV !== 'production';
 
+// ── Trust proxy (task 0.3) ─────────────────────────────────────────────────
+// In production the app runs behind a TLS-terminating proxy / load balancer.
+// Express must trust it so that:
+//   • req.secure / X-Forwarded-Proto are honoured, and
+//   • express-rate-limit keys on the real client IP (X-Forwarded-For) instead
+//     of the single proxy IP (which would bucket all users together).
+// Default: trust the first hop in production, off in dev. Override with
+// TRUST_PROXY (a number of hops, "true"/"false", or an IP/subnet list).
+if (process.env.TRUST_PROXY !== undefined) {
+  const tp = process.env.TRUST_PROXY.trim();
+  app.set('trust proxy',
+    /^\d+$/.test(tp) ? Number(tp) :
+    tp === 'true'    ? true :
+    tp === 'false'   ? false :
+    tp);
+} else if (!isDev) {
+  app.set('trust proxy', 1);
+}
+
+// ── Production env sanity check (task 0.5) ─────────────────────────────────
+// Warn loudly (but don't crash) when recommended production variables are
+// missing. MONGO_URI is enforced separately by connectDB(); ALLOWED_ORIGINS
+// matters because without it CORS falls back to localhost and blocks the
+// real client domain.
+if (!isDev) {
+  const recommended = ['MONGO_URI', 'JWT_SECRET', 'ALLOWED_ORIGINS'];
+  const missing = recommended.filter((k) => !process.env[k]);
+  if (missing.length) {
+    console.warn(`[ENV] Missing recommended production variables: ${missing.join(', ')}`);
+  }
+}
+
 function getAllowedOrigins() {
   if (process.env.ALLOWED_ORIGINS) {
     return process.env.ALLOWED_ORIGINS
@@ -50,7 +82,41 @@ function getAllowedOrigins() {
   return [...origins];
 }
 
-app.use(helmet());
+// ── Helmet + Content-Security-Policy (task 0.4) ────────────────────────────
+// CSP is tuned for the React SPA served same-origin (task 0.2):
+//   • scripts: 'self' only (Vite emits external hashed bundles) + the Razorpay
+//     Checkout SDK. No 'unsafe-inline' for scripts — the SPA has no inline JS.
+//   • styles: 'unsafe-inline' is required because the UI uses inline style={{}}
+//     attributes throughout (React/Recharts); Google Fonts stylesheet allowed.
+//   • Razorpay needs its CDN/API for script, frame (checkout iframe), connect
+//     (telemetry/API) and images.
+// The /admin-panel route relaxes this per-response (it is a trusted single-file
+// tool with inline scripts/handlers) — see that handler below.
+const cspDirectives = {
+  defaultSrc:  ["'self'"],
+  baseUri:     ["'self'"],
+  objectSrc:   ["'none'"],
+  frameAncestors: ["'self'"],
+  formAction:  ["'self'"],
+  scriptSrc:     ["'self'", "https://checkout.razorpay.com"],
+  scriptSrcAttr: ["'none'"],
+  styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+  fontSrc:     ["'self'", "https://fonts.gstatic.com", "data:"],
+  imgSrc:      ["'self'", "data:", "https://*.razorpay.com"],
+  frameSrc:    ["'self'", "https://*.razorpay.com"],
+  connectSrc:  ["'self'", "https://*.razorpay.com"],
+};
+// Force HTTPS upgrades in production only. In dev, explicitly disable the
+// directive (helmet's useDefaults would otherwise add it) so that opening the
+// server origin over http://localhost doesn't upgrade same-origin /api calls.
+cspDirectives.upgradeInsecureRequests = isDev ? null : [];
+
+app.use(helmet({
+  contentSecurityPolicy: { useDefaults: true, directives: cspDirectives },
+  // Razorpay's checkout iframe + Google Fonts are cross-origin embeds; COEP off
+  // (helmet's default) keeps them working. Set explicitly for clarity.
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(cookieParser());
 app.use(cors({
   origin: (origin, callback) => {
@@ -126,12 +192,57 @@ app.get('/admin-panel', (req, res) => {
 
   if (!adminPanelHtml) return res.status(404).send('Admin panel not available.');
 
+  // Route-scoped CSP (task 0.4): the admin panel is a single trusted file that
+  // uses inline <script>, inline on* handlers and inline <style>, so it needs a
+  // looser policy than the global SPA one. It still calls only its own origin
+  // (connect-src 'self') and blocks objects/plugins. This override replaces the
+  // strict global CSP set by helmet for this response only.
   res
+    .setHeader('Content-Security-Policy',
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline'; " +
+      "script-src-attr 'unsafe-inline'; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: https:; " +
+      "connect-src 'self'; " +
+      "font-src 'self' data:; " +
+      "object-src 'none'; base-uri 'self'; frame-ancestors 'self'")
     .setHeader('Content-Type', 'text/html')
     .setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
     .setHeader('Pragma', 'no-cache')
     .send(adminPanelHtml);
 });
+
+// ── Serve the built React SPA, same-origin (tasks 0.1 / 0.2) ───────────────
+// Production model: Express serves client/dist and the SPA calls the API via
+// relative /api/* on the same origin. In development this block is inert — the
+// client runs on Vite (port 3000) and proxies /api here — because no build
+// exists at client/dist. Mounted AFTER all /api routes and the /admin-panel
+// route, and BEFORE the JSON 404 so unknown /api routes still 404 as JSON.
+const clientDist = join(__dirname, '../../client/dist');
+if (existsSync(clientDist)) {
+  // Hashed asset files (…/assets/*.[hash].js|css) are immutable → cache hard.
+  // index.html is served no-cache so new deploys are picked up immediately.
+  app.use(express.static(clientDist, {
+    index: false,
+    maxAge: '1y',
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
+    },
+  }));
+
+  // SPA history fallback: any non-API GET returns index.html so client-side
+  // routing works on hard refresh and deep links.
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(join(clientDist, 'index.html'));
+  });
+
+  console.log('[SPA] Serving client build from client/dist');
+} else if (!isDev) {
+  console.warn('[SPA] client/dist not found — run `npm run build` in client/ before starting in production.');
+}
 
 app.use((_req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorHandler);

@@ -51,7 +51,7 @@ function UnmarkAllModal({ onConfirm, onCancel }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{
-        background: '#1c2030', border: '1px solid #2d3748',
+        background: 'var(--bg-card)', border: '1px solid var(--border-card)',
         borderRadius: 14, padding: '28px 28px 24px',
         maxWidth: 380, width: '90%',
         boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
@@ -66,17 +66,17 @@ function UnmarkAllModal({ onConfirm, onCancel }) {
           <AlertTriangle size={22} color="#f87171" />
         </div>
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9' }}>Unmark All Progress?</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-bright)' }}>Unmark All Progress?</div>
         </div>
-        <div style={{ fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 1.6, marginBottom: 24 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-dim)', textAlign: 'center', lineHeight: 1.6, marginBottom: 24 }}>
           This will reset <span style={{ color: '#f87171', fontWeight: 600 }}>all completed topics</span> back
           to pending. Your schedule and subjects remain intact.
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onCancel} style={{
             flex: 1, padding: '10px 0', borderRadius: 9, cursor: 'pointer',
-            background: 'transparent', border: '1px solid #252d42',
-            color: '#64748b', fontSize: 13, fontWeight: 600,
+            background: 'transparent', border: '1px solid var(--border-card)',
+            color: 'var(--text-dim)', fontSize: 13, fontWeight: 600,
           }}>Cancel</button>
           <button onClick={onConfirm} style={{
             flex: 1, padding: '10px 0', borderRadius: 9, cursor: 'pointer',
@@ -112,7 +112,7 @@ function UnscheduledBanner({ count, onRegenerate }) {
           <div style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b', marginBottom: 2 }}>
             {count} topic{count > 1 ? 's' : ''} not in your current schedule
           </div>
-          <div style={{ fontSize: 12, color: '#64748b' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
             These topics were added after your plan was generated. Regenerate to include them.
           </div>
         </div>
@@ -129,7 +129,7 @@ function UnscheduledBanner({ count, onRegenerate }) {
         >
           <RefreshCw size={12} /> Regenerate Plan
         </button>
-        <div style={{ color: '#475569', flexShrink: 0 }}>
+        <div style={{ color: 'var(--text-dimmer)', flexShrink: 0 }}>
           {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </div>
       </div>
@@ -204,11 +204,11 @@ const DayCard = memo(function DayCard({
     ? '#f59e0b'
     : isPast && doneCount > 0 && doneCount < total
     ? '#f87171'
-    : '#252d42';
+    : 'var(--border-card)';
 
   return (
     <div style={{
-      background: '#1c2030', border: `1px solid ${borderColor}`,
+      background: 'var(--bg-card)', border: `1px solid ${borderColor}`,
       borderLeft: `3px solid ${borderColor}`,
       borderRadius: 10, overflow: 'hidden', transition: 'border-color 0.25s ease',
     }}>
@@ -220,12 +220,12 @@ const DayCard = memo(function DayCard({
         <div style={{
           width: 36, height: 36, borderRadius: 8, flexShrink: 0,
           background: allDone ? 'rgba(52,211,153,0.12)' : isToday ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${allDone ? 'rgba(52,211,153,0.25)' : isToday ? 'rgba(245,158,11,0.25)' : '#252d42'}`,
+          border: `1px solid ${allDone ? 'rgba(52,211,153,0.25)' : isToday ? 'rgba(245,158,11,0.25)' : 'var(--border-card)'}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.25s ease',
         }}>
-          <div style={{ fontSize: 10, color: '#475569', lineHeight: 1 }}>Day</div>
-          <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1, marginTop: 1, color: allDone ? '#34d399' : isToday ? '#f59e0b' : '#94a3b8', transition: 'color 0.25s ease' }}>
+          <div style={{ fontSize: 10, color: 'var(--text-dimmer)', lineHeight: 1 }}>Day</div>
+          <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1, marginTop: 1, color: allDone ? '#34d399' : isToday ? '#f59e0b' : 'var(--text-muted)', transition: 'color 0.25s ease' }}>
             {dayNumber}
           </div>
         </div>
@@ -233,7 +233,7 @@ const DayCard = memo(function DayCard({
         {/* Date + progress */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>{dateStr}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-bright)' }}>{dateStr}</span>
             {isToday && !allDone && (
               <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(245,158,11,0.15)', color: '#f59e0b', padding: '1px 7px', borderRadius: 4 }}>TODAY</span>
             )}
@@ -245,14 +245,14 @@ const DayCard = memo(function DayCard({
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ flex: 1, background: '#111827', borderRadius: 4, height: 4, overflow: 'hidden' }}>
+            <div style={{ flex: 1, background: 'var(--bg-deep)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 4, width: `${pct}%`,
                 background: allDone ? '#34d399' : isToday ? '#f59e0b' : '#818cf8',
                 transition: 'width 0.35s ease, background 0.25s ease',
               }} />
             </div>
-            <span style={{ fontSize: 11, color: '#475569', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-dimmer)', whiteSpace: 'nowrap' }}>
               {doneCount}/{total} · {totalHrs.toFixed(1)}h
             </span>
           </div>
@@ -273,7 +273,7 @@ const DayCard = memo(function DayCard({
           {allDone ? 'Unmark' : 'Mark Done'}
         </button>
 
-        <div style={{ color: '#334155', flexShrink: 0 }}>
+        <div style={{ color: 'var(--text-dimmest)', flexShrink: 0 }}>
           {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </div>
       </div>
@@ -284,7 +284,7 @@ const DayCard = memo(function DayCard({
           <div style={{
             display: 'flex', gap: 16, marginBottom: 10,
             padding: '8px 12px', background: 'rgba(255,255,255,0.02)',
-            borderRadius: 8, fontSize: 11, color: '#475569',
+            borderRadius: 8, fontSize: 11, color: 'var(--text-dimmer)',
           }}>
             <span>📚 {total} topics</span>
             <span>✅ {doneCount} done</span>
@@ -311,23 +311,23 @@ const DayCard = memo(function DayCard({
                   }}
                 >
                   <div style={{ flexShrink: 0, transition: 'transform 0.18s ease', transform: done ? 'scale(1.1)' : 'scale(1)' }}>
-                    {done ? <CheckCircle2 size={15} color="#34d399" /> : <Circle size={15} color="#334155" />}
+                    {done ? <CheckCircle2 size={15} color="#34d399" /> : <Circle size={15} color="var(--text-dimmest)" />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 13, color: done ? '#475569' : '#cbd5e1',
+                      fontSize: 13, color: done ? 'var(--text-dimmer)' : 'var(--text-soft)',
                       textDecoration: done ? 'line-through' : 'none',
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       transition: 'color 0.18s ease',
                     }}>
                       {s.topicName}
                     </div>
-                    <div style={{ fontSize: 10, marginTop: 1, color: done ? '#1e293b' : '#334155' }}>
+                    <div style={{ fontSize: 10, marginTop: 1, color: done ? 'var(--border-mid)' : 'var(--text-dimmest)' }}>
                       {s.subjectName}
                     </div>
                   </div>
                   <Pill label={DIFF_LBL[s.difficulty]} color={DIFF_CLR[s.difficulty]} />
-                  <span style={{ fontSize: 11, color: '#334155', minWidth: 28, textAlign: 'right' }}>{s.hours}h</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-dimmest)', minWidth: 28, textAlign: 'right' }}>{s.hours}h</span>
                 </div>
               );
             })}
@@ -445,11 +445,11 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
           )}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}>
-          <span style={{ color: '#64748b' }}>{stats.doneTopics} of {stats.totalTopics} topics done</span>
+          <span style={{ color: 'var(--text-dim)' }}>{stats.doneTopics} of {stats.totalTopics} topics done</span>
           <span style={{ color: '#f59e0b', fontWeight: 700 }}>{stats.pct}%</span>
         </div>
         <ProgressBar pct={stats.pct} height={10} />
-        <div style={{ marginTop: 10, fontSize: 12, color: '#475569' }}>
+        <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-dimmer)' }}>
           {stats.pct === 0    && 'Click any topic below to mark it complete ✓'}
           {stats.pct > 0   && stats.pct < 50  && `Keep going! ${stats.totalTopics - stats.doneTopics} topics remaining.`}
           {stats.pct >= 50 && stats.pct < 100 && `Halfway there! ${stats.totalTopics - stats.doneTopics} topics left.`}
@@ -475,8 +475,8 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
               padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
               fontSize: 12, fontWeight: 600,
               background: view === 'schedule' ? 'rgba(245,158,11,0.1)' : 'transparent',
-              border: `1px solid ${view === 'schedule' ? 'rgba(245,158,11,0.3)' : '#252d42'}`,
-              color: view === 'schedule' ? '#f59e0b' : '#475569',
+              border: `1px solid ${view === 'schedule' ? 'rgba(245,158,11,0.3)' : 'var(--border-card)'}`,
+              color: view === 'schedule' ? '#f59e0b' : 'var(--text-dimmer)',
             }}
           >
             <Calendar size={13} /> By Schedule
@@ -488,8 +488,8 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
               padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
               fontSize: 12, fontWeight: 600,
               background: view === 'subject' ? 'rgba(129,140,248,0.1)' : 'transparent',
-              border: `1px solid ${view === 'subject' ? 'rgba(129,140,248,0.3)' : '#252d42'}`,
-              color: view === 'subject' ? '#818cf8' : '#475569',
+              border: `1px solid ${view === 'subject' ? 'rgba(129,140,248,0.3)' : 'var(--border-card)'}`,
+              color: view === 'subject' ? '#818cf8' : 'var(--text-dimmer)',
             }}
           >
             <BookOpen size={13} /> By Subject
@@ -518,15 +518,15 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
           {/* Unscheduled topics section within schedule view */}
           {unscheduledTopics.length > 0 && (
             <div style={{
-              background: '#1c2030', border: '1px solid #252d42',
-              borderLeft: '3px solid #475569',
+              background: 'var(--bg-card)', border: '1px solid var(--border-card)',
+              borderLeft: '3px solid var(--text-dimmer)',
               borderRadius: 10, overflow: 'hidden',
             }}>
               <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a2035' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#64748b', marginBottom: 2 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-dim)', marginBottom: 2 }}>
                   📋 Unscheduled Topics ({unscheduledTopics.length})
                 </div>
-                <div style={{ fontSize: 11, color: '#334155' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-dimmest)' }}>
                   These topics are not in your current plan. You can mark them manually or regenerate your plan.
                 </div>
               </div>
@@ -547,17 +547,17 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
                     >
                       {done
                         ? <CheckCircle2 size={15} color="#34d399" style={{ flexShrink: 0 }} />
-                        : <Circle       size={15} color="#334155" style={{ flexShrink: 0 }} />}
+                        : <Circle       size={15} color="var(--text-dimmest)" style={{ flexShrink: 0 }} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
                           fontSize: 13,
-                          color: done ? '#475569' : '#94a3b8',
+                          color: done ? 'var(--text-dimmer)' : 'var(--text-muted)',
                           textDecoration: done ? 'line-through' : 'none',
                           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                         }}>
                           {t.name}
                         </div>
-                        <div style={{ fontSize: 10, color: '#334155', marginTop: 1 }}>{t.subjectName}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-dimmest)', marginTop: 1 }}>{t.subjectName}</div>
                       </div>
                       <Pill label={DIFF_LBL[t.difficulty]} color={DIFF_CLR[t.difficulty]} />
                     </div>
@@ -573,10 +573,10 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
       {view === 'schedule' && schedule.length === 0 && (
         <div style={{
           textAlign: 'center', padding: '40px 24px',
-          border: '1px dashed #1e293b', borderRadius: 12,
-          color: '#334155', fontSize: 13,
+          border: '1px dashed var(--border-mid)', borderRadius: 12,
+          color: 'var(--text-dimmest)', fontSize: 13,
         }}>
-          <Zap size={28} color="#334155" style={{ margin: '0 auto 12px', display: 'block' }} />
+          <Zap size={28} color="var(--text-dimmest)" style={{ margin: '0 auto 12px', display: 'block' }} />
           No schedule generated yet — go to Setup and click Generate Plan to see your day-by-day progress here.
         </div>
       )}
@@ -589,8 +589,8 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
           <Card key={s.id}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
               <div style={{ width: 9, height: 9, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-              <div style={{ flex: 1, fontWeight: 600, fontSize: 14, color: '#f1f5f9' }}>{s.name}</div>
-              <span style={{ fontSize: 12, color: '#475569' }}>{done}/{s.topics.length}</span>
+              <div style={{ flex: 1, fontWeight: 600, fontSize: 14, color: 'var(--text-bright)' }}>{s.name}</div>
+              <span style={{ fontSize: 12, color: 'var(--text-dimmer)' }}>{done}/{s.topics.length}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: s.color }}>{pct}%</span>
             </div>
             <ProgressBar pct={pct} color={s.color} height={4} />
@@ -604,16 +604,16 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
                 >
                   {t.status === 'done'
                     ? <CheckCircle2 size={15} color="#34d399" style={{ flexShrink: 0 }} />
-                    : <Circle       size={15} color="#334155" style={{ flexShrink: 0 }} />}
+                    : <Circle       size={15} color="var(--text-dimmest)" style={{ flexShrink: 0 }} />}
                   <span style={{
                     flex: 1, fontSize: 13,
-                    color: t.status === 'done' ? '#475569' : '#cbd5e1',
+                    color: t.status === 'done' ? 'var(--text-dimmer)' : 'var(--text-soft)',
                     textDecoration: t.status === 'done' ? 'line-through' : 'none',
                   }}>
                     {t.name}
                   </span>
                   <Pill label={DIFF_LBL[t.difficulty]} color={DIFF_CLR[t.difficulty]} />
-                  <span style={{ fontSize: 11, color: '#334155' }}>{DIFF_HRS[t.difficulty]}h</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-dimmest)' }}>{DIFF_HRS[t.difficulty]}h</span>
                 </div>
               ))}
             </div>

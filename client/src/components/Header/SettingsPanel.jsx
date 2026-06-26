@@ -708,9 +708,9 @@ export default function SettingsPanel() {
   });
 
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+    <div className="sf-settings" style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
       {/* Sidebar nav */}
-      <div style={{
+      <div className="sf-settings-nav" style={{
         width: 148, flexShrink: 0,
         borderRight: '1px solid var(--border-mid)',
         padding: '12px 8px',
