@@ -38,6 +38,57 @@ function getRazorpay() {
   });
 }
 
+// ── Payment / Razorpay environment helpers (tasks 1.1 / 1.2) ───────────────
+// Detects values that are unconfigured placeholders rather than real secrets,
+// so a half-filled .env (e.g. "<razorpay-webhook-secret>") is never mistaken
+// for a configured one.
+export function isPlaceholderSecret(val) {
+  if (typeof val !== 'string') return true;
+  const v = val.trim();
+  if (v === '') return true;
+  if (v.includes('<') || v.includes('>')) return true; // angle-bracket templates
+  const KNOWN_PLACEHOLDERS = new Set([
+    'replace_this_with_your_razorpay_webhook_secret',
+    'your-razorpay-webhook-secret',
+    'your-razorpay-key-secret',
+    'changeme',
+    'placeholder',
+  ]);
+  return KNOWN_PLACEHOLDERS.has(v.toLowerCase());
+}
+
+// Resolve the Razorpay key mode from the key-id prefix (rzp_live_ / rzp_test_).
+export function getRazorpayMode() {
+  const id = (process.env.RAZORPAY_KEY_ID || '').trim();
+  if (id.startsWith('rzp_live_')) return 'live';
+  if (id.startsWith('rzp_test_')) return 'test';
+  return 'unknown';
+}
+
+// Startup validation (called from app.js). Pure — returns findings, never exits.
+// `isProd` decides severity: test/unknown keys and missing secrets are fatal in
+// production, advisory in development. Secret VALUES are never logged.
+export function validatePaymentConfig({ isProd }) {
+  const fatal = [];
+  const warnings = [];
+  const mode = getRazorpayMode();
+
+  if (isPlaceholderSecret(process.env.RAZORPAY_KEY_ID))
+    (isProd ? fatal : warnings).push('RAZORPAY_KEY_ID is missing or a placeholder.');
+  if (isPlaceholderSecret(process.env.RAZORPAY_KEY_SECRET))
+    (isProd ? fatal : warnings).push('RAZORPAY_KEY_SECRET is missing or a placeholder.');
+
+  // Production must never run on test/unknown keys — financially unsafe.
+  if (isProd && mode !== 'live')
+    fatal.push(`Razorpay key mode is "${mode}" — production requires LIVE keys (rzp_live_…).`);
+
+  // Webhook secret is required for reliable auto-grant of Pro after payment.
+  if (isPlaceholderSecret(process.env.RAZORPAY_WEBHOOK_SECRET))
+    (isProd ? fatal : warnings).push('RAZORPAY_WEBHOOK_SECRET is missing or a placeholder — webhook events will be rejected and Pro will not auto-grant after payment.');
+
+  return { mode, fatal, warnings };
+}
+
 // Invalidate any approved/rejected cancellation requests on re-subscribe
 async function clearOldCancellationRequest(userId) {
   try {
@@ -167,7 +218,10 @@ export async function createOrder(req, res, next) {
       );
       const finalUser = updatedUser || await User.findById(user._id);
 
-      sendPurchaseConfirmationEmail(finalUser.email, finalUser.name, 0, code).catch(console.error);
+      sendPurchaseConfirmationEmail(
+        finalUser.email, finalUser.name, 0, code,
+        { planType, label: planRecord.label, expiresAt }
+      ).catch(console.error);
 
       const { password: _pw, tokenVersion: _tv, resetOtp: _ro, resetOtpExpiry: _roe, resetVerified: _rv, ...safeUser } = finalUser.toObject();
       return res.json({ free: true, user: safeUser });
@@ -255,7 +309,8 @@ export async function verifyPayment(req, res, next) {
     const user = updatedUser || await User.findById(req.userId);
 
     sendPurchaseConfirmationEmail(
-      user.email, user.name, paymentRecord.amountPaise, code || null
+      user.email, user.name, paymentRecord.amountPaise, code || null,
+      { planType: paymentRecord.planType, expiresAt }
     ).catch(console.error);
 
     const { password: _pw, tokenVersion: _tv, resetOtp: _ro, resetOtpExpiry: _roe, resetVerified: _rv, ...safeUser } = user.toObject();
@@ -270,8 +325,10 @@ export async function handleWebhook(req, res) {
   try {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-    if (!webhookSecret) {
-      console.error('[Webhook] RAZORPAY_WEBHOOK_SECRET is not set — rejecting event. Configure it in server/.env.');
+    // Reject when the secret is unset OR still a placeholder — never trust a
+    // half-configured webhook secret.
+    if (isPlaceholderSecret(webhookSecret)) {
+      console.error('[Webhook] RAZORPAY_WEBHOOK_SECRET is not configured (missing/placeholder) — rejecting event.');
       return res.status(500).json({ status: 'misconfigured' });
     }
 
@@ -285,7 +342,15 @@ export async function handleWebhook(req, res) {
       .update(req.body)
       .digest('hex');
 
-    if (expectedSig !== receivedSig) {
+    // Constant-time comparison to avoid leaking signature bytes via timing.
+    // timingSafeEqual throws on unequal lengths, so length-check first.
+    const expectedBuf = Buffer.from(expectedSig, 'utf8');
+    const receivedBuf = Buffer.from(String(receivedSig), 'utf8');
+    const sigValid =
+      expectedBuf.length === receivedBuf.length &&
+      crypto.timingSafeEqual(expectedBuf, receivedBuf);
+
+    if (!sigValid) {
       console.warn('[Webhook] Signature mismatch — possible spoofed request');
       return res.status(400).json({ message: 'Invalid webhook signature.' });
     }
@@ -327,7 +392,8 @@ export async function handleWebhook(req, res) {
 
       if (user) {
         sendPurchaseConfirmationEmail(
-          user.email, user.name, record.amountPaise, record.couponCode || null
+          user.email, user.name, record.amountPaise, record.couponCode || null,
+          { planType: record.planType, expiresAt }
         ).catch(console.error);
         console.log(`[Webhook] Pro access granted to user ${user._id} via order ${orderId}`);
       }

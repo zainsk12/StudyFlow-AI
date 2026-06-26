@@ -16,6 +16,7 @@ import subjectRoutes       from "./routes/subject.routes.js";
 import authRoutes          from "./routes/auth.routes.js";
 import syllabusRoutes      from "./routes/syllabus.routes.js";
 import paymentRoutes       from "./routes/payment.routes.js";
+import { validatePaymentConfig } from "./controllers/payment.controller.js";
 import adminRoutes         from "./routes/admin.routes.js";
 import cancellationRoutes  from "./routes/cancellation.routes.js";
 import { errorHandler }    from "./middleware/errorHandler.js";
@@ -247,21 +248,27 @@ if (existsSync(clientDist)) {
 app.use((_req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorHandler);
 
-const WEBHOOK_SECRET_PLACEHOLDER = 'replace_this_with_your_razorpay_webhook_secret';
+// ── Payment configuration validation (tasks 1.1 / 1.2) ─────────────────────
+// Runs before the port is bound. Logs the Razorpay key mode (never the secret).
+// In production a fatal finding (test/unknown keys, or missing key/webhook
+// secret) refuses to start, guaranteeing prod never runs on test keys or an
+// unconfigured webhook. In development these are advisory warnings only.
+{
+  const { mode, fatal, warnings } = validatePaymentConfig({ isProd: !isDev });
+  warnings.forEach((w) => console.warn(`[Payment] ${w}`));
+  if (fatal.length) {
+    fatal.forEach((f) => console.error(`[Payment] CRITICAL: ${f}`));
+    if (!isDev) {
+      console.error('[Payment] Refusing to start in production with an invalid payment configuration. Fix the variables above and restart.');
+      process.exit(1);
+    }
+  }
+  console.log(`[Payment] Razorpay mode: ${mode.toUpperCase()}`);
+}
 
 app.listen(PORT, () => {
   console.log(`\n🚀  StudyFlow AI server running on http://localhost:${PORT}\n`);
   console.log(`[CORS] Allowed origins: ${getAllowedOrigins().join(', ')}\n`);
-
-  // Warn loudly if webhook secret is missing — Pro access won't auto-grant via webhook.
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  if (!webhookSecret || webhookSecret === WEBHOOK_SECRET_PLACEHOLDER) {
-    console.error(
-      '\n⚠️  [Payment] RAZORPAY_WEBHOOK_SECRET is not configured!\n' +
-      '   Webhook events will be rejected and Pro access will NOT be\n' +
-      '   auto-granted after payment. Set this in server/.env NOW.\n'
-    );
-  }
 
   if (adminPanelHtml && process.env.ADMIN_SECRET) {
     console.log(`[AdminPanel] Available at: http://localhost:${PORT}/admin-panel\n`);

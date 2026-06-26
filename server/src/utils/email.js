@@ -113,8 +113,35 @@ export async function sendOtpEmail(toEmail, otp, type = 'reset') {
   }
 }
 
+// ── Plan display helpers ───────────────────────────────────────────────────
+// Derive a human label from the plan. Prefers the admin-configured label, then
+// falls back to the canonical plan type so the three built-in plans always read
+// correctly even when the caller doesn't pass a label.
+function planLabelFor(plan) {
+  const type = plan?.planType || 'lifetime';
+  const label = plan?.label && String(plan.label).trim();
+  if (label) return label;
+  if (type === 'monthly')  return 'Monthly';
+  if (type === 'yearly')   return 'Yearly';
+  if (type === 'lifetime') return 'Lifetime';
+  return String(type);
+}
+
+// Validity text reflects what the user actually bought: lifetime never expires,
+// timed plans show the real expiry date already computed by the payment flow.
+function validityFor(plan) {
+  const type = plan?.planType || 'lifetime';
+  if (type === 'lifetime' || plan?.expiresAt == null) return 'Lifetime — never expires';
+  const d = new Date(plan.expiresAt);
+  if (isNaN(d.getTime())) return '—';
+  return 'Valid until ' + d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 // ── Send purchase confirmation email ───────────────────────────────────────
-export async function sendPurchaseConfirmationEmail(toEmail, name, amountPaise, couponCode) {
+// `plan` (optional, backward-compatible): { planType, label?, expiresAt? }.
+// When omitted, falls back to a Lifetime presentation so older callers keep
+// working unchanged.
+export async function sendPurchaseConfirmationEmail(toEmail, name, amountPaise, couponCode, plan = {}) {
   try {
     const transporter = getTransporter();
     const from = process.env.EMAIL_FROM || `StudyFlow AI <${process.env.EMAIL_USER}>`;
@@ -123,11 +150,14 @@ export async function sendPurchaseConfirmationEmail(toEmail, name, amountPaise, 
       ? 'FREE (coupon applied)'
       : `₹${(amountPaise / 100).toFixed(0)}`;
 
+    const label    = planLabelFor(plan);
+    const validity = validityFor(plan);
+
     await transporter.sendMail({
       from,
       to: toEmail,
-      subject: '🎉 Welcome to StudyFlow AI Pro — Lifetime Access Unlocked!',
-      text: `Hi ${name}, your lifetime access to StudyFlow AI is now active. Amount paid: ${amountDisplay}.`,
+      subject: `🎉 You're now StudyFlow AI Pro — ${label} plan activated!`,
+      text: `Hi ${name}, your ${label} StudyFlow AI Pro plan is now active. Amount paid: ${amountDisplay}. ${validity}.`,
       html: `
         <div style="font-family:'Segoe UI',sans-serif;background:#0d1117;padding:40px 20px;min-height:100vh">
           <div style="max-width:480px;margin:0 auto;background:#1c2030;border:1px solid #252d42;border-radius:16px;padding:40px 36px">
@@ -143,15 +173,19 @@ export async function sendPurchaseConfirmationEmail(toEmail, name, amountPaise, 
             <div style="text-align:center;margin-bottom:28px">
               <div style="font-size:48px;margin-bottom:12px">🎉</div>
               <h2 style="font-size:24px;font-weight:700;color:#f1f5f9;margin:0 0 8px">You're now Pro!</h2>
-              <p style="font-size:14px;color:#64748b;margin:0">Lifetime access to all StudyFlow AI features is now active on your account.</p>
+              <p style="font-size:14px;color:#64748b;margin:0">Your ${label} plan is now active — all StudyFlow AI Pro features are unlocked on your account.</p>
             </div>
 
             <div style="background:#111827;border:1px solid #252d42;border-radius:12px;padding:20px;margin-bottom:24px">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
                 <span style="font-size:13px;color:#64748b">Plan</span>
-                <span style="font-size:13px;font-weight:600;color:#f59e0b">Lifetime Access</span>
+                <span style="font-size:13px;font-weight:600;color:#f59e0b">${label}</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <span style="font-size:13px;color:#64748b">Validity</span>
+                <span style="font-size:13px;font-weight:600;color:#f1f5f9">${validity}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center${couponCode ? ';margin-bottom:10px' : ''}">
                 <span style="font-size:13px;color:#64748b">Amount Paid</span>
                 <span style="font-size:13px;font-weight:600;color:#34d399">${amountDisplay}</span>
               </div>
