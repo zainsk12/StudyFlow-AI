@@ -1,3 +1,7 @@
+> ⚠️ **OBSOLETE — superseded 2026-07-30.** This audit predates the current codebase. Do not use for current status. See `DEPLOYMENT_ROADMAP.md` and `PROJECT_VERIFICATION_JULY_2026.md` for current, verified status.
+
+---
+
 # Bug Report — StudyFlow AI
 
 > Audit date: 2026-06-24. Severity: 🔴 critical · 🟠 major · 🟡 minor. Each item lists file:line and impact.

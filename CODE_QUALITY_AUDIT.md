@@ -1,3 +1,7 @@
+> ⚠️ **OBSOLETE — superseded 2026-07-30.** This audit predates the current codebase. Do not use for current status. See `DEPLOYMENT_ROADMAP.md` and `PROJECT_VERIFICATION_JULY_2026.md` for current, verified status.
+
+---
+
 # Code Quality Audit — StudyFlow AI
 
 > Audit date: 2026-06-24. Severity tags: 🔴 high · 🟠 medium · 🟡 low. File paths and line references included.

@@ -1,3 +1,7 @@
+> ⚠️ **OBSOLETE — superseded 2026-07-30.** This audit predates the current codebase. Do not use for current status. See `DEPLOYMENT_ROADMAP.md` and `PROJECT_VERIFICATION_JULY_2026.md` for current, verified status.
+
+---
+
 # Master Audit Report — StudyFlow AI
 
 > Full-codebase audit, 2026-06-24. Consolidates: `PROJECT_OVERVIEW.md`, `CODE_QUALITY_AUDIT.md`, `BUG_REPORT.md`, `SECURITY_AUDIT.md`, `PRODUCTION_READINESS.md`, `PRODUCT_REVIEW.md`.

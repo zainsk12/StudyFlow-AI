@@ -1,3 +1,7 @@
+> ⚠️ **OBSOLETE — superseded 2026-07-30.** This audit predates the current codebase. Do not use for current status. See `DEPLOYMENT_ROADMAP.md` and `PROJECT_VERIFICATION_JULY_2026.md` for current, verified status.
+
+---
+
 # Product Review — StudyFlow AI
 
 > Reviewed as a SaaS founder / product reviewer on 2026-06-24. Lens: would this convert and retain thousands of students, and is the paid value defensible?
