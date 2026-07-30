@@ -222,6 +222,93 @@ export async function saveFullPlan(req, res, next) {
 }
 
 /**
+ * GET /api/schedule/sync
+ *
+ * Module 2: Cross-Device Synchronization Engine — status endpoint.
+ *
+ * Lightweight metadata comparison so the client can decide whether it needs
+ * to download or upload, WITHOUT transferring the full planner payload on
+ * every check. The client sends the version (and optionally lastModified)
+ * it last confirmed the server had; this compares that against the current
+ * server document and reports which side is ahead.
+ *
+ * Deliberately does NOT resolve conflicts or merge anything — Module 3's
+ * job. `version` is a strictly-increasing counter bumped by saveFullPlan on
+ * every write, so it is the primary signal; `lastModified` is returned as
+ * additional metadata for a future merge module and used only as a
+ * same-version tiebreak hint here.
+ *
+ * Purely additive: no existing route, field, or response shape is changed.
+ */
+export async function getSyncStatus(req, res, next) {
+  try {
+    const rawVersion      = req.query.version;
+    const rawLastModified = req.query.lastModified;
+
+    const clientVersion      = rawVersion      !== undefined ? Number(rawVersion)      : undefined;
+    const clientLastModified = rawLastModified !== undefined ? Number(rawLastModified) : undefined;
+
+    const hasClientVersion      = clientVersion      !== undefined && !Number.isNaN(clientVersion);
+    const hasClientLastModified = clientLastModified !== undefined && !Number.isNaN(clientLastModified);
+
+    const plan = await StudyPlan.findOne({ userId: req.userId });
+
+    // No server plan yet — nothing to download. If the client already has a
+    // version it thinks is synced, treat that as ahead of an empty server so
+    // its next debounced save creates the document as usual.
+    if (!plan) {
+      return res.json({
+        exists:             false,
+        serverVersion:      0,
+        serverLastModified: 0,
+        serverSavedAt:      0,
+        inSync:             !hasClientVersion || clientVersion === 0,
+        serverNewer:        false,
+        clientNewer:        hasClientVersion && clientVersion > 0,
+      });
+    }
+
+    const serverVersion      = plan.version ?? 1;
+    const serverLastModified = plan.lastModified ? plan.lastModified.getTime() : 0;
+    const serverSavedAt      = plan.updatedAt    ? plan.updatedAt.getTime()    : 0;
+
+    let inSync      = false;
+    let serverNewer = false;
+    let clientNewer = false;
+
+    if (!hasClientVersion) {
+      // Client hasn't told us what it has (first load, or an older client
+      // that predates this endpoint) — safest default is "go fetch full
+      // plan and compare savedAt yourself", so report server as newer.
+      serverNewer = true;
+    } else if (clientVersion < serverVersion) {
+      serverNewer = true;
+    } else if (clientVersion > serverVersion) {
+      // Shouldn't happen in normal operation (server always owns the
+      // counter), but don't claim staleness that isn't there.
+      clientNewer = true;
+    } else {
+      inSync = true;
+      if (hasClientLastModified) {
+        clientNewer = clientLastModified > serverLastModified;
+      }
+    }
+
+    res.json({
+      exists: true,
+      serverVersion,
+      serverLastModified,
+      serverSavedAt,
+      inSync,
+      serverNewer,
+      clientNewer,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * POST /api/schedule/streak/migrate
  *
  * One-time migration of a client's legacy `localStorage` streak

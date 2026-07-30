@@ -64,13 +64,31 @@ async function fetchFullPlan() {
 
 async function pushFullPlan(payload) {
   try {
-    await fetch(`${API}/full`, {
+    const res = await fetch(`${API}/full`, {
       method:  'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),
     });
-  } catch { /* silent */ }
+    // Module 2: return the server's response (contains the bumped `version`)
+    // so callers can keep track of what the server currently has, instead of
+    // silently discarding it as before. Existing fire-and-forget call sites
+    // (e.g. clearAll) are unaffected — they simply don't await/use the result.
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+// Module 2: query the lightweight sync-status endpoint instead of always
+// pulling the full plan, so routine "is anything new?" checks don't move the
+// whole payload over the wire.
+async function fetchSyncStatus(knownVersion) {
+  try {
+    const params = new URLSearchParams({ version: String(knownVersion ?? 0) });
+    const res = await fetch(`${API}/sync?${params.toString()}`, { credentials: 'include' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
 }
 
 // One-time migration of a legacy `sf_streak_<uid>` localStorage value onto
@@ -170,6 +188,18 @@ export function useStudyPlanner(userId, _token) {
   const prevUidRef     = useRef(uid);
   const debounceRef    = useRef(null);
 
+  // ── Module 2: sync engine state ───────────────────────────────────────────
+  // The last server `version` this tab has confirmed (via hydration, a
+  // successful push, or a sync-status check). Used to ask the server "is
+  // there anything newer than this?" without re-sending the whole plan.
+  const serverVersionRef = useRef(0);
+  // Guards against overlapping sync-status checks / downloads.
+  const isSyncingRef     = useRef(false);
+  // Set right before applying a downloaded server snapshot so the very next
+  // run of the persist effect (triggered by those same setState calls)
+  // doesn't immediately re-upload the data we just downloaded.
+  const skipNextPersistRef = useRef(false);
+
   // ── latestPayloadRef ──────────────────────────────────────────────────────
   // Always holds the most-recent planner state so the beforeunload flush
   // can read it without stale-closure issues (no dep-array churn needed).
@@ -234,6 +264,11 @@ export function useStudyPlanner(userId, _token) {
     const local = loadFromStorage(uid);
 
     fetchFullPlan().then(serverData => {
+      // Module 2: remember whatever version the server reported (even if we
+      // end up keeping the local snapshot below) so later sync-status checks
+      // compare against a real baseline instead of 0.
+      serverVersionRef.current = serverData?.version ?? 0;
+
       // Pick whichever snapshot is newer: localStorage (savedAt = last
       // browser-side change) vs server (savedAt = last successful PUT).
       // This prevents stale server data from overwriting a localStorage copy
@@ -274,6 +309,9 @@ export function useStudyPlanner(userId, _token) {
     const local = loadFromStorage(uid);
 
     fetchFullPlan().then(serverData => {
+      // Module 2: same baseline tracking as the initial-mount hydration above.
+      serverVersionRef.current = serverData?.version ?? 0;
+
       const src = pickNewerSource(serverData, local);
       if (src) {
         setSubjects(src.subjects      ?? []);
@@ -300,6 +338,15 @@ export function useStudyPlanner(userId, _token) {
     if (!persistEnabled.current) return;
     if (!uid) return;
 
+    // Module 2: the sync engine already wrote this exact snapshot to both
+    // localStorage and the server when it downloaded it — don't immediately
+    // re-upload it right back (avoids the "unnecessary upload" this effect
+    // would otherwise fire on the state changes the download just made).
+    if (skipNextPersistRef.current) {
+      skipNextPersistRef.current = false;
+      return;
+    }
+
     // Stamp every save with the current ms timestamp so the hydration logic
     // above can compare freshness between localStorage and the server.
     const payload = {
@@ -314,8 +361,88 @@ export function useStudyPlanner(userId, _token) {
     // Server: debounced — the beforeunload flush handles the "refresh too fast"
     // edge case so we can keep a comfortable 2 s window here.
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => pushFullPlan(payload), 2000);
+    debounceRef.current = setTimeout(() => {
+      pushFullPlan(payload).then(result => {
+        // Module 2: remember the version the server settled on so the next
+        // sync-status check knows this upload already happened.
+        if (result?.version !== undefined) serverVersionRef.current = result.version;
+      });
+      // Release the debounce guard as soon as the request is sent (not when
+      // it resolves) — sync-status polling only needs to know a save isn't
+      // about to overwrite it a moment later, not wait on the network.
+      debounceRef.current = null;
+    }, 2000);
   }, [uid, subjects, examDate, dailyHours, schedule, dayIdx, overflowCount, streak, streakLastDate]);
+
+  // ── Module 2: automatic cross-device sync check ────────────────────────────
+  // Asks the server "has anything changed since the version I last saw?"
+  // On its own this is metadata-only (no plan payload moves). Only when the
+  // server reports it's newer do we fetch and apply the full plan — i.e. a
+  // stale local cache gets refreshed automatically without the user having
+  // to reload the page. Last-write-wins remains the resolution strategy
+  // (unchanged from Module 1); no merging happens here (Module 3).
+  const checkSyncStatus = useCallback(async () => {
+    if (!uid || !persistEnabled.current || isSyncingRef.current) return;
+
+    // A local change is queued to upload — let that finish and become the
+    // new server version instead of racing a download against it. This is
+    // also what keeps offline edits intact: nothing here can overwrite
+    // unsaved local changes.
+    if (debounceRef.current) return;
+
+    const status = await fetchSyncStatus(serverVersionRef.current);
+    if (!status || !status.exists || !status.serverNewer) return;
+
+    isSyncingRef.current = true;
+    try {
+      const serverData = await fetchFullPlan();
+      if (serverData) {
+        skipNextPersistRef.current = true;
+        setSubjects(serverData.subjects      ?? []);
+        setExamDate(serverData.examDate      ?? defaultExamDate());
+        setDailyHours(serverData.dailyHours  ?? 4);
+        setSchedule(serverData.schedule      ?? []);
+        setDayIdx(serverData.dayIdx          ?? 0);
+        setOverflowCount(serverData.overflowCount ?? 0);
+        setStreak(serverData.streak?.count       ?? 0);
+        setStreakLastDate(serverData.streak?.lastDate ?? null);
+
+        // Update caches directly (mirrors the hydration-effect pattern) so
+        // a refresh right after this still sees the newly-synced data.
+        saveToStorage(uid, serverData);
+        saveStreak(uid, serverData.streak ?? { count: 0, lastDate: null });
+
+        serverVersionRef.current = serverData.version ?? serverVersionRef.current;
+      }
+    } catch {
+      /* offline / network error — silent, preserves offline functionality */
+    } finally {
+      isSyncingRef.current = false;
+    }
+  }, [uid]);
+
+  // Poll periodically and on tab refocus/visibility so multi-device changes
+  // show up automatically without a manual reload. Debounced local saves and
+  // the beforeunload flush (above) remain the only upload paths — this
+  // effect only ever downloads.
+  useEffect(() => {
+    if (!uid) return;
+
+    const POLL_MS = 20000;
+    const interval = setInterval(checkSyncStatus, POLL_MS);
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') checkSyncStatus();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', checkSyncStatus);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', checkSyncStatus);
+    };
+  }, [uid, checkSyncStatus]);
 
   // ── Computed ───────────────────────────────────────────────────────────────
   const stats = useMemo(
