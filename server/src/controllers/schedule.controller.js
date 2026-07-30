@@ -137,6 +137,12 @@ export async function getFullPlan(req, res, next) {
       dayIdx:        plan.dayIdx        ?? 0,
       overflowCount: plan.overflowCount ?? 0,
       savedAt:       plan.updatedAt ? plan.updatedAt.getTime() : 0,
+
+      // ── Study streak + sync metadata (Module 1, additive fields only) ─────
+      streak:                          plan.streak ?? { count: 0, lastDate: null },
+      version:                         plan.version ?? 1,
+      lastModified:                    plan.lastModified ? plan.lastModified.getTime() : 0,
+      migratedStreakFromLocalStorage:  plan.migratedStreakFromLocalStorage ?? false,
     });
   } catch (err) {
     next(err);
@@ -149,13 +155,17 @@ export async function getFullPlan(req, res, next) {
 export async function saveFullPlan(req, res, next) {
   try {
     const {
-      subjects, examDate, dailyHours, schedule, dayIdx, overflowCount,
+      subjects, examDate, dailyHours, schedule, dayIdx, overflowCount, streak,
       savedAt: _clientSavedAt,
     } = req.body;
 
     // ── Input validation ───────────────────────────────────────────────────
     if (subjects !== undefined && !isValidSubjects(subjects)) {
       return res.status(400).json({ error: '`subjects` must be an array of valid subject objects.' });
+    }
+
+    if (streak !== undefined && !isValidStreak(streak)) {
+      return res.status(400).json({ error: '`streak` must be an object with a non-negative numeric `count` and an optional string `lastDate`.' });
     }
 
     if (schedule !== undefined && !isValidSchedule(schedule)) {
@@ -189,15 +199,88 @@ export async function saveFullPlan(req, res, next) {
       ...(schedule      !== undefined && { schedule }),
       ...(dayIdx        !== undefined && { dayIdx: Number(dayIdx) }),
       ...(overflowCount !== undefined && { overflowCount: Number(overflowCount) }),
+      // Study streak now lives on the server document (Module 1). Only
+      // touched when the client actually sends one, so callers that don't
+      // know about streaks yet (none currently, but future-proofing) can't
+      // accidentally wipe it.
+      ...(streak        !== undefined && { streak: { count: streak.count ?? 0, lastDate: streak.lastDate ?? null } }),
+      // Sync metadata: stamp every write so a future sync module always has
+      // an up-to-date "last modified" marker to compare against.
+      lastModified: new Date(),
     };
 
     const plan = await StudyPlan.findOneAndUpdate(
       { userId: req.userId },
-      { $set: setFields },
+      { $set: setFields, $inc: { version: 1 } },
       { upsert: true, new: true, runValidators: true }
     );
 
-    res.json({ ok: true, updatedAt: plan.updatedAt });
+    res.json({ ok: true, updatedAt: plan.updatedAt, version: plan.version });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/schedule/streak/migrate
+ *
+ * One-time migration of a client's legacy `localStorage` streak
+ * (`sf_streak_<uid>`) onto the server-side StudyPlan document. This does
+ * NOT implement general synchronization — it is a single, idempotent
+ * "adopt this value if the server doesn't already have one" operation,
+ * guarded by `migratedStreakFromLocalStorage` so it can never run twice
+ * (and therefore can never clobber real server progress on a retry).
+ *
+ * Safe for brand-new users who have never generated a plan: examDate/
+ * dailyHours fall back to schema defaults so the upsert succeeds.
+ */
+export async function migrateStreak(req, res, next) {
+  try {
+    const { count, lastDate } = req.body || {};
+
+    if (!isValidStreak({ count, lastDate })) {
+      return res.status(400).json({ error: '`count` must be a non-negative number and `lastDate` an optional string.' });
+    }
+
+    const existing = await StudyPlan.findOne({ userId: req.userId });
+
+    // Migration already ran (successfully or as a no-op) — never touch the
+    // streak again via this endpoint, regardless of what the client sends.
+    if (existing?.migratedStreakFromLocalStorage) {
+      return res.json({
+        migrated: false,
+        streak:   existing.streak ?? { count: 0, lastDate: null },
+        version:  existing.version ?? 1,
+      });
+    }
+
+    // Only adopt the incoming legacy value if the server doesn't already
+    // have real streak progress of its own — guards against a stale local
+    // copy overwriting genuine server-side data in any edge case.
+    const serverStreak = existing?.streak ?? { count: 0, lastDate: null };
+    const shouldAdopt  = !serverStreak.count && !serverStreak.lastDate;
+
+    const updated = await StudyPlan.findOneAndUpdate(
+      { userId: req.userId },
+      {
+        $set: {
+          userId: req.userId,
+          migratedStreakFromLocalStorage: true,
+          lastModified: new Date(),
+          ...(shouldAdopt && {
+            streak: { count: count ?? 0, lastDate: lastDate ?? null },
+          }),
+        },
+        $inc: { version: 1 },
+      },
+      { upsert: true, new: true, runValidators: true }
+    );
+
+    res.json({
+      migrated: shouldAdopt,
+      streak:   updated.streak,
+      version:  updated.version,
+    });
   } catch (err) {
     next(err);
   }

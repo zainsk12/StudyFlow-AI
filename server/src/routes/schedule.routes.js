@@ -1,6 +1,6 @@
 // server/src/routes/schedule.routes.js
 import { Router }          from 'express';
-import { generate, getSchedule, getFullPlan, saveFullPlan } from '../controllers/schedule.controller.js';
+import { generate, getSchedule, getFullPlan, saveFullPlan, migrateStreak } from '../controllers/schedule.controller.js';
 import { protect }         from '../middleware/auth.middleware.js';
 import { validate, rules } from '../middleware/validate.js';
 
@@ -25,5 +25,9 @@ router.get('/full',      getFullPlan);
 
 // PUT  /api/schedule/full     — save complete planner state (free, own data)
 router.put('/full',      saveFullPlan);
+
+// POST /api/schedule/streak/migrate — one-time localStorage -> MongoDB streak
+// migration (Module 1). Idempotent; safe to call even if already migrated.
+router.post('/streak/migrate', migrateStreak);
 
 export default router;

@@ -73,6 +73,42 @@ async function pushFullPlan(payload) {
   } catch { /* silent */ }
 }
 
+// One-time migration of a legacy `sf_streak_<uid>` localStorage value onto
+// the server (Module 1: move Study Streak to MongoDB). The server endpoint
+// is idempotent (guarded by `migratedStreakFromLocalStorage`), so it's safe
+// to call this every time hydration finds an un-migrated server plan — it
+// will simply no-op on subsequent calls.
+async function migrateLegacyStreak(legacy) {
+  try {
+    const res = await fetch(`${API}/streak/migrate`, {
+      method:  'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ count: legacy.count, lastDate: legacy.lastDate }),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+// Resolves the effective streak on hydration: server is the source of truth
+// once migrated. If the server hasn't migrated yet, the legacy localStorage
+// streak (if any) is pushed up via the idempotent /streak/migrate endpoint
+// exactly once; the server's response (post-migration) then wins.
+async function resolveServerStreak(uid, serverData) {
+  if (serverData && serverData.migratedStreakFromLocalStorage) {
+    return serverData.streak ?? { count: 0, lastDate: null };
+  }
+
+  const legacy = loadStreak(uid);
+  const migrated = await migrateLegacyStreak(legacy);
+  if (migrated) return migrated.streak ?? { count: 0, lastDate: null };
+
+  // Migration call failed (offline, etc.) — fall back to whatever the server
+  // already reported, else the legacy local value, so the UI isn't blank.
+  return serverData?.streak ?? legacy;
+}
+
 // ── Source picker: returns whichever snapshot is newer ────────────────────
 // Both server and localStorage snapshots carry a `savedAt` ms timestamp.
 // If either is missing a timestamp we conservatively prefer the server
@@ -122,6 +158,7 @@ export function useStudyPlanner(userId, _token) {
   const [dayIdx,        setDayIdx]        = useState(savedAtMount?.dayIdx        ?? 0);
   const [overflowCount, setOverflowCount] = useState(savedAtMount?.overflowCount ?? 0);
   const [streak, setStreak] = useState(() => uid ? loadStreak(uid).count : 0);
+  const [streakLastDate, setStreakLastDate] = useState(() => uid ? loadStreak(uid).lastDate : null);
 
   const [lastAddedSubjectId, setLastAddedSubjectId] = useState(null);
   const [lastAddedTopicId,   setLastAddedTopicId]   = useState(null);
@@ -141,8 +178,9 @@ export function useStudyPlanner(userId, _token) {
   useEffect(() => {
     latestPayloadRef.current = {
       subjects, examDate, dailyHours, schedule, dayIdx, overflowCount,
+      streak: { count: streak, lastDate: streakLastDate },
     };
-  }, [subjects, examDate, dailyHours, schedule, dayIdx, overflowCount]);
+  }, [subjects, examDate, dailyHours, schedule, dayIdx, overflowCount, streak, streakLastDate]);
 
   // ── beforeunload flush ────────────────────────────────────────────────────
   // The persist effect debounces server saves by 2 s. If the user refreshes
@@ -213,6 +251,12 @@ export function useStudyPlanner(userId, _token) {
         // Mirror the winning source to localStorage
         saveToStorage(uid, src);
       }
+
+      resolveServerStreak(uid, serverData).then(resolved => {
+        setStreak(resolved.count ?? 0);
+        setStreakLastDate(resolved.lastDate ?? null);
+        saveStreak(uid, resolved);
+      });
     }).finally(() => {
       persistEnabled.current = true;
     });
@@ -240,6 +284,12 @@ export function useStudyPlanner(userId, _token) {
         setOverflowCount(src.overflowCount ?? 0);
         saveToStorage(uid, src);
       }
+
+      resolveServerStreak(uid, serverData).then(resolved => {
+        setStreak(resolved.count ?? 0);
+        setStreakLastDate(resolved.lastDate ?? null);
+        saveStreak(uid, resolved);
+      });
     }).finally(() => {
       persistEnabled.current = true;
     });
@@ -254,6 +304,7 @@ export function useStudyPlanner(userId, _token) {
     // above can compare freshness between localStorage and the server.
     const payload = {
       subjects, examDate, dailyHours, schedule, dayIdx, overflowCount,
+      streak: { count: streak, lastDate: streakLastDate },
       savedAt: Date.now(),
     };
 
@@ -264,7 +315,7 @@ export function useStudyPlanner(userId, _token) {
     // edge case so we can keep a comfortable 2 s window here.
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => pushFullPlan(payload), 2000);
-  }, [uid, subjects, examDate, dailyHours, schedule, dayIdx, overflowCount]);
+  }, [uid, subjects, examDate, dailyHours, schedule, dayIdx, overflowCount, streak, streakLastDate]);
 
   // ── Computed ───────────────────────────────────────────────────────────────
   const stats = useMemo(
@@ -327,6 +378,7 @@ export function useStudyPlanner(userId, _token) {
     const newCount = prev.lastDate === yesterdayStr() ? prev.count + 1 : 1;
     saveStreak(uid, { count: newCount, lastDate: today });
     setStreak(newCount);
+    setStreakLastDate(today);
   }, [uid]);
 
   const toggleTopic = (sid, tid) =>
@@ -408,6 +460,7 @@ export function useStudyPlanner(userId, _token) {
     const empty = {
       subjects: [], schedule: [], dayIdx: 0,
       examDate: freshDate, dailyHours: 4, overflowCount: 0,
+      streak: { count: 0, lastDate: null },
       savedAt: Date.now(),
     };
     setSubjects([]);
@@ -423,6 +476,7 @@ export function useStudyPlanner(userId, _token) {
       pushFullPlan(empty);
       saveStreak(uid, { count: 0, lastDate: null });
       setStreak(0);
+      setStreakLastDate(null);
     }
   }, [uid]);
 
