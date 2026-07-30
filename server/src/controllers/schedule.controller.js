@@ -7,17 +7,49 @@ const MAX_SUBJECTS       = 50;
 const MAX_TOPICS_PER_SUB = 200;
 
 // Lightweight structural validators
+const DIFFICULTIES = ['easy', 'medium', 'hard'];
+const STATUSES     = ['pending', 'done'];
+
+// Validate a single topic's shape (task 4.1). Tolerates absent optional fields
+// (the client can briefly hold an unnamed topic) but rejects wrong types and
+// out-of-enum difficulty/status — the values that would otherwise corrupt
+// schedule math (DIFF_HRS lookups) and progress/behind-count calculations.
+function isValidTopic(t) {
+  if (!t || typeof t !== 'object') return false;
+  if (typeof t.name !== 'string') return false;
+  if (t.id !== undefined && typeof t.id !== 'string') return false;
+  if (t.difficulty !== undefined && !DIFFICULTIES.includes(t.difficulty)) return false;
+  if (t.status !== undefined && !STATUSES.includes(t.status)) return false;
+  return true;
+}
+
 function isValidSubjects(subjects) {
   if (!Array.isArray(subjects)) return false;
   if (subjects.length > MAX_SUBJECTS) return false;
   for (const s of subjects) {
     if (!s || typeof s !== 'object') return false;
     if (typeof s.name !== 'string' || s.name.trim() === '') return false;
+    if (s.id !== undefined && typeof s.id !== 'string') return false;
+    if (s.color !== undefined && typeof s.color !== 'string') return false;
     if (s.topics !== undefined) {
       if (!Array.isArray(s.topics)) return false;
       if (s.topics.length > MAX_TOPICS_PER_SUB) return false;
+      // task 4.1: validate every topic's shape, not just the array length.
+      for (const t of s.topics) {
+        if (!isValidTopic(t)) return false;
+      }
     }
   }
+  return true;
+}
+
+// Validate the optional streak object (task 4.3).
+function isValidStreak(streak) {
+  if (streak === undefined || streak === null) return true;
+  if (typeof streak !== 'object') return false;
+  if (streak.count !== undefined &&
+      (typeof streak.count !== 'number' || !Number.isFinite(streak.count) || streak.count < 0)) return false;
+  if (streak.lastDate !== undefined && streak.lastDate !== null && typeof streak.lastDate !== 'string') return false;
   return true;
 }
 
