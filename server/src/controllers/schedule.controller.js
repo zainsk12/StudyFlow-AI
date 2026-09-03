@@ -1,4 +1,3 @@
-import { buildSchedule } from '../utils/scheduler.js';
 import StudyPlan        from '../models/StudyPlan.js';
 
 // Hard caps — high enough to never affect real users, low enough to prevent
@@ -60,65 +59,6 @@ function isValidSchedule(schedule) {
     if (!Array.isArray(day.sessions)) return false;
   }
   return true;
-}
-
-/**
- * POST /api/schedule/generate
- */
-export async function generate(req, res, next) {
-  try {
-    const { subjects, examDate, dailyHours } = req.body;
-
-    if (!subjects || !examDate || !dailyHours) {
-      return res.status(400).json({
-        error: '`subjects`, `examDate`, and `dailyHours` are all required.',
-      });
-    }
-
-    if (!isValidSubjects(subjects)) {
-      return res.status(400).json({
-        error: `subjects must be an array of up to ${MAX_SUBJECTS} subjects, each with up to ${MAX_TOPICS_PER_SUB} topics.`,
-      });
-    }
-
-    const schedule      = buildSchedule(subjects, examDate, Number(dailyHours));
-    const overflowCount = 0;
-
-    await StudyPlan.findOneAndUpdate(
-      { userId: req.userId },
-      { userId: req.userId, examDate, dailyHours: Number(dailyHours), schedule, overflowCount },
-      { upsert: true, new: true, runValidators: true }
-    );
-
-    res.json({
-      schedule,
-      overflowCount,
-      totalDays:     schedule.length,
-      totalSessions: schedule.reduce((a, d) => a + d.sessions.length, 0),
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
-/**
- * GET /api/schedule
- */
-export async function getSchedule(req, res, next) {
-  try {
-    const plan = await StudyPlan.findOne({ userId: req.userId });
-    if (!plan) return res.json(null);
-
-    res.json({
-      examDate:      plan.examDate,
-      dailyHours:    plan.dailyHours,
-      schedule:      plan.schedule,
-      totalDays:     plan.schedule.length,
-      totalSessions: plan.schedule.reduce((a, d) => a + d.sessions.length, 0),
-    });
-  } catch (err) {
-    next(err);
-  }
 }
 
 /**

@@ -11,7 +11,6 @@ import {
   forgotPassword,
   verifyOtp,
   resetPassword,
-  sendCancelOtp,
 } from "../controllers/auth.controller.js";
 import { protect }              from "../middleware/auth.middleware.js";
 import { validate, rules }      from "../middleware/validate.js";
@@ -38,7 +37,5 @@ router.patch("/change-password", protect,               otpLimiter,             
 router.post("/forgot-password", forgotPasswordLimiter, validate(rules.forgotPassword),  forgotPassword);
 router.post("/verify-otp",      otpLimiter,            validate(rules.verifyOtp),       verifyOtp);
 router.post("/reset-password",  authLimiter,           validate(rules.resetPassword),   resetPassword);
-
-router.post("/send-cancel-otp", protect,               otpLimiter,                      sendCancelOtp);
 
 export default router;

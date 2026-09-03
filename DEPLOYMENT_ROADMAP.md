@@ -1,8 +1,8 @@
 # StudyFlow AI — Deployment Roadmap
 
 **Generated:** 2026-06-26 · **Synchronized:** 2026-07-30
-**Status:** Single source of truth. Supersedes all prior audit documents (see `PROJECT_VERIFICATION_JULY_2026.md` for the diff that produced this update).
-**Note:** The codebase is now ahead of this roadmap — nearly all Phase 0–4 items below are **done in code**. Only two real launch blockers remain (Task 1.1, 1.2) plus doc cleanup (7.1).
+**Status:** Single source of truth (see `PROJECT_VERIFICATION_JULY_2026.md` for the diff that produced this update).
+**Note:** The codebase is now ahead of this roadmap — nearly all Phase 0–4 items below are **done in code**. Only two real launch blockers remain (Task 1.1, 1.2).
 
 ---
 
@@ -81,8 +81,8 @@ Ops/dashboard action. `RAZORPAY_KEY_ID` is still `rzp_test_*`.
 
 ## Phase 7 — Code Quality & Cleanup
 
-### Task 7.1 — Remove/mark superseded audit markdown files — 🟡 IN PROGRESS
-`MASTER_AUDIT_REPORT.md`, `SECURITY_AUDIT.md`, `BUG_REPORT.md`, `CODE_QUALITY_AUDIT.md`, `PRODUCTION_READINESS.md`, `PRODUCT_REVIEW.md` have been marked **OBSOLETE** with a banner (2026-07-30 sync). `PROJECT_OVERVIEW.md` remains current and is kept.
+### Task 7.1 — Remove superseded audit markdown files — ✅ DONE
+The six superseded audit docs have been removed from the repo. `PROJECT_OVERVIEW.md` remains current and is kept.
 
 - ❌ **7.2** Dead `GET /api/schedule` still present. **Open.**
 - ❌ **7.3** `console.log` noise not yet gated by logger/`NODE_ENV`. **Open.**
@@ -119,6 +119,5 @@ Ops/dashboard action. `RAZORPAY_KEY_ID` is still `rzp_test_*`.
 
 1. **Task 1.1 + 1.2** — the only two genuine remaining launch blockers.
 2. **BUG-18** — fix AI coach topic-name stripping (previously untracked).
-3. **Task 7.1** — finish removing/archiving the obsolete audit docs.
-4. Phase 2/4 remaining items (2.4, 4.2, 4.3) as bandwidth allows.
-5. Phases 5–8 continuously, post-launch.
+3. Phase 2/4 remaining items (2.4, 4.2, 4.3) as bandwidth allows.
+4. Phases 5–8 continuously, post-launch.

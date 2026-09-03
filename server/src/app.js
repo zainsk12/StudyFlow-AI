@@ -11,7 +11,6 @@ import { connectDB }     from "../config/db.js";
 
 import aiRoutes            from "./routes/ai.routes.js";
 import scheduleRoutes      from "./routes/schedule.routes.js";
-import subjectRoutes       from "./routes/subject.routes.js";
 import authRoutes          from "./routes/auth.routes.js";
 import syllabusRoutes      from "./routes/syllabus.routes.js";
 import paymentRoutes       from "./routes/payment.routes.js";
@@ -155,7 +154,6 @@ app.get("/health", (_req, res) => res.json({ status: "ok", uptime: process.uptim
 
 app.use("/api/ai",            aiRoutes);
 app.use("/api/schedule",      scheduleRoutes);
-app.use("/api/subjects",      subjectRoutes);
 app.use("/api/auth",          authRoutes);
 app.use("/api/syllabus",      syllabusRoutes);
 app.use("/api/admin",         adminRoutes);

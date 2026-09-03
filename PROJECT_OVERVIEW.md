@@ -148,7 +148,6 @@ State is **dual-sourced**: client keeps planner state in `localStorage` AND mirr
 
 ## 13. Key Discrepancies vs README
 
-1. AI provider is **Groq + Mistral**, not Anthropic Claude.
-2. Auth, payments, admin, coupons, cancellations exist — README lists them only as "roadmap".
+> Note: README.md has since been updated and now correctly documents the AI providers, shipped auth/payments/admin features, and the lack of an in-memory DB fallback. Items 1, 2, and 4 below no longer apply; item 3 remains accurate.
+
 3. The documented REST surface (`/api/subjects`, `/api/schedule/generate`) is **implemented but not used by the client**; the app persists everything through `/api/schedule/full`.
-4. "MongoDB optional / in-memory store works out of the box" is **false** — `connectDB()` calls `process.exit(1)` on failure; the app cannot run without MongoDB.

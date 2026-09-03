@@ -432,38 +432,3 @@ export async function getStatus(req, res, next) {
     next(err);
   }
 }
-
-// ── POST /api/payment/cancel ──────────────────────────────────────────────
-export async function cancelSubscription(req, res, next) {
-  try {
-    const { otp } = req.body;
-    if (!otp) return res.status(400).json({ message: 'Verification code is required.' });
-
-    const user = await User.findById(req.userId);
-    if (!user)        return res.status(404).json({ message: 'User not found.' });
-    if (!user.isPro)  return res.status(400).json({ message: 'No active subscription to cancel.' });
-
-    if (!user.cancelOtp || !user.cancelOtpExpiry)
-      return res.status(400).json({ message: 'No verification code found. Please request a new one.' });
-
-    if (new Date() > user.cancelOtpExpiry)
-      return res.status(400).json({ message: 'Verification code expired. Please request a new one.' });
-
-    const bcrypt  = await import('bcryptjs');
-    const isMatch = await bcrypt.default.compare(String(otp).trim(), user.cancelOtp);
-    if (!isMatch) return res.status(400).json({ message: 'Incorrect verification code.' });
-
-    user.isPro                 = false;
-    user.paidAt                = null;
-    user.planType              = null;
-    user.subscriptionExpiresAt = null;
-    user.cancelOtp             = null;
-    user.cancelOtpExpiry       = null;
-    await user.save();
-    invalidateUserCache(req.userId);
-
-    res.status(200).json({ message: 'Subscription cancelled successfully.' });
-  } catch (err) {
-    next(err);
-  }
-}

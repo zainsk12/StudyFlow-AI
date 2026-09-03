@@ -60,7 +60,7 @@
 - **Task 6.2 / 4.2** — No new indexes for admin queries; no stale-order sweep.
 - **Task 7.2/7.3** — Dead `GET /api/schedule` still present; `console.log` noise not yet gated by logger/`NODE_ENV`.
 - **Task 8.1/8.4** — Zero automated tests, no CI config found anywhere in the tree.
-- README.md itself is **not updated** — still claims Anthropic Claude AI, in-memory DB fallback, and lists auth/payments as "roadmap" items that have long been built (this discrepancy was flagged by `PROJECT_OVERVIEW.md` itself and remains true).
+- README.md has since been **updated and is now accurate** — it correctly documents Groq/Mistral (not Anthropic Claude), correctly states there is no in-memory DB fallback, and lists auth/payments/admin as shipped features rather than "roadmap" items. (This discrepancy was originally flagged by `PROJECT_OVERVIEW.md`; it no longer applies.)
 
 ## Bugs Mentioned in Markdown
 

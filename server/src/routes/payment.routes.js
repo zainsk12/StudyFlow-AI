@@ -1,6 +1,6 @@
 import { Router }        from 'express';
 import { protect }       from '../middleware/auth.middleware.js';
-import { rateLimiter, otpLimiter } from '../middleware/rateLimiter.js';
+import { rateLimiter }   from '../middleware/rateLimiter.js';
 import express           from 'express';
 import {
   getPlans,
@@ -9,7 +9,6 @@ import {
   verifyPayment,
   handleWebhook,
   getStatus,
-  cancelSubscription,
 } from '../controllers/payment.controller.js';
 
 const router = Router();
@@ -45,6 +44,5 @@ router.post('/validate-coupon', validateCoupon);
 router.post('/create-order',    createOrder);
 router.post('/verify',          verifyPayment);
 router.get( '/status',          getStatus);
-router.post('/cancel', otpLimiter, cancelSubscription);
 
 export default router;

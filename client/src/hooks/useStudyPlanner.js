@@ -163,7 +163,7 @@ function pickNewerSource(serverData, localData) {
 }
 
 // ── Hook ───────────────────────────────────────────────────────────────────
-export function useStudyPlanner(userId, _token) {
+export function useStudyPlanner(userId) {
   const uid = userId ? String(userId) : null;
 
   // Initialize state from localStorage immediately so first render isn't blank.

@@ -49,13 +49,6 @@ export const protect = async (req, res, next) => {
     let token = req.cookies?.sf_token;
 
     if (!token) {
-      const authHeader = req.headers.authorization;
-      if (authHeader?.startsWith('Bearer ')) {
-        token = authHeader.split(' ')[1];
-      }
-    }
-
-    if (!token) {
       return res.status(401).json({ message: 'Not authorised — no token' });
     }
 

@@ -299,27 +299,3 @@ export const resetPassword = async (req, res, next) => {
     res.status(200).json({ message: "Password reset successfully. You can now sign in." });
   } catch (error) { next(error); }
 };
-
-// ── POST /api/auth/send-cancel-otp ───────────────────────────────────────
-export const sendCancelOtp = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ message: 'User not found.' });
-    if (!user.isPro) return res.status(400).json({ message: 'No active subscription to cancel.' });
-
-    const otp       = crypto.randomInt(100000, 999999).toString();
-    const otpHashed = await bcrypt.hash(otp, 10);
-    const expiry    = new Date(Date.now() + 10 * 60 * 1000);
-
-    await sendOtpEmail(user.email, otp, 'cancel');
-
-    user.cancelOtp       = otpHashed;
-    user.cancelOtpExpiry = expiry;
-    await user.save();
-
-    res.status(200).json({ message: 'Verification code sent to your email.' });
-  } catch (error) {
-    console.error('sendCancelOtp error:', error);
-    res.status(500).json({ message: 'Failed to send verification email. Please try again.' });
-  }
-};

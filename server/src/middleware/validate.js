@@ -106,32 +106,6 @@ export const rules = {
     newPassword: [r.required('New password'), r.password('New password')],
   },
 
-  createSubject: {
-    name:  [r.required('name'), r.string('name'), r.minLen('name', 1), r.maxLen('name', 100)],
-    color: [r.hexColor()],
-  },
-
-  updateSubject: {
-    name:  [r.string('name'), r.minLen('name', 1), r.maxLen('name', 100)],
-    color: [r.hexColor()],
-  },
-
-  addTopic: {
-    name:       [r.required('name'), r.string('name'), r.minLen('name', 1), r.maxLen('name', 100)],
-    difficulty: [r.oneOf('difficulty', ['easy', 'medium', 'hard'])],
-  },
-
-  updateTopic: {
-    name:       [r.string('name'), r.minLen('name', 1), r.maxLen('name', 100)],
-    difficulty: [r.oneOf('difficulty', ['easy', 'medium', 'hard'])],
-    status:     [r.oneOf('status',     ['pending', 'done'])],
-  },
-
-  generateSchedule: {
-    examDate:   [r.required('examDate'),   r.string('examDate')],
-    dailyHours: [r.required('dailyHours'), r.finite('dailyHours')],
-  },
-
   aiChat: {
     // message XOR messages — checked at controller level; only basic type guard here
   },
