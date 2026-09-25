@@ -6,19 +6,13 @@ import helmet   from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import { fileURLToPath } from "url";
 import { dirname, join }       from "path";
-import { readFileSync, existsSync }  from "fs";
+import { existsSync }  from "fs";
 import { connectDB }     from "../config/db.js";
 
 import aiRoutes            from "./routes/ai.routes.js";
 import scheduleRoutes      from "./routes/schedule.routes.js";
 import authRoutes          from "./routes/auth.routes.js";
 import syllabusRoutes      from "./routes/syllabus.routes.js";
-import paymentRoutes       from "./routes/payment.routes.js";
-import { validatePaymentConfig } from "./controllers/payment.controller.js";
-import adminRoutes         from "./routes/admin.routes.js";
-import { matchAdminSecret, hasAdminConfig } from "./middleware/admin.middleware.js";
-import { adminPanelLimiter } from "./middleware/rateLimiter.js";
-import cancellationRoutes  from "./routes/cancellation.routes.js";
 import { errorHandler }    from "./middleware/errorHandler.js";
 import { rateLimiter }     from "./middleware/rateLimiter.js";
 import { requestLogger }   from "./middleware/requestLogger.js";
@@ -74,9 +68,8 @@ function getAllowedOrigins() {
   }
 
   // No explicit list configured. The localhost dev defaults are added ONLY in
-  // development so production never silently trusts localhost; in production an
-  // unset ALLOWED_ORIGINS yields just CLIENT_URL/ADMIN_PANEL_URL (if provided),
-  // and the startup env check above already warns when it's missing.
+  // development so production never silently trusts localhost; production may
+  // use CLIENT_URL as its single allowed origin.
   const origins = new Set();
   if (isDev) {
     origins.add('http://localhost:3000');
@@ -84,34 +77,30 @@ function getAllowedOrigins() {
   }
 
   if (process.env.CLIENT_URL)      origins.add(process.env.CLIENT_URL);
-  if (process.env.ADMIN_PANEL_URL) origins.add(process.env.ADMIN_PANEL_URL);
 
   return [...origins];
 }
 
-// ── Helmet + Content-Security-Policy (task 0.4) ────────────────────────────
+// ── Helmet + Content-Security-Policy ──────────────────────────────────────
 // CSP is tuned for the React SPA served same-origin (task 0.2):
-//   • scripts: 'self' only (Vite emits external hashed bundles) + the Razorpay
-//     Checkout SDK. No 'unsafe-inline' for scripts — the SPA has no inline JS.
+//   • scripts: 'self' only (Vite emits external hashed bundles). No
+//     'unsafe-inline' for scripts — the SPA has no inline JS.
 //   • styles: 'unsafe-inline' is required because the UI uses inline style={{}}
 //     attributes throughout (React/Recharts); Google Fonts stylesheet allowed.
-//   • Razorpay needs its CDN/API for script, frame (checkout iframe), connect
-//     (telemetry/API) and images.
-// The /admin-panel route relaxes this per-response (it is a trusted single-file
-// tool with inline scripts/handlers) — see that handler below.
+// The app uses this policy consistently across its routes.
 const cspDirectives = {
   defaultSrc:  ["'self'"],
   baseUri:     ["'self'"],
   objectSrc:   ["'none'"],
   frameAncestors: ["'self'"],
   formAction:  ["'self'"],
-  scriptSrc:     ["'self'", "https://checkout.razorpay.com"],
+  scriptSrc:     ["'self'"],
   scriptSrcAttr: ["'none'"],
   styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
   fontSrc:     ["'self'", "https://fonts.gstatic.com", "data:"],
-  imgSrc:      ["'self'", "data:", "https://*.razorpay.com"],
-  frameSrc:    ["'self'", "https://*.razorpay.com"],
-  connectSrc:  ["'self'", "https://*.razorpay.com"],
+  imgSrc:      ["'self'", "data:"],
+  frameSrc:    ["'self'"],
+  connectSrc:  ["'self'"],
 };
 // Force HTTPS upgrades in production only. In dev, explicitly disable the
 // directive (helmet's useDefaults would otherwise add it) so that opening the
@@ -120,8 +109,7 @@ cspDirectives.upgradeInsecureRequests = isDev ? null : [];
 
 app.use(helmet({
   contentSecurityPolicy: { useDefaults: true, directives: cspDirectives },
-  // Razorpay's checkout iframe + Google Fonts are cross-origin embeds; COEP off
-  // (helmet's default) keeps them working. Set explicitly for clarity.
+  // Google Fonts are cross-origin; COEP off keeps them working.
   crossOriginEmbedderPolicy: false,
 }));
 app.use(cookieParser());
@@ -141,8 +129,6 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use("/api/payment",  paymentRoutes);
-
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(mongoSanitize()); // strips keys starting with $ from req.body, req.query, req.params
@@ -156,74 +142,12 @@ app.use("/api/ai",            aiRoutes);
 app.use("/api/schedule",      scheduleRoutes);
 app.use("/api/auth",          authRoutes);
 app.use("/api/syllabus",      syllabusRoutes);
-app.use("/api/admin",         adminRoutes);
-app.use("/api/cancellation",  cancellationRoutes);
-
-let adminPanelHtml = null;
-try {
-  adminPanelHtml = readFileSync(
-    join(__dirname, '../admin-panel.html'),
-    'utf8'
-  );
-} catch {
-  console.warn('[AdminPanel] admin-panel.html not found — /admin-panel route will return 404.');
-}
-
-app.get('/admin-panel', adminPanelLimiter, (req, res) => {
-  if (!hasAdminConfig()) return res.status(404).send('Not found.');
-
-  // Read secret from HTTP Basic Auth (Authorization: Basic base64(user:password))
-  // The admin enters any username + a configured admin secret as the password.
-  // matchAdminSecret performs a constant-time check against all configured
-  // admin credentials (single ADMIN_SECRET and/or per-admin ADMIN_SECRETS).
-  const authHeader = req.headers.authorization ?? '';
-  let authorized = false;
-  if (authHeader.startsWith('Basic ')) {
-    try {
-      const decoded  = Buffer.from(authHeader.slice(6), 'base64').toString('utf8');
-      // username:password — everything after the first colon is the password
-      const password = decoded.slice(decoded.indexOf(':') + 1);
-      authorized = matchAdminSecret(password) !== null;
-    } catch { authorized = false; }
-  }
-
-  if (!authorized) {
-    return res
-      .status(401)
-      .setHeader('WWW-Authenticate', 'Basic realm="StudyFlow Admin", charset="UTF-8"')
-      .setHeader('Cache-Control', 'no-store')
-      .send('Unauthorized');
-  }
-
-  if (!adminPanelHtml) return res.status(404).send('Admin panel not available.');
-
-  // Route-scoped CSP (task 0.4): the admin panel is a single trusted file that
-  // uses inline <script>, inline on* handlers and inline <style>, so it needs a
-  // looser policy than the global SPA one. It still calls only its own origin
-  // (connect-src 'self') and blocks objects/plugins. This override replaces the
-  // strict global CSP set by helmet for this response only.
-  res
-    .setHeader('Content-Security-Policy',
-      "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline'; " +
-      "script-src-attr 'unsafe-inline'; " +
-      "style-src 'self' 'unsafe-inline'; " +
-      "img-src 'self' data: https:; " +
-      "connect-src 'self'; " +
-      "font-src 'self' data:; " +
-      "object-src 'none'; base-uri 'self'; frame-ancestors 'self'")
-    .setHeader('Content-Type', 'text/html')
-    .setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
-    .setHeader('Pragma', 'no-cache')
-    .send(adminPanelHtml);
-});
-
 // ── Serve the built React SPA, same-origin (tasks 0.1 / 0.2) ───────────────
 // Production model: Express serves client/dist and the SPA calls the API via
 // relative /api/* on the same origin. In development this block is inert — the
 // client runs on Vite (port 3000) and proxies /api here — because no build
-// exists at client/dist. Mounted AFTER all /api routes and the /admin-panel
-// route, and BEFORE the JSON 404 so unknown /api routes still 404 as JSON.
+// exists at client/dist. Mounted AFTER all /api routes and BEFORE the JSON 404
+// so unknown /api routes still 404 as JSON.
 const clientDist = join(__dirname, '../../client/dist');
 if (existsSync(clientDist)) {
   // Hashed asset files (…/assets/*.[hash].js|css) are immutable → cache hard.
@@ -252,31 +176,10 @@ if (existsSync(clientDist)) {
 app.use((_req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorHandler);
 
-// ── Payment configuration validation (tasks 1.1 / 1.2) ─────────────────────
-// Runs before the port is bound. Logs the Razorpay key mode (never the secret).
-// In production a fatal finding (test/unknown keys, or missing key/webhook
-// secret) refuses to start, guaranteeing prod never runs on test keys or an
-// unconfigured webhook. In development these are advisory warnings only.
-{
-  const { mode, fatal, warnings } = validatePaymentConfig({ isProd: !isDev });
-  warnings.forEach((w) => console.warn(`[Payment] ${w}`));
-  if (fatal.length) {
-    fatal.forEach((f) => console.error(`[Payment] CRITICAL: ${f}`));
-    if (!isDev) {
-      console.error('[Payment] Refusing to start in production with an invalid payment configuration. Fix the variables above and restart.');
-      process.exit(1);
-    }
-  }
-  console.log(`[Payment] Razorpay mode: ${mode.toUpperCase()}`);
-}
-
 app.listen(PORT, () => {
   console.log(`\n🚀  StudyFlow AI server running on http://localhost:${PORT}\n`);
   console.log(`[CORS] Allowed origins: ${getAllowedOrigins().join(', ')}\n`);
 
-  if (adminPanelHtml && process.env.ADMIN_SECRET) {
-    console.log(`[AdminPanel] Available at: http://localhost:${PORT}/admin-panel\n`);
-  }
 });
 
 export default app;

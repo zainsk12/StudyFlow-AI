@@ -6,7 +6,7 @@
 // NOT:
 //   Authorization: Bearer token   ← token is undefined in this architecture
 //
-// PaywallModal and useStudyPlanner have been updated accordingly.
+// Planner persistence uses the authenticated HttpOnly cookie.
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  // Background Pro-status poll
+  // Periodically verify the session and refresh account details.
   // FIX (Bug 4): When the server returns a non-ok response (401 expired token),
   // the old handler just returned early, leaving the user visually logged in
   // indefinitely with no state cleanup or redirect to /login.
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
         }
         const { user: fresh } = await res.json();
         setUser(prev => {
-          if (prev?.isPro === fresh.isPro && prev?.name === fresh.name) return prev;
+          if (JSON.stringify(prev) === JSON.stringify(fresh)) return prev;
           localStorage.setItem('sf_user', JSON.stringify(fresh));
           return fresh;
         });
@@ -68,24 +68,6 @@ export function AuthProvider({ children }) {
     const id = setInterval(poll, POLL_INTERVAL_MS);
     return () => clearInterval(id);
   }, [user?._id]);
-
-  // Re-check Pro status when tab regains focus
-  useEffect(() => {
-    const onFocus = async () => {
-      if (!user) return;
-      try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (!res.ok) return;
-        const { user: fresh } = await res.json();
-        if (fresh?.isPro !== user?.isPro) {
-          setUser(fresh);
-          localStorage.setItem('sf_user', JSON.stringify(fresh));
-        }
-      } catch {}
-    };
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [user?._id, user?.isPro]);
 
   const login = (userData) => {
     setUser(userData);

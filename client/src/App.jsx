@@ -168,7 +168,6 @@ useEffect(() => {
             addSubject={addSubject}   removeSubject={removeSubject}   updateSubject={updateSubject}
             addTopic={addTopic}       removeTopic={removeTopic}       updateTopic={updateTopic}
             onImportSubjects={importSubjects}
-            isPro={!!user?.isPro}
             hasSchedule={schedule.length > 0}
             onGenerate={handleGenerate}
             onOpenFeasibility={openFeasibility}

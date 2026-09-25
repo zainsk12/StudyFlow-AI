@@ -7,7 +7,6 @@
  * In development the raw stack is also included.
  *
  * Normalizes:
- *   - Razorpay SDK errors  { statusCode, error.description }
  *   - Mongoose validation  err.name === 'ValidationError'
  *   - Mongoose cast error  err.name === 'CastError'  (bad ObjectId)
  *   - Mongoose duplicate   err.code === 11000
@@ -46,11 +45,6 @@ function send(res, status, message, code, req, stack) {
 }
 
 export function errorHandler(err, req, res, _next) {
-  // ── Razorpay SDK ────────────────────────────────────────────────────────
-  if (err.error?.description) {
-    return send(res, err.statusCode || 400, err.error.description, 'RAZORPAY_ERROR', req, err.stack);
-  }
-
   // ── Mongoose validation error ───────────────────────────────────────────
   if (err.name === 'ValidationError') {
     const message = Object.values(err.errors).map(e => e.message).join('. ');

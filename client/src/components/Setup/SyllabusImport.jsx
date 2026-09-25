@@ -1,18 +1,14 @@
 // client/src/components/Setup/SyllabusImport.jsx
 import { useState, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { FileUp, X, CheckCircle2, Circle, AlertCircle, FileText, Sparkles, Lock } from 'lucide-react';
-import PaywallModal from '../Payment/PaywallModal';
+import { FileUp, X, CheckCircle2, Circle, AlertCircle, FileText, Sparkles } from 'lucide-react';
 
 const COLORS   = ['#f59e0b','#818cf8','#34d399','#f87171','#38bdf8','#a78bfa','#fb923c','#4ade80'];
 const DIFF_CLR = { easy: '#34d399', medium: '#f59e0b', hard: '#f87171' };
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
-export default function SyllabusImport({ onImport, isPro }) {
-  const { refreshUser } = useAuth();
+export default function SyllabusImport({ onImport }) {
   const [open,        setOpen]        = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
   const [status,    setStatus]    = useState('idle');  // idle | uploading | preview | error
   const [error,     setError]     = useState('');
   const [subjects,  setSubjects]  = useState([]);
@@ -20,14 +16,12 @@ export default function SyllabusImport({ onImport, isPro }) {
   const [dragging,  setDragging]  = useState(false);
   const [progress,  setProgress]  = useState(0);
   const [progMsg,   setProgMsg]   = useState('');
-  const [chunkInfo, setChunkInfo] = useState({ current: 0, total: 0 });
   const fileRef = useRef();
 
   const reset = () => {
     setStatus('idle'); setError(''); setSubjects([]);
     setSelected({}); setDragging(false);
     setProgress(0); setProgMsg('');
-    setChunkInfo({ current: 0, total: 0 });
     // Reset file input so the same file can be re-selected after an error
     if (fileRef.current) fileRef.current.value = '';
   };
@@ -68,13 +62,6 @@ export default function SyllabusImport({ onImport, isPro }) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        if (res.status === 403 && data.code === 'PRO_REQUIRED') {
-          await refreshUser();
-          reset();
-          setOpen(false);
-          setShowPaywall(true);
-          return;
-        }
         setError(data.message || 'Failed to process PDF');
         setStatus('error');
         return;
@@ -101,7 +88,6 @@ export default function SyllabusImport({ onImport, isPro }) {
             if (event.type === 'status' || event.type === 'chunk') {
               if (event.progress != null) setProgress(event.progress);
               setProgMsg(event.message ?? '');
-              if (event.current) setChunkInfo({ current: event.current, total: event.total });
             }
 
             if (event.type === 'error') {
@@ -170,7 +156,7 @@ export default function SyllabusImport({ onImport, isPro }) {
     <>
       {/* Trigger button */}
       <button
-        onClick={() => isPro ? setOpen(true) : setShowPaywall(true)}
+        onClick={() => setOpen(true)}
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'rgba(129,140,248,0.08)',
@@ -180,14 +166,8 @@ export default function SyllabusImport({ onImport, isPro }) {
           fontSize: 12, fontWeight: 500,
         }}
       >
-        {isPro ? <Sparkles size={13} /> : <Lock size={13} />} Import from PDF
+        <Sparkles size={13} /> Import from PDF
       </button>
-
-      {/* Paywall modal */}
-      {showPaywall && (
-        <PaywallModal featureName="PDF Syllabus Import" onClose={() => setShowPaywall(false)} />
-      )}
-
       {/* Modal */}
       {open && (
         <div style={{
@@ -272,11 +252,6 @@ export default function SyllabusImport({ onImport, isPro }) {
                     <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>
                       {progMsg || 'Analyzing your syllabus…'}
                     </div>
-                    {chunkInfo.total > 1 && (
-                      <div style={{ fontSize: 12, color: 'var(--text-dimmer)' }}>
-                        Section {chunkInfo.current} of {chunkInfo.total}
-                      </div>
-                    )}
                   </div>
 
                   <div style={{ background: 'var(--bg-deep)', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
@@ -293,7 +268,7 @@ export default function SyllabusImport({ onImport, isPro }) {
                     <span style={{ color: progress >=  5 ? '#818cf8' : 'var(--text-dimmest)' }}>Reading PDF</span>
                     <span style={{ color: progress >= 20 ? '#818cf8' : 'var(--text-dimmest)' }}>Extracting text</span>
                     <span style={{ color: progress >= 70 ? '#818cf8' : 'var(--text-dimmest)' }}>AI analysis</span>
-                    <span style={{ color: progress >= 93 ? '#818cf8' : 'var(--text-dimmest)' }}>Merging results</span>
+                    <span style={{ color: progress >= 90 ? '#818cf8' : 'var(--text-dimmest)' }}>Preparing results</span>
                   </div>
 
                   <div style={{ textAlign: 'right', fontSize: 11, color: 'var(--text-dimmer)', marginTop: 6 }}>

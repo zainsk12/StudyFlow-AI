@@ -7,23 +7,9 @@ const userSchema = new mongoose.Schema({
 
   tokenVersion: { type: Number, default: 0 },
 
-  isPro:     { type: Boolean, default: false },
-  paidAt:    { type: Date,    default: null  },
-  paymentId: { type: String,  default: null  },
-
-  // Subscription plan and expiry — null for free users and lifetime subscribers
-  planType:              { type: String, enum: ["monthly", "yearly", "lifetime", null], default: null },
-  subscriptionExpiresAt: { type: Date,   default: null },
-
-  // Track AI usage for refund/cancellation decisions
-  aiMessageCount: { type: Number, default: 0 },
-
   resetOtp:       { type: String,  default: null },
   resetOtpExpiry: { type: Date,    default: null },
   resetVerified:  { type: Boolean, default: false },
-
-  cancelOtp:       { type: String, default: null },
-  cancelOtpExpiry: { type: Date,   default: null },
 
   // Dedicated OTP for the authenticated "change password" flow. Kept separate
   // from the forgot-password reset* fields so the two flows cannot overwrite

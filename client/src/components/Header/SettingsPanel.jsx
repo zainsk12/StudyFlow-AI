@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import {
-  Sun, Moon, Monitor, Lock, Bell, CreditCard, Shield,
+  Sun, Moon, Monitor, Lock, Bell, Shield,
   Clock, BookOpen, Check, Loader, ChevronRight, LogOut,
   AlertTriangle, Eye, EyeOff,
 } from 'lucide-react';
@@ -337,243 +337,6 @@ function AccountSection() {
   );
 }
 
-// ── Section: Subscription ─────────────────────────────────────────────────
-function SubscriptionSection() {
-  const { user } = useAuth();
-
-  // step: 'idle' | 'sending' | 'verify' | 'submitting' | 'done'
-  const [step,      setStep]    = useState('idle');
-  const [otpVal,    setOtpVal]  = useState('');
-  const [reason,    setReason]  = useState('');
-  const [msg,       setMsg]     = useState('');
-  const [msgOk,     setMsgOk]   = useState(false);
-
-  // Cancellation request status fetched from server
-  const [reqStatus, setReqStatus] = useState(null); // null | { status, adminReason, createdAt }
-
-  // FIX: useEffect with user.isPro as dependency — re-fetches whenever Pro status
-  // changes (e.g. after re-subscribing), clearing stale approved/rejected banners.
-  useEffect(() => {
-    if (!user?.isPro) {
-      // User is not Pro — clear any stale request status and reset flow
-      setReqStatus(null);
-      setStep('idle');
-      return;
-    }
-    let cancelled = false;
-    fetch('/api/cancellation/my-status', { credentials: 'include' })
-      .then(r => r.json())
-      .then(d => { if (!cancelled) setReqStatus(d.request ?? null); })
-      .catch(() => { if (!cancelled) setReqStatus(null); });
-    return () => { cancelled = true; };
-  }, [user?.isPro, user?.paidAt]); // re-run when isPro or paidAt changes (catches re-subscribe)
-
-  const handleSendOtp = async () => {
-    setStep('sending'); setMsg('');
-    try {
-      const res  = await fetch('/api/cancellation/send-otp', { method: 'POST', credentials: 'include' });
-      const data = await res.json();
-      if (!res.ok) { setMsg(data.message || 'Failed to send code.'); setMsgOk(false); setStep('idle'); return; }
-      setStep('verify');
-      setMsg('Verification code sent to your email.');
-      setMsgOk(true);
-    } catch { setMsg('Network error.'); setMsgOk(false); setStep('idle'); }
-  };
-
-  const handleSubmitRequest = async () => {
-    if (!otpVal || otpVal.length !== 6) { setMsg('Enter the 6-digit code from your email.'); setMsgOk(false); return; }
-    setStep('submitting'); setMsg('');
-    try {
-      const res  = await fetch('/api/cancellation/request', {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otp: otpVal, reason }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setMsg(data.message || 'Submission failed.'); setMsgOk(false); setStep('verify'); return; }
-      setMsg('✓ Request submitted. Awaiting admin review.'); setMsgOk(true);
-      setStep('done');
-      setReqStatus({ status: 'pending', adminReason: '', createdAt: new Date().toISOString() });
-    } catch { setMsg('Network error.'); setMsgOk(false); setStep('submitting'); }
-  };
-
-  const paidDate = user?.paidAt
-    ? new Date(user.paidAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-    : null;
-
-  const statusColors = {
-    pending:  { bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)',  color: '#f59e0b' },
-    approved: { bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.25)',  color: '#34d399' },
-    rejected: { bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.25)', color: '#f87171' },
-  };
-
-  const hasPendingRequest = reqStatus?.status === 'pending';
-
-  return (
-    <div>
-      <SectionTitle>Subscription & Payments</SectionTitle>
-      <Card>
-        <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* Plan badge */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '12px 14px', borderRadius: 10,
-            background: user?.isPro ? 'rgba(245,158,11,0.08)' : 'rgba(99,102,241,0.06)',
-            border: `1px solid ${user?.isPro ? 'rgba(245,158,11,0.2)' : 'rgba(99,102,241,0.15)'}`,
-          }}>
-            <div>
-              <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 2 }}>Current Plan</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: user?.isPro ? '#f59e0b' : '#818cf8' }}>
-                {user?.isPro ? '⚡ Pro' : '🆓 Free'}
-              </div>
-            </div>
-            {user?.isPro && paidDate && (
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-dim)' }}>Activated</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{paidDate}</div>
-              </div>
-            )}
-          </div>
-
-          {/* Payment ID */}
-          {user?.isPro && user?.paymentId && (
-            <div style={{
-              padding: '10px 12px', borderRadius: 8,
-              background: 'var(--input-bg)', border: '1px solid var(--border-mid)',
-              fontSize: 12, color: 'var(--text-dim)',
-            }}>
-              <div style={{ fontWeight: 600, color: 'var(--text-muted)', marginBottom: 3 }}>Payment ID</div>
-              <div style={{ fontFamily: 'monospace', fontSize: 11 }}>{user.paymentId}</div>
-            </div>
-          )}
-
-          {!user?.isPro && (
-            <div style={{ fontSize: 12, color: 'var(--text-dim)', padding: '8px 0' }}>
-              Upgrade to Pro to unlock unlimited AI coaching, advanced analytics, and more.
-            </div>
-          )}
-
-          {/* Existing request status banner */}
-          {user?.isPro && reqStatus && (
-            <div style={{
-              padding: '12px 14px', borderRadius: 10,
-              background: statusColors[reqStatus.status]?.bg,
-              border: `1px solid ${statusColors[reqStatus.status]?.border}`,
-            }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: statusColors[reqStatus.status]?.color, marginBottom: 4 }}>
-                {reqStatus.status === 'pending'  && '⏳ Cancellation Request Pending'}
-                {reqStatus.status === 'approved' && '✓ Cancellation Approved'}
-                {reqStatus.status === 'rejected' && '✗ Cancellation Rejected'}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>
-                Submitted {new Date(reqStatus.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </div>
-              {reqStatus.status === 'rejected' && reqStatus.adminReason && (
-                <div style={{
-                  marginTop: 8, padding: '8px 10px', borderRadius: 7,
-                  background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.15)',
-                  fontSize: 12, color: '#f87171',
-                }}>
-                  <strong>Reason:</strong> {reqStatus.adminReason}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Cancellation request flow (only if Pro and no pending request) */}
-          {user?.isPro && !hasPendingRequest && reqStatus?.status !== 'approved' && step !== 'done' && (
-            <>
-              {step === 'verify' || step === 'submitting' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <div style={{
-                    padding: '10px 12px', borderRadius: 8,
-                    background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.2)',
-                    fontSize: 12, color: '#f87171',
-                    display: 'flex', alignItems: 'center', gap: 6,
-                  }}>
-                    <AlertTriangle size={13} /> Enter the 6-digit code sent to {user?.email}
-                  </div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="000000"
-                    value={otpVal}
-                    onChange={e => setOtpVal(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    style={{
-                      ...inputStyle,
-                      letterSpacing: '0.3em', fontSize: 18, fontWeight: 700,
-                      textAlign: 'center', color: '#f87171',
-                    }}
-                  />
-                  <textarea
-                    placeholder="Reason for cancellation (optional)"
-                    value={reason}
-                    onChange={e => setReason(e.target.value.slice(0, 500))}
-                    rows={2}
-                    style={{ ...inputStyle, resize: 'vertical', fontSize: 12 }}
-                  />
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      onClick={() => { setStep('idle'); setOtpVal(''); setMsg(''); }}
-                      style={{ ...btnDanger, flex: 1, background: 'transparent', border: '1px solid var(--border-mid)', color: 'var(--text-muted)' }}
-                    >
-                      Go Back
-                    </button>
-                    <button
-                      onClick={handleSubmitRequest}
-                      disabled={step === 'submitting' || otpVal.length !== 6}
-                      style={{ ...btnDanger, flex: 1 }}
-                    >
-                      {step === 'submitting' ? <Loader size={13} className="spin" /> : <AlertTriangle size={13} />}
-                      Submit Request
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={handleSendOtp}
-                  disabled={step === 'sending'}
-                  style={btnDanger}
-                >
-                  {step === 'sending' ? <Loader size={13} className="spin" /> : null}
-                  {step === 'sending' ? 'Sending code…' : 'Request Cancellation / Refund'}
-                </button>
-              )}
-              {msg && <StatusMsg msg={msg} ok={msgOk} />}
-            </>
-          )}
-
-          {step === 'done' && msg && <StatusMsg msg={msg} ok={msgOk} />}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-// ── Section: Notifications ────────────────────────────────────────────────
-function NotificationsSection({ settings, onChange }) {
-  return (
-    <div>
-      <SectionTitle>Notifications</SectionTitle>
-      <Card>
-        <Row icon={<Bell size={14} />} label="Email Notifications">
-          <Toggle
-            value={settings.emailNotifs}
-            onChange={v => onChange({ ...settings, emailNotifs: v })}
-          />
-        </Row>
-        <Row icon={<Clock size={14} />} label="Study Reminders" last>
-          <Toggle
-            value={settings.reminders}
-            onChange={v => onChange({ ...settings, reminders: v })}
-          />
-        </Row>
-      </Card>
-    </div>
-  );
-}
-
 // ── Section: Security ─────────────────────────────────────────────────────
 function SecuritySection() {
   const { logout } = useAuth();
@@ -667,7 +430,6 @@ function PreferencesSection({ settings, onChange }) {
 const SECTIONS = [
   { id: 'appearance',    label: 'Appearance',     icon: <Sun    size={14} /> },
   { id: 'account',       label: 'Account',        icon: <Lock   size={14} /> },
-  { id: 'subscription',  label: 'Subscription',   icon: <CreditCard size={14} /> },
   { id: 'notifications', label: 'Notifications',  icon: <Bell   size={14} /> },
   { id: 'security',      label: 'Security',        icon: <Shield size={14} /> },
   { id: 'preferences',  label: 'Preferences',    icon: <BookOpen size={14} /> },
@@ -741,7 +503,6 @@ export default function SettingsPanel() {
         )}
         {active === 'appearance'    && <AppearanceSection />}
         {active === 'account'       && <AccountSection />}
-        {active === 'subscription'  && <SubscriptionSection />}
         {active === 'notifications' && <NotificationsSection settings={settings} onChange={handleSettingsChange} />}
         {active === 'security'      && <SecuritySection />}
         {active === 'preferences'   && <PreferencesSection settings={settings} onChange={handleSettingsChange} />}

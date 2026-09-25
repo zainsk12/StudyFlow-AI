@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import {
-  X, User, Mail, Calendar, Zap, Shield,
+  X, User, Mail, Calendar, Shield,
   Edit3, Check, Loader, BookOpen, Target, Clock, TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -119,26 +119,6 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
             }}>
               {initial}
             </div>
-
-            {user?.isPro ? (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)',
-                borderRadius: 20, padding: '4px 12px',
-                fontSize: 11, fontWeight: 700, color: '#f59e0b', marginBottom: 14,
-              }}>
-                <Zap size={11} /> PRO MEMBER
-              </div>
-            ) : (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                background: 'rgba(71,85,105,0.2)', border: '1px solid var(--border-card, #252d42)',
-                borderRadius: 20, padding: '4px 12px',
-                fontSize: 11, fontWeight: 600, color: 'var(--text-dim, #64748b)', marginBottom: 14,
-              }}>
-                <Shield size={11} /> FREE PLAN
-              </div>
-            )}
 
             {editingName ? (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', width: '100%', maxWidth: 280 }}>

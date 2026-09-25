@@ -1,7 +1,9 @@
 import Groq from 'groq-sdk';
-import User from '../models/User.js';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// llama-3.3-70b-versatile was retired for developer-tier accounts. Keep the
+// model configurable so provider catalog changes don't require code edits.
+const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 
 const MAX_CHAT_MESSAGES  = 20;
 const MAX_MESSAGE_CHARS  = 4000;
@@ -53,7 +55,7 @@ You know the student's full study plan:
 Give helpful, personalised, concise study advice. Be encouraging and practical.`;
 
     const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: GROQ_MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
         ...groqMessages,
@@ -63,11 +65,6 @@ Give helpful, personalised, concise study advice. Be encouraging and practical.`
 
     const reply = completion.choices?.[0]?.message?.content
       ?? 'Sorry, I could not generate a response. Please try again.';
-
-    // Increment AI message count for the user (fire-and-forget, non-blocking)
-    if (req.userId) {
-      User.findByIdAndUpdate(req.userId, { $inc: { aiMessageCount: 1 } }).catch(() => {});
-    }
 
     res.json({ reply });
   } catch (error) {
@@ -103,7 +100,7 @@ export const regenAdvice = async (req, res) => {
         { role: 'system', content: 'You are a motivating AI study coach. Keep responses under 2 sentences. Be direct, encouraging, and practical.' },
         { role: 'user',   content: `I am ${safeBehind} topic(s) behind. I've done ${safeDone}/${safeTotal} topics (${pct}%) with ${safeDays} days left. Schedule regenerated. Give a brief motivating message and one tip.` },
       ],
-      model:      'llama-3.3-70b-versatile',
+      model:      GROQ_MODEL,
       max_tokens: 120,
     });
 

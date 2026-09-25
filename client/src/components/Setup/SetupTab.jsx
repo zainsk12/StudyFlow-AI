@@ -106,7 +106,6 @@ export default function SetupTab({
   addSubject, removeSubject, updateSubject,
   addTopic, removeTopic, updateTopic,
   onImportSubjects, onClearAll,
-  isPro,
   onGenerate,
   onOpenFeasibility,
   hasSchedule,
@@ -215,7 +214,7 @@ export default function SetupTab({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <SecLabel icon={<Plus size={13} />}>Subjects &amp; Topics</SecLabel>
           <div className="sf-row-wrap" style={{ display: 'flex', gap: 8 }}>
-            <SyllabusImport isPro={isPro} onImport={handleImportSubjects} />
+            <SyllabusImport onImport={handleImportSubjects} />
             <button onClick={addSubject} style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)',

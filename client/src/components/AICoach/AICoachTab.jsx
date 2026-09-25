@@ -1,9 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
-import { Brain, Sparkles, Send, Lock, Zap, RefreshCw } from 'lucide-react';
+import { Brain, Sparkles, Send, RefreshCw } from 'lucide-react';
 import Card from '../common/Card';
 import { QUICK_PROMPTS } from '../../constants';
-import { useAuth } from '../../context/AuthContext';
-import PaywallModal from '../Payment/PaywallModal';
 
 const MAX_CHAT_MESSAGES = 100;
 
@@ -13,66 +11,13 @@ function trimMessages(msgs) {
 }
 
 export default function AICoachTab({ subjects, stats, examDate, dailyHours, messages, setMessages }) {
-  const { user } = useAuth();
   const [input,       setInput]       = useState('');
   const [isLoading,   setIsLoading]   = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  // ── Paywall gate ──────────────────────────────────────────────────────────
-  if (!user?.isPro) {
-    return (
-      <>
-        <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 420, textAlign: 'center', padding: '48px 32px', gap: 0 }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: 18, marginBottom: 20,
-            background: 'linear-gradient(135deg,rgba(129,140,248,0.15),rgba(99,102,241,0.1))',
-            border: '1px solid rgba(129,140,248,0.25)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Brain size={28} color="#818cf8" />
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>
-            AI Study Coach
-          </div>
-          <div style={{ fontSize: 14, color: '#64748b', marginBottom: 28, maxWidth: 340, lineHeight: 1.6 }}>
-            Get personalised study tips, topic explanations, and progress insights — powered by Groq AI.
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28, alignItems: 'flex-start', maxWidth: 280 }}>
-            {['Personalised study advice', 'Topic-by-topic explanations', 'Progress & weakness analysis', 'Exam strategy coaching'].map(f => (
-              <div key={f} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <Sparkles size={13} color="#818cf8" />
-                <span style={{ fontSize: 13, color: '#94a3b8' }}>{f}</span>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => setShowPaywall(true)}
-            style={{
-              background: 'linear-gradient(135deg,#818cf8,#6366f1)',
-              border: 'none', borderRadius: 10, padding: '12px 28px',
-              color: '#fff', fontWeight: 600, fontSize: 14, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}
-          >
-            <Zap size={15} /> Upgrade to Pro
-          </button>
-        </Card>
-
-        {showPaywall && (
-          <PaywallModal
-            onClose={() => setShowPaywall(false)}
-            onSuccess={() => setShowPaywall(false)}
-            featureName="AI Study Coach"
-          />
-        )}
-      </>
-    );
-  }
 
   // ── Send message ──────────────────────────────────────────────────────────
   const send = async (text) => {

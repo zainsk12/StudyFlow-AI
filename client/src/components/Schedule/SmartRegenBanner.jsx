@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, RefreshCw, Sparkles, X, CheckCircle2, Lock } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import PaywallModal from '../Payment/PaywallModal';
+import { AlertTriangle, RefreshCw, Sparkles, X, CheckCircle2 } from 'lucide-react';
 
 export default function SmartRegenBanner({
   behindCount,
@@ -10,12 +8,10 @@ export default function SmartRegenBanner({
   totalTopics,
   onRegenerate,
 }) {
-  const { user } = useAuth();
   const [dismissed,   setDismissed]   = useState(false);
   const [loading,     setLoading]     = useState(false);
   const [aiMessage,   setAiMessage]   = useState('');
   const [regenDone,   setRegenDone]   = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
     if (behindCount > 0) {
@@ -91,7 +87,7 @@ export default function SmartRegenBanner({
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button
-              onClick={() => user?.isPro ? fetchAdviceAndRegen() : setShowPaywall(true)}
+              onClick={fetchAdviceAndRegen}
               disabled={loading}
               style={{
                 display: 'flex', alignItems: 'center', gap: 7,
@@ -104,9 +100,7 @@ export default function SmartRegenBanner({
             >
               {loading
                 ? <><RefreshCw size={13} className="spin" /> Regenerating…</>
-                : user?.isPro
-                  ? <><Sparkles size={13} /> Smart Regenerate</>
-                  : <><Lock size={13} /> Smart Regenerate</>}
+                : <><Sparkles size={13} /> Smart Regenerate</>}
             </button>
             <button
               onClick={() => setDismissed(true)}
@@ -128,17 +122,6 @@ export default function SmartRegenBanner({
           <X size={14} />
         </button>
       </div>
-
-      {showPaywall && (
-        <PaywallModal
-          featureName="Smart Schedule Regeneration"
-          onClose={() => setShowPaywall(false)}
-          onSuccess={() => {
-            setShowPaywall(false);
-            fetchAdviceAndRegen();
-          }}
-        />
-      )}
     </div>
   );
 }

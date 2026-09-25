@@ -62,16 +62,11 @@ export async function sendOtpEmail(toEmail, otp, type = 'reset') {
       process.env.EMAIL_FROM ||
       `StudyFlow AI <${process.env.EMAIL_USER}>`;
 
-    const isCancel    = type === 'cancel';
     const isPwdChange = type === 'pwdChange';
-    const subject   = isCancel    ? 'Confirm Subscription Cancellation — StudyFlow AI'
-                    : isPwdChange ? 'Verify Password Change — StudyFlow AI'
+    const subject   = isPwdChange ? 'Verify Password Change — StudyFlow AI'
                     : 'Your StudyFlow AI password reset code';
-    const heading   = isCancel    ? 'Confirm Cancellation'
-                    : isPwdChange ? 'Verify Password Change'
-                    : 'Password Reset';
-    const bodyText  = isCancel    ? 'Enter the code below to confirm your subscription cancellation. It expires in <strong style="color:#f59e0b">10 minutes</strong>.'
-                    : isPwdChange ? 'Enter the code below to verify your password change. It expires in <strong style="color:#f59e0b">10 minutes</strong>.'
+    const heading   = isPwdChange ? 'Verify Password Change' : 'Password Reset';
+    const bodyText  = isPwdChange ? 'Enter the code below to verify your password change. It expires in <strong style="color:#f59e0b">10 minutes</strong>.'
                     : 'Enter the code below to reset your password. It expires in <strong style="color:#f59e0b">10 minutes</strong>.'
 
     await transporter.sendMail({
@@ -109,113 +104,6 @@ export async function sendOtpEmail(toEmail, otp, type = 'reset') {
     console.log("✅ OTP email sent successfully");
   } catch (error) {
     console.error("❌ Failed to send email:", error);
-    throw error;
-  }
-}
-
-// ── Plan display helpers ───────────────────────────────────────────────────
-// Derive a human label from the plan. Prefers the admin-configured label, then
-// falls back to the canonical plan type so the three built-in plans always read
-// correctly even when the caller doesn't pass a label.
-function planLabelFor(plan) {
-  const type = plan?.planType || 'lifetime';
-  const label = plan?.label && String(plan.label).trim();
-  if (label) return label;
-  if (type === 'monthly')  return 'Monthly';
-  if (type === 'yearly')   return 'Yearly';
-  if (type === 'lifetime') return 'Lifetime';
-  return String(type);
-}
-
-// Validity text reflects what the user actually bought: lifetime never expires,
-// timed plans show the real expiry date already computed by the payment flow.
-function validityFor(plan) {
-  const type = plan?.planType || 'lifetime';
-  if (type === 'lifetime' || plan?.expiresAt == null) return 'Lifetime — never expires';
-  const d = new Date(plan.expiresAt);
-  if (isNaN(d.getTime())) return '—';
-  return 'Valid until ' + d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-// ── Send purchase confirmation email ───────────────────────────────────────
-// `plan` (optional, backward-compatible): { planType, label?, expiresAt? }.
-// When omitted, falls back to a Lifetime presentation so older callers keep
-// working unchanged.
-export async function sendPurchaseConfirmationEmail(toEmail, name, amountPaise, couponCode, plan = {}) {
-  try {
-    const transporter = getTransporter();
-    const from = process.env.EMAIL_FROM || `StudyFlow AI <${process.env.EMAIL_USER}>`;
-
-    const amountDisplay = amountPaise === 0
-      ? 'FREE (coupon applied)'
-      : `₹${(amountPaise / 100).toFixed(0)}`;
-
-    const label    = planLabelFor(plan);
-    const validity = validityFor(plan);
-
-    await transporter.sendMail({
-      from,
-      to: toEmail,
-      subject: `🎉 You're now StudyFlow AI Pro — ${label} plan activated!`,
-      text: `Hi ${name}, your ${label} StudyFlow AI Pro plan is now active. Amount paid: ${amountDisplay}. ${validity}.`,
-      html: `
-        <div style="font-family:'Segoe UI',sans-serif;background:#0d1117;padding:40px 20px;min-height:100vh">
-          <div style="max-width:480px;margin:0 auto;background:#1c2030;border:1px solid #252d42;border-radius:16px;padding:40px 36px">
-
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px">
-              <div style="width:44px;height:44px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🎓</div>
-              <div>
-                <div style="font-size:20px;font-weight:700;color:#f1f5f9">StudyFlow AI</div>
-                <div style="font-size:11px;color:#475569">Intelligent Study Planner</div>
-              </div>
-            </div>
-
-            <div style="text-align:center;margin-bottom:28px">
-              <div style="font-size:48px;margin-bottom:12px">🎉</div>
-              <h2 style="font-size:24px;font-weight:700;color:#f1f5f9;margin:0 0 8px">You're now Pro!</h2>
-              <p style="font-size:14px;color:#64748b;margin:0">Your ${label} plan is now active — all StudyFlow AI Pro features are unlocked on your account.</p>
-            </div>
-
-            <div style="background:#111827;border:1px solid #252d42;border-radius:12px;padding:20px;margin-bottom:24px">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                <span style="font-size:13px;color:#64748b">Plan</span>
-                <span style="font-size:13px;font-weight:600;color:#f59e0b">${label}</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                <span style="font-size:13px;color:#64748b">Validity</span>
-                <span style="font-size:13px;font-weight:600;color:#f1f5f9">${validity}</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center${couponCode ? ';margin-bottom:10px' : ''}">
-                <span style="font-size:13px;color:#64748b">Amount Paid</span>
-                <span style="font-size:13px;font-weight:600;color:#34d399">${amountDisplay}</span>
-              </div>
-              ${couponCode ? `
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:13px;color:#64748b">Coupon Used</span>
-                <span style="font-size:12px;font-weight:600;color:#818cf8;background:rgba(129,140,248,0.1);padding:2px 8px;border-radius:4px">${couponCode}</span>
-              </div>` : ''}
-            </div>
-
-            <div style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.2);border-radius:10px;padding:14px 18px;margin-bottom:24px">
-              <div style="font-size:13px;font-weight:600;color:#34d399;margin-bottom:6px">✓ Unlocked Features</div>
-              <div style="font-size:12px;color:#64748b;line-height:1.8">
-                • AI Study Coach (unlimited conversations)<br/>
-                • Import Syllabus from PDF<br/>
-                • Smart Schedule Regeneration
-              </div>
-            </div>
-
-            <p style="font-size:12px;color:#334155;text-align:center;margin:0">
-              Thank you for supporting StudyFlow AI. Good luck with your studies! 📚
-            </p>
-          </div>
-        </div>
-      `,
-    });
-
-    console.log("✅ Purchase confirmation email sent");
-  } catch (error) {
-    console.error("❌ Failed to send purchase confirmation email:", error);
     throw error;
   }
 }

@@ -2,9 +2,8 @@ import { randomUUID } from 'crypto';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-// Query-param keys whose values must never appear in logs.
-// The admin panel passes its secret as ?secret=..., and any accidental
-// token/key params sent by clients should also stay out of log storage.
+// Query-param keys whose values must never appear in logs. This also protects
+// credentials if a client accidentally puts them in a URL.
 const REDACTED_PARAMS = new Set(['secret', 'token', 'api_key', 'key', 'password', 'apikey']);
 
 function redactUrl(rawUrl) {

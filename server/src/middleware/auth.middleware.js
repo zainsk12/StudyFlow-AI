@@ -1,8 +1,7 @@
 import jwt  from 'jsonwebtoken';
 import User from '../models/User.js';
 
-// Cache stores: userId -> { tv, isPro, planType, subscriptionExpiresAt, at }
-// Merging subscription fields into the same cache avoids a second DB round-trip.
+// Cache stores: userId -> { tv, at }
 const USER_CACHE    = new Map();
 const CACHE_TTL_MS  = 60_000;   // 60 seconds
 const MAX_CACHE_SIZE = 10_000;
@@ -20,7 +19,7 @@ async function getUserEntry(userId) {
   if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached;
 
   const user = await User.findById(userId)
-    .select('tokenVersion isPro planType subscriptionExpiresAt')
+    .select('tokenVersion')
     .lean();
   if (!user) return null;
 
@@ -30,9 +29,6 @@ async function getUserEntry(userId) {
 
   const entry = {
     tv:                    user.tokenVersion,
-    isPro:                 user.isPro,
-    planType:              user.planType ?? null,
-    subscriptionExpiresAt: user.subscriptionExpiresAt ?? null,
     at:                    Date.now(),
   };
   USER_CACHE.set(userId, entry);
@@ -67,32 +63,6 @@ export const protect = async (req, res, next) => {
     if (decoded.tv !== entry.tv) {
       USER_CACHE.delete(decoded.id);
       return res.status(401).json({ message: 'Session expired — please log in again' });
-    }
-
-    // ── Subscription expiry check ─────────────────────────────────────────
-    // Lifetime plan: subscriptionExpiresAt is null — never expires.
-    // Monthly/yearly: auto-downgrade if expiry has passed.
-    if (
-      entry.isPro &&
-      entry.planType !== 'lifetime' &&
-      entry.subscriptionExpiresAt !== null &&
-      new Date() > new Date(entry.subscriptionExpiresAt)
-    ) {
-      // Evict cache so next request re-reads the updated state.
-      USER_CACHE.delete(decoded.id);
-
-      // Fire-and-forget DB downgrade — errors are logged but don't block the request.
-      User.findByIdAndUpdate(decoded.id, {
-        $set: {
-          isPro:                 false,
-          planType:              null,
-          subscriptionExpiresAt: null,
-          paidAt:                null,
-          paymentId:             null,
-        },
-      }).catch(err =>
-        console.error('[Auth] Failed to downgrade expired subscription:', err.message)
-      );
     }
 
     req.userId = decoded.id;

@@ -110,7 +110,7 @@ export const logoutAll = async (req, res, next) => {
 export const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.userId).select(
-      '-password -tokenVersion -resetOtp -resetOtpExpiry -resetVerified -cancelOtp -cancelOtpExpiry -pwdChangeOtp -pwdChangeOtpExpiry'
+      '-password -tokenVersion -resetOtp -resetOtpExpiry -resetVerified -pwdChangeOtp -pwdChangeOtpExpiry'
     );
     if (!user) return res.status(404).json({ message: "User not found." });
     res.status(200).json({ user });

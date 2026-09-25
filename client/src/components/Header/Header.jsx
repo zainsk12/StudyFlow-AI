@@ -1,6 +1,6 @@
 // client/src/components/Header/Header.jsx
 import { useState, useEffect, useRef } from 'react';
-import { Target, Calendar, CheckCircle2, BarChart2, Brain, LogOut, User, Zap, Settings } from 'lucide-react';
+import { Target, Calendar, CheckCircle2, BarChart2, Brain, LogOut, User, Settings } from 'lucide-react';
 import { TABS }          from '../../constants';
 import { useAuth }       from '../../context/AuthContext';
 import PomodoroTimer     from '../Schedule/PomodoroTimer';
@@ -165,18 +165,6 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
               </div>
             </div>
 
-            {/* Pro badge */}
-            {user?.isPro && (
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)',
-                borderRadius: 20, padding: '3px 10px',
-                fontSize: 10, fontWeight: 700, color: '#f59e0b',
-                marginTop: 10,
-              }}>
-                <Zap size={10} /> PRO MEMBER
-              </div>
-            )}
           </div>
 
           {/* Menu items */}

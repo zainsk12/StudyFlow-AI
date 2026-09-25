@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/app.js",
   "scripts": {
-    "dev": "nodemon --ignore 'admin-panel.html' --ignore '*.html' src/app.js",
+    "dev": "nodemon src/app.js",
     "start": "node src/app.js"
   },
   "dependencies": {
@@ -23,9 +23,7 @@
     "morgan": "^1.10.0",
     "multer": "^2.1.1",
     "nodemailer": "^8.0.4",
-    "p-limit": "^7.3.0",
-    "pdf-parse": "^1.1.1",
-    "razorpay": "^2.9.2"
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
