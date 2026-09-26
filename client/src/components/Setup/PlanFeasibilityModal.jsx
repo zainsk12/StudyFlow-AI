@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronUp, X, CheckCircle2, Zap, RefreshCw,
 } from 'lucide-react';
 import { DIFF_HRS, DIFF_CLR, DIFF_LBL } from '../../constants';
+import { calendarDaysBetween } from '../../utils/scheduler';
 
 function localMidnight(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -16,9 +17,7 @@ function localTodayMidnight() {
   return new Date(n.getFullYear(), n.getMonth(), n.getDate(), 0, 0, 0, 0);
 }
 function daysUntil(dateStr) {
-  return Math.max(1, Math.round(
-    (localMidnight(dateStr) - localTodayMidnight()) / 86_400_000
-  ));
+  return Math.max(1, calendarDaysBetween(localTodayMidnight(), localMidnight(dateStr)));
 }
 function dateStrFromToday(extraDays) {
   const d = new Date(localTodayMidnight());

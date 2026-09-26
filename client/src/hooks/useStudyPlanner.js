@@ -62,14 +62,18 @@ async function fetchFullPlan() {
   } catch { return null; }
 }
 
-async function pushFullPlan(payload) {
+async function pushFullPlan(payload, expectedVersion) {
   try {
     const res = await fetch(`${API}/full`, {
       method:  'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+      body:    JSON.stringify({ ...payload, expectedVersion }),
     });
+    if (res.status === 409) {
+      const conflict = await res.json();
+      return { conflict: true, serverVersion: conflict.serverVersion };
+    }
     // Module 2: return the server's response (contains the bumped `version`)
     // so callers can keep track of what the server currently has, instead of
     // silently discarding it as before. Existing fire-and-forget call sites
@@ -115,16 +119,16 @@ async function migrateLegacyStreak(legacy) {
 // exactly once; the server's response (post-migration) then wins.
 async function resolveServerStreak(uid, serverData) {
   if (serverData && serverData.migratedStreakFromLocalStorage) {
-    return serverData.streak ?? { count: 0, lastDate: null };
+    return { ...(serverData.streak ?? { count: 0, lastDate: null }), version: serverData.version };
   }
 
   const legacy = loadStreak(uid);
   const migrated = await migrateLegacyStreak(legacy);
-  if (migrated) return migrated.streak ?? { count: 0, lastDate: null };
+  if (migrated) return { ...(migrated.streak ?? { count: 0, lastDate: null }), version: migrated.version };
 
   // Migration call failed (offline, etc.) — fall back to whatever the server
   // already reported, else the legacy local value, so the UI isn't blank.
-  return serverData?.streak ?? legacy;
+  return { ...(serverData?.streak ?? legacy), version: serverData?.version };
 }
 
 // ── Source picker: returns whichever snapshot is newer ────────────────────
@@ -134,17 +138,9 @@ async function resolveServerStreak(uid, serverData) {
 // and the server copy doesn't — that means the local copy was saved after
 // the last successful server push, so we prefer local.
 //
-// KNOWN LIMITATION — cross-device sync is last-write-wins (roadmap task 2.4):
-// The whole planner state is persisted as one snapshot, and reconciliation
-// picks the newer snapshot wholesale rather than merging field-by-field. This
-// is correct and lossless for the single-device case this app targets (the
-// beforeunload flush + debounce keep the server current), but if the SAME
-// account edits on TWO devices concurrently, the device that saves last
-// overwrites the other's unsynced changes. A per-topic merge would be needed
-// to eliminate this; it is intentionally deferred because topic status is not
-// monotonic (un-marking is a supported action), so a naive union would
-// resurrect intentionally-cleared progress. Treat this as documented expected
-// behaviour, not a regression.
+// Cross-device snapshots are compared by version before writes. Conflicting
+// local and server copies are preserved until the user chooses which to keep;
+// the app does not attempt an automatic field-level merge.
 function pickNewerSource(serverData, localData) {
   if (!serverData && !localData) return null;
   if (!serverData) return localData;
@@ -160,6 +156,21 @@ function pickNewerSource(serverData, localData) {
 
   // Neither has a timestamp (legacy data) — prefer server as before.
   return serverData;
+}
+
+function samePlan(left, right) {
+  if (!left || !right) return false;
+  const streak = value => value ?? { count: 0, lastDate: null };
+  const stable = value => {
+    if (Array.isArray(value)) return value.map(stable);
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])]));
+    }
+    return value;
+  };
+  return ['subjects', 'examDate', 'dailyHours', 'schedule', 'dayIdx', 'overflowCount']
+    .every(key => JSON.stringify(stable(left[key] ?? null)) === JSON.stringify(stable(right[key] ?? null))) &&
+    JSON.stringify(stable(streak(left.streak))) === JSON.stringify(stable(streak(right.streak)));
 }
 
 // ── Hook ───────────────────────────────────────────────────────────────────
@@ -197,6 +208,7 @@ export function useStudyPlanner(userId) {
   const saveGenerationRef = useRef(0);
   const saveInFlightRef = useRef(null);
   const attemptSaveRef = useRef(null);
+  const conflictServerVersionRef = useRef(null);
 
   // ── Module 2: sync engine state ───────────────────────────────────────────
   // The last server `version` this tab has confirmed (via hydration, a
@@ -227,17 +239,28 @@ export function useStudyPlanner(userId) {
   // cross-device download while it remains unsynced.
   attemptSaveRef.current = async () => {
     const pending = pendingSaveRef.current;
-    if (!pending || !persistEnabled.current || activeUidRef.current !== pending.uid || saveInFlightRef.current) return;
+    if (!pending || conflictServerVersionRef.current !== null || !persistEnabled.current || activeUidRef.current !== pending.uid || saveInFlightRef.current) return;
 
     const requestToken = {};
     saveInFlightRef.current = requestToken;
-    const result = await pushFullPlan(pending.payload);
+    const result = await pushFullPlan(pending.payload, pending.baseVersion);
     if (saveInFlightRef.current === requestToken) saveInFlightRef.current = null;
     if (activeUidRef.current !== pending.uid) return;
 
     if (result?.version !== undefined) {
       serverVersionRef.current = result.version;
-      if (saveGenerationRef.current === pending.generation) {
+      const latest = pendingSaveRef.current;
+      const isCurrentGeneration = saveGenerationRef.current === pending.generation;
+      if (latest?.uid === pending.uid) {
+        latest.baseVersion = result.version;
+        latest.payload = {
+          ...latest.payload,
+          baseVersion: result.version,
+          syncPending: !isCurrentGeneration,
+        };
+        saveToStorage(pending.uid, latest.payload);
+      }
+      if (isCurrentGeneration) {
         pendingSaveRef.current = null;
         retryAttemptRef.current = 0;
         setSaveStatus('saved');
@@ -246,6 +269,12 @@ export function useStudyPlanner(userId) {
         // latest snapshot now instead of marking the planner as fully saved.
         attemptSaveRef.current?.();
       }
+      return;
+    }
+
+    if (result?.conflict) {
+      conflictServerVersionRef.current = result.serverVersion ?? 0;
+      setSaveStatus('conflict');
       return;
     }
 
@@ -279,7 +308,8 @@ export function useStudyPlanner(userId) {
 
     const flush = () => {
       // Only flush if the gate is open (we are past the hydration window).
-      if (activeUidRef.current !== uid || !persistEnabled.current || !latestPayloadRef.current) return;
+      if (activeUidRef.current !== uid || conflictServerVersionRef.current !== null ||
+          !persistEnabled.current || !latestPayloadRef.current) return;
 
       clearTimeout(debounceRef.current);
 
@@ -295,7 +325,7 @@ export function useStudyPlanner(userId) {
         method:      'PUT',
         credentials: 'include',
         headers:     { 'Content-Type': 'application/json' },
-        body:        JSON.stringify(payload),
+        body:        JSON.stringify({ ...payload, expectedVersion: serverVersionRef.current }),
         keepalive:   true,
       }).catch(() => {});
     };
@@ -316,6 +346,7 @@ export function useStudyPlanner(userId) {
     clearTimeout(retryTimerRef.current);
     retryTimerRef.current = null;
     pendingSaveRef.current = null;
+    conflictServerVersionRef.current = null;
     saveInFlightRef.current = null;
     retryAttemptRef.current = 0;
     saveGenerationRef.current += 1;
@@ -337,6 +368,21 @@ export function useStudyPlanner(userId) {
     }
 
     const local = loadFromStorage(uid);
+    if (local) {
+      setSubjects(local.subjects ?? []);
+      setExamDate(local.examDate ?? defaultExamDate());
+      setDailyHours(local.dailyHours ?? 4);
+      setSchedule(local.schedule ?? []);
+      setDayIdx(local.dayIdx ?? 0);
+      setOverflowCount(local.overflowCount ?? 0);
+    } else {
+      setSubjects([]);
+      setExamDate(defaultExamDate());
+      setDailyHours(4);
+      setSchedule([]);
+      setDayIdx(0);
+      setOverflowCount(0);
+    }
 
     fetchFullPlan().then(async serverData => {
       if (!active || activeUidRef.current !== uid) return;
@@ -344,14 +390,37 @@ export function useStudyPlanner(userId) {
       // Module 2: remember whatever version the server reported (even if we
       // end up keeping the local snapshot below) so later sync-status checks
       // compare against a real baseline instead of 0.
-      serverVersionRef.current = serverData?.version ?? 0;
+      serverVersionRef.current = serverData?.version ?? local?.baseVersion ?? 0;
 
       // Pick whichever snapshot is newer: localStorage (savedAt = last
       // browser-side change) vs server (savedAt = last successful PUT).
       // This prevents stale server data from overwriting a localStorage copy
       // that was updated after the last successful server push (e.g. the user
       // marked topics done and refreshed before the 2-s debounce fired).
-      const src = pickNewerSource(serverData, local);
+      const localIsNewer = Boolean(local?.savedAt && local.savedAt > (serverData?.savedAt ?? 0));
+      const hasPendingLocal = local?.syncPending === true ||
+        (local && local.syncPending === undefined && localIsNewer);
+      const localBaseVersion = local?.baseVersion;
+      const versionsDiffer = localBaseVersion === undefined
+        ? localIsNewer
+        : localBaseVersion !== (serverData?.version ?? 0);
+      const hasConflict = Boolean(serverData && hasPendingLocal && versionsDiffer && !samePlan(local, serverData));
+      if (hasConflict) {
+        conflictServerVersionRef.current = serverData.version ?? 1;
+        setSaveStatus('conflict');
+        const generation = ++saveGenerationRef.current;
+        pendingSaveRef.current = {
+          uid,
+          payload: local,
+          generation,
+          baseVersion: localBaseVersion ?? 0,
+        };
+      } else if (serverData && hasPendingLocal && samePlan(local, serverData)) {
+        saveToStorage(uid, { ...serverData, baseVersion: serverData.version ?? 1, syncPending: false });
+      }
+
+      const src = hasPendingLocal ? local : pickNewerSource(serverData, local);
+      const keepLocalPending = hasPendingLocal && (!serverData || !samePlan(local, serverData));
 
       if (src) {
         setSubjects(src.subjects      ?? []);
@@ -361,11 +430,21 @@ export function useStudyPlanner(userId) {
         setDayIdx(src.dayIdx          ?? 0);
         setOverflowCount(src.overflowCount ?? 0);
         // Mirror the winning source to localStorage
-        saveToStorage(uid, src);
+        saveToStorage(uid, {
+          ...src,
+          baseVersion: serverData?.version ?? src.baseVersion ?? 0,
+          syncPending: keepLocalPending,
+        });
       }
 
       const resolved = await resolveServerStreak(uid, serverData);
       if (!active || activeUidRef.current !== uid) return;
+      if (resolved.version !== undefined) {
+        serverVersionRef.current = resolved.version;
+        if (conflictServerVersionRef.current !== null) {
+          conflictServerVersionRef.current = resolved.version;
+        }
+      }
       setStreak(resolved.count ?? 0);
       setStreakLastDate(resolved.lastDate ?? null);
       saveStreak(uid, resolved);
@@ -401,6 +480,10 @@ export function useStudyPlanner(userId) {
     const payload = {
       subjects, examDate, dailyHours, schedule, dayIdx, overflowCount,
       streak: { count: streak, lastDate: streakLastDate },
+      baseVersion: conflictServerVersionRef.current !== null
+        ? (pendingSaveRef.current?.baseVersion ?? serverVersionRef.current)
+        : serverVersionRef.current,
+      syncPending: true,
       savedAt: Date.now(),
     };
 
@@ -408,15 +491,16 @@ export function useStudyPlanner(userId) {
     saveToStorage(uid, payload);
 
     const generation = ++saveGenerationRef.current;
-    pendingSaveRef.current = { uid, payload, generation };
+    pendingSaveRef.current = { uid, payload, generation, baseVersion: payload.baseVersion };
     retryAttemptRef.current = 0;
     clearTimeout(retryTimerRef.current);
     retryTimerRef.current = null;
-    setSaveStatus('saving');
+    if (conflictServerVersionRef.current === null) setSaveStatus('saving');
 
     // Server: debounced — the beforeunload flush handles the "refresh too fast"
     // edge case so we can keep a comfortable 2 s window here.
     clearTimeout(debounceRef.current);
+    if (conflictServerVersionRef.current !== null) return;
     debounceRef.current = setTimeout(() => {
       // The timer may have been queued just before React cleaned up the
       // previous identity's effects. Never send that old account's snapshot.
@@ -437,8 +521,8 @@ export function useStudyPlanner(userId) {
   // On its own this is metadata-only (no plan payload moves). Only when the
   // server reports it's newer do we fetch and apply the full plan — i.e. a
   // stale local cache gets refreshed automatically without the user having
-  // to reload the page. Last-write-wins remains the resolution strategy
-  // (unchanged from Module 1); no merging happens here (Module 3).
+  // to reload the page. Unsynced local snapshots block downloads, while the
+  // server's expected-version check detects concurrent writes.
   const checkSyncStatus = useCallback(async () => {
     if (!uid || !persistEnabled.current || isSyncingRef.current) return;
 
@@ -575,6 +659,55 @@ export function useStudyPlanner(userId) {
     setStreakLastDate(today);
   }, [uid]);
 
+  const keepLocalPlan = useCallback(() => {
+    const pending = pendingSaveRef.current;
+    const remoteVersion = conflictServerVersionRef.current;
+    if (!uid || !pending || remoteVersion === null || activeUidRef.current !== uid) return;
+
+    serverVersionRef.current = remoteVersion;
+    conflictServerVersionRef.current = null;
+    pending.baseVersion = remoteVersion;
+    pending.payload = { ...pending.payload, baseVersion: remoteVersion };
+    pendingSaveRef.current = pending;
+    saveToStorage(uid, pending.payload);
+    setSaveStatus('saving');
+    attemptSaveRef.current?.();
+  }, [uid]);
+
+  const loadRemotePlan = useCallback(async () => {
+    if (!uid || conflictServerVersionRef.current === null || activeUidRef.current !== uid) return;
+
+    const remote = await fetchFullPlan();
+    if (!remote || activeUidRef.current !== uid) return;
+
+    const local = loadFromStorage(uid);
+    try {
+      if (local) localStorage.setItem(`sf_planner_conflict_${uid}`, JSON.stringify(local));
+    } catch { /* keep the active local plan if storage is unavailable */ }
+
+    clearTimeout(debounceRef.current);
+    clearTimeout(retryTimerRef.current);
+    debounceRef.current = null;
+    retryTimerRef.current = null;
+    pendingSaveRef.current = null;
+    saveGenerationRef.current += 1;
+    conflictServerVersionRef.current = null;
+    serverVersionRef.current = remote.version ?? 0;
+    skipNextPersistRef.current = true;
+
+    setSubjects(remote.subjects ?? []);
+    setExamDate(remote.examDate ?? defaultExamDate());
+    setDailyHours(remote.dailyHours ?? 4);
+    setSchedule(remote.schedule ?? []);
+    setDayIdx(remote.dayIdx ?? 0);
+    setOverflowCount(remote.overflowCount ?? 0);
+    setStreak(remote.streak?.count ?? 0);
+    setStreakLastDate(remote.streak?.lastDate ?? null);
+    saveToStorage(uid, { ...remote, baseVersion: serverVersionRef.current, syncPending: false });
+    saveStreak(uid, remote.streak ?? { count: 0, lastDate: null });
+    setSaveStatus('saved');
+  }, [uid]);
+
   const toggleTopic = (sid, tid) =>
   setSubjects(prev =>
     prev.map(s =>
@@ -685,5 +818,7 @@ export function useStudyPlanner(userId) {
     clearAll, unmarkAll,
     streak,
     saveStatus,
+    keepLocalPlan,
+    loadRemotePlan,
   };
 }

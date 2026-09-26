@@ -4,6 +4,8 @@ import StudyPlan        from '../models/StudyPlan.js';
 // a single request from monopolising the event loop inside buildSchedule.
 const MAX_SUBJECTS       = 50;
 const MAX_TOPICS_PER_SUB = 200;
+const MAX_SCHEDULE_DAYS  = 3660;
+const MAX_SESSIONS_PER_DAY = 500;
 
 // Lightweight structural validators
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
@@ -54,9 +56,25 @@ function isValidStreak(streak) {
 
 function isValidSchedule(schedule) {
   if (!Array.isArray(schedule)) return false;
+  if (schedule.length > MAX_SCHEDULE_DAYS) return false;
   for (const day of schedule) {
-    if (!day || typeof day !== 'object') return false;
+    if (!day || typeof day !== 'object' || Array.isArray(day)) return false;
+    if (typeof day.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(day.date)) return false;
+    const date = new Date(`${day.date}T00:00:00.000Z`);
+    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== day.date) return false;
     if (!Array.isArray(day.sessions)) return false;
+    if (day.sessions.length > MAX_SESSIONS_PER_DAY) return false;
+    for (const session of day.sessions) {
+      if (!session || typeof session !== 'object' || Array.isArray(session)) return false;
+      for (const key of ['subjectName', 'topicName']) {
+        if (typeof session[key] !== 'string') return false;
+      }
+      for (const key of ['subjectId', 'color', 'topicId']) {
+        if (session[key] !== undefined && typeof session[key] !== 'string') return false;
+      }
+      if (session.difficulty !== undefined && !DIFFICULTIES.includes(session.difficulty)) return false;
+      if (typeof session.hours !== 'number' || !Number.isFinite(session.hours) || session.hours <= 0 || session.hours > 24) return false;
+    }
   }
   return true;
 }
@@ -96,8 +114,15 @@ export async function saveFullPlan(req, res, next) {
   try {
     const {
       subjects, examDate, dailyHours, schedule, dayIdx, overflowCount, streak,
-      savedAt: _clientSavedAt,
+      savedAt: _clientSavedAt, expectedVersion,
     } = req.body;
+
+    if (expectedVersion === undefined) {
+      return res.status(428).json({ code: 'EXPECTED_VERSION_REQUIRED', error: 'Refresh planner data before saving.' });
+    }
+    if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0) {
+      return res.status(400).json({ error: '`expectedVersion` must be a non-negative integer.' });
+    }
 
     // ── Input validation ───────────────────────────────────────────────────
     if (subjects !== undefined && !isValidSubjects(subjects)) {
@@ -114,20 +139,27 @@ export async function saveFullPlan(req, res, next) {
 
     if (examDate !== undefined) {
       const d = new Date(examDate);
-      if (isNaN(d.getTime())) {
+      if (isNaN(d.getTime()) || !/^\d{4}-\d{2}-\d{2}$/.test(examDate) || d.toISOString().slice(0, 10) !== examDate) {
         return res.status(400).json({ error: '`examDate` must be a valid date string.' });
       }
     }
 
     if (dailyHours !== undefined) {
-      const h = Number(dailyHours);
-      if (isNaN(h) || h <= 0 || h > 24) {
+      if (typeof dailyHours !== 'number' || !Number.isFinite(dailyHours) || dailyHours <= 0 || dailyHours > 24) {
         return res.status(400).json({ error: '`dailyHours` must be a number between 1 and 24.' });
       }
     }
 
-    if (dayIdx !== undefined && (isNaN(Number(dayIdx)) || Number(dayIdx) < 0)) {
-      return res.status(400).json({ error: '`dayIdx` must be a non-negative number.' });
+    if (dayIdx !== undefined && (typeof dayIdx !== 'number' || !Number.isSafeInteger(dayIdx) || dayIdx < 0)) {
+      return res.status(400).json({ error: '`dayIdx` must be a non-negative integer.' });
+    }
+
+    if (overflowCount !== undefined && (typeof overflowCount !== 'number' || !Number.isSafeInteger(overflowCount) || overflowCount < 0)) {
+      return res.status(400).json({ error: '`overflowCount` must be a non-negative integer.' });
+    }
+
+    if (dayIdx !== undefined && schedule?.length > 0 && dayIdx >= schedule.length) {
+      return res.status(400).json({ error: '`dayIdx` must point to an existing schedule day.' });
     }
 
     // ── Build update payload (only include provided fields) ─────────────────
@@ -135,25 +167,45 @@ export async function saveFullPlan(req, res, next) {
       userId: req.userId,
       ...(subjects      !== undefined && { subjects }),
       ...(examDate      !== undefined && { examDate }),
-      ...(dailyHours    !== undefined && { dailyHours: Number(dailyHours) }),
+      ...(dailyHours    !== undefined && { dailyHours }),
       ...(schedule      !== undefined && { schedule }),
-      ...(dayIdx        !== undefined && { dayIdx: Number(dayIdx) }),
-      ...(overflowCount !== undefined && { overflowCount: Number(overflowCount) }),
+      ...(dayIdx        !== undefined && { dayIdx }),
+      ...(overflowCount !== undefined && { overflowCount }),
       // Study streak now lives on the server document (Module 1). Only
       // touched when the client actually sends one, so callers that don't
       // know about streaks yet (none currently, but future-proofing) can't
       // accidentally wipe it.
       ...(streak        !== undefined && { streak: { count: streak.count ?? 0, lastDate: streak.lastDate ?? null } }),
-      // Sync metadata: stamp every write so a future sync module always has
-      // an up-to-date "last modified" marker to compare against.
+      // Sync metadata: stamp every write for sync status and conflict handling.
       lastModified: new Date(),
     };
 
-    const plan = await StudyPlan.findOneAndUpdate(
-      { userId: req.userId },
-      { $set: setFields, $inc: { version: 1 } },
-      { upsert: true, new: true, runValidators: true }
-    );
+    let plan;
+    const current = await StudyPlan.findOne({ userId: req.userId }).select('version').lean();
+    const currentVersion = current ? (current.version ?? 1) : 0;
+    if (currentVersion !== expectedVersion) {
+      return res.status(409).json({ code: 'PLAN_VERSION_CONFLICT', serverVersion: currentVersion });
+    }
+
+    if (!current) {
+      plan = await StudyPlan.create({ ...setFields, version: 1 });
+    } else {
+      const versionFilter = current.version === undefined
+        ? { version: { $exists: false } }
+        : { version: current.version };
+      plan = await StudyPlan.findOneAndUpdate(
+        { userId: req.userId, ...versionFilter },
+        { $set: { ...setFields, version: currentVersion + 1 } },
+        { new: true, runValidators: true }
+      );
+      if (!plan) {
+        const latest = await StudyPlan.findOne({ userId: req.userId }).select('version');
+        return res.status(409).json({
+          code: 'PLAN_VERSION_CONFLICT',
+          serverVersion: latest ? (latest.version ?? 1) : 0,
+        });
+      }
+    }
 
     res.json({ ok: true, updatedAt: plan.updatedAt, version: plan.version });
   } catch (err) {
@@ -172,11 +224,9 @@ export async function saveFullPlan(req, res, next) {
  * it last confirmed the server had; this compares that against the current
  * server document and reports which side is ahead.
  *
- * Deliberately does NOT resolve conflicts or merge anything — Module 3's
- * job. `version` is a strictly-increasing counter bumped by saveFullPlan on
- * every write, so it is the primary signal; `lastModified` is returned as
- * additional metadata for a future merge module and used only as a
- * same-version tiebreak hint here.
+ * This endpoint only reports status. PUT /full enforces the version with an
+ * atomic compare-and-update; the client presents both copies for user choice
+ * when a concurrent update is detected.
  *
  * Purely additive: no existing route, field, or response shape is changed.
  */

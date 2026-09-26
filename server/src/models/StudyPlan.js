@@ -68,19 +68,13 @@ const StudyPlanSchema = new mongoose.Schema(
     // ── Study streak (Module 1: moved from localStorage to MongoDB) ─────────
     streak: { type: StreakSchema, default: () => ({ count: 0, lastDate: null }) },
 
-    // ── Sync / migration metadata (prep for future cross-device sync;
-    //    synchronization itself is NOT implemented here) ─────────────────────
-    // Bumped on every full-plan write. Not currently used for conflict
-    // resolution (last-write-wins via `savedAt` is unchanged), but recorded
-    // now so a future sync module has a monotonically increasing revision
-    // number to compare without needing a data migration at that point.
+    // ── Sync / migration metadata ───────────────────────────────────────────
+    // Bumped on every full-plan write and used as the optimistic concurrency
+    // token so stale devices cannot silently overwrite newer planner data.
     version: { type: Number, default: 1 },
 
     // Explicit last-modified marker, distinct from Mongoose's own
-    // `updatedAt` (kept via `timestamps` below). Future sync logic may want
-    // to stamp this independently of document-save time (e.g. "when did the
-    // *client* last change this"), so it's tracked as its own field rather
-    // than reused from `updatedAt`.
+    // `updatedAt` (kept via `timestamps` below) for sync status responses.
     lastModified: { type: Date, default: Date.now },
 
     // One-time guard so the localStorage → server streak migration can never

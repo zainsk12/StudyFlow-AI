@@ -48,7 +48,7 @@ export default function App() {
     addSubject, removeSubject, updateSubject,
     addTopic,   removeTopic,   updateTopic,
     importSubjects, clearAll, unmarkAll,
-    streak, saveStatus,
+    streak, saveStatus, keepLocalPlan, loadRemotePlan,
   } = planner;
 
   // ── Handlers ────────────────────────────────────────────────────────────
@@ -138,6 +138,28 @@ useEffect(() => {
           fontSize: 13,
         }}>
           Your latest changes are saved on this device. StudyFlow will keep trying to sync them.
+        </div>
+      )}
+      {saveStatus === 'conflict' && (
+        <div role="alert" style={{
+          maxWidth: 912, margin: '12px auto 0', padding: '12px 14px',
+          border: '1px solid rgba(251,191,36,0.4)', borderRadius: 10,
+          background: 'rgba(251,191,36,0.08)', color: 'var(--text-primary)',
+          fontSize: 13, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+        }}>
+          <span style={{ flex: '1 1 280px' }}>
+            This plan changed on another device. Both copies are preserved; choose which one to keep.
+          </span>
+          <button type="button" onClick={keepLocalPlan} style={{
+            padding: '7px 10px', borderRadius: 8, cursor: 'pointer',
+            border: '1px solid rgba(147,51,234,0.5)', background: 'rgba(147,51,234,0.14)',
+            color: 'var(--text-primary)',
+          }}>Keep this device’s plan</button>
+          <button type="button" onClick={loadRemotePlan} style={{
+            padding: '7px 10px', borderRadius: 8, cursor: 'pointer',
+            border: '1px solid var(--border-mid)', background: 'var(--bg-header)',
+            color: 'var(--text-primary)',
+          }}>Load the other device’s plan</button>
         </div>
       )}
 

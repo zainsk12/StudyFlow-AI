@@ -26,6 +26,14 @@ function localDateStr(date) {
   return `${y}-${m}-${d}`;
 }
 
+// Compare calendar dates rather than elapsed milliseconds. Local-midnight
+// intervals can be 23 or 25 hours when daylight saving time changes.
+export function calendarDaysBetween(startDate, endDate) {
+  const start = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  const end = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+  return Math.round((end - start) / 86_400_000);
+}
+
 /**
  * Days from today (local) until a "YYYY-MM-DD" date string.
  */
@@ -33,14 +41,14 @@ function daysUntil(dateStr) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const exam = localMidnight(dateStr);
-  return Math.max(0, Math.floor((exam - today) / 86_400_000));
+  return Math.max(0, calendarDaysBetween(today, exam));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Internal core builder
 // ─────────────────────────────────────────────────────────────────────────────
 function buildScheduleFrom(subjects, startDate, examDate, dailyHours, skipTopicIds = new Set()) {
-  const totalDays = Math.max(1, Math.floor((examDate - startDate) / 86_400_000));
+  const totalDays = Math.max(1, calendarDaysBetween(startDate, examDate));
 
   const queue = subjects
     .flatMap(s =>
