@@ -185,8 +185,11 @@ export function useStudyPlanner(userId) {
   // Stays FALSE until the first fetchFullPlan() settles, preventing any
   // accidental write during the hydration window.
   const persistEnabled = useRef(false);
-  const prevUidRef     = useRef(uid);
   const debounceRef    = useRef(null);
+  // A queued save belongs to the account that created it. Update this during
+  // render so a timer cannot send that snapshot after an account switch.
+  const activeUidRef   = useRef(uid);
+  activeUidRef.current = uid;
 
   // ── Module 2: sync engine state ───────────────────────────────────────────
   // The last server `version` this tab has confirmed (via hydration, a
@@ -227,7 +230,7 @@ export function useStudyPlanner(userId) {
 
     const flush = () => {
       // Only flush if the gate is open (we are past the hydration window).
-      if (!persistEnabled.current || !latestPayloadRef.current) return;
+      if (activeUidRef.current !== uid || !persistEnabled.current || !latestPayloadRef.current) return;
 
       clearTimeout(debounceRef.current);
 
@@ -254,16 +257,34 @@ export function useStudyPlanner(userId) {
 
   // ── Hydrate from server on mount ──────────────────────────────────────────
   useEffect(() => {
-    if (!uid) {
-      persistEnabled.current = true;
-      return;
-    }
+    let active = true;
 
+    // Invalidate work and any delayed save owned by the previous account
+    // before starting hydration for this identity.
     persistEnabled.current = false;
+    clearTimeout(debounceRef.current);
+    debounceRef.current = null;
+    serverVersionRef.current = 0;
+    isSyncingRef.current = false;
+    skipNextPersistRef.current = false;
+
+    if (!uid) {
+      setSubjects([]);
+      setExamDate(defaultExamDate());
+      setDailyHours(4);
+      setSchedule([]);
+      setDayIdx(0);
+      setOverflowCount(0);
+      setStreak(0);
+      setStreakLastDate(null);
+      return () => { active = false; };
+    }
 
     const local = loadFromStorage(uid);
 
-    fetchFullPlan().then(serverData => {
+    fetchFullPlan().then(async serverData => {
+      if (!active || activeUidRef.current !== uid) return;
+
       // Module 2: remember whatever version the server reported (even if we
       // end up keeping the local snapshot below) so later sync-status checks
       // compare against a real baseline instead of 0.
@@ -287,50 +308,20 @@ export function useStudyPlanner(userId) {
         saveToStorage(uid, src);
       }
 
-      resolveServerStreak(uid, serverData).then(resolved => {
-        setStreak(resolved.count ?? 0);
-        setStreakLastDate(resolved.lastDate ?? null);
-        saveStreak(uid, resolved);
-      });
+      const resolved = await resolveServerStreak(uid, serverData);
+      if (!active || activeUidRef.current !== uid) return;
+      setStreak(resolved.count ?? 0);
+      setStreakLastDate(resolved.lastDate ?? null);
+      saveStreak(uid, resolved);
     }).finally(() => {
-      persistEnabled.current = true;
+      if (active && activeUidRef.current === uid) persistEnabled.current = true;
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uid]);
-
-  // ── Reload when user switches account ─────────────────────────────────────
-  useEffect(() => {
-    if (prevUidRef.current === uid) return;
-    prevUidRef.current = uid;
-    if (!uid) return;
-
-    persistEnabled.current = false;
-
-    const local = loadFromStorage(uid);
-
-    fetchFullPlan().then(serverData => {
-      // Module 2: same baseline tracking as the initial-mount hydration above.
-      serverVersionRef.current = serverData?.version ?? 0;
-
-      const src = pickNewerSource(serverData, local);
-      if (src) {
-        setSubjects(src.subjects      ?? []);
-        setExamDate(src.examDate      ?? defaultExamDate());
-        setDailyHours(src.dailyHours  ?? 4);
-        setSchedule(src.schedule      ?? []);
-        setDayIdx(src.dayIdx          ?? 0);
-        setOverflowCount(src.overflowCount ?? 0);
-        saveToStorage(uid, src);
-      }
-
-      resolveServerStreak(uid, serverData).then(resolved => {
-        setStreak(resolved.count ?? 0);
-        setStreakLastDate(resolved.lastDate ?? null);
-        saveStreak(uid, resolved);
-      });
-    }).finally(() => {
-      persistEnabled.current = true;
-    });
+    return () => {
+      active = false;
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+      persistEnabled.current = false;
+    };
   }, [uid]);
 
   // ── Persist state to localStorage + server (debounced) ────────────────────
@@ -362,6 +353,12 @@ export function useStudyPlanner(userId) {
     // edge case so we can keep a comfortable 2 s window here.
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
+      // The timer may have been queued just before React cleaned up the
+      // previous identity's effects. Never send that old account's snapshot.
+      if (activeUidRef.current !== uid || !persistEnabled.current) {
+        debounceRef.current = null;
+        return;
+      }
       pushFullPlan(payload).then(result => {
         // Module 2: remember the version the server settled on so the next
         // sync-status check knows this upload already happened.
