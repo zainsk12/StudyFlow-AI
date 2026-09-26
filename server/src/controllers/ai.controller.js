@@ -52,7 +52,9 @@ You know the student's full study plan:
 - Overall progress: ${stats?.pct ?? 0}%
 - Subjects: ${summarizeSubjects(subjects)}
 
-Give helpful, personalised, concise study advice. Be encouraging and practical.`;
+Give helpful, personalised, concise study advice. Be encouraging and practical.
+Format responses with standard Markdown (headings, lists, emphasis, and tables only when useful).
+Finish every response with a complete thought; avoid overly long plans and keep most answers under 400 words.`;
 
     const completion = await groq.chat.completions.create({
       model: GROQ_MODEL,
@@ -60,7 +62,7 @@ Give helpful, personalised, concise study advice. Be encouraging and practical.`
         { role: 'system', content: systemPrompt },
         ...groqMessages,
       ],
-      max_tokens: 512,
+      max_tokens: 1800,
     });
 
     const reply = completion.choices?.[0]?.message?.content

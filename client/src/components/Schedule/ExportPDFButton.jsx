@@ -11,16 +11,7 @@ import { Download, Loader } from 'lucide-react';
 
 const DIFF_CLR_HEX = { easy: '#34d399', medium: '#c026d3', hard: '#f87171' };
 
-// ── FIX C: Truncate long strings before passing to doc.text() ─────────────
-// jsPDF does not word-wrap or clip text — long strings simply overflow their
-// column and render on top of adjacent cells. This helper appends "…" when
-// the string exceeds maxChars so every column stays within its allotted width.
-function truncate(text, maxChars) {
-  if (!text) return '';
-  return text.length > maxChars ? text.slice(0, maxChars - 1) + '…' : text;
-}
-
-export default function ExportPDFButton({ schedule, subjects, examDate, dailyHours, stats }) {
+export default function ExportPDFButton({ schedule, subjects, examDate, dailyHours }) {
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
@@ -51,9 +42,24 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
         if (y + needed > PH - 16) newPage();
       };
 
+      const drawDayHeader = (label, hours, continued = false) => {
+        checkPageBreak(16);
+        doc.setFillColor(35, 20, 52);
+        doc.roundedRect(ML - 2, y - 3, CW + 4, 11, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(248, 244, 252);
+        doc.text(`${label}${continued ? ' (continued)' : ''}`, ML + 1, y + 4);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(216, 180, 254);
+        doc.text(`${hours.toFixed(1)}h`, PW - MR - 2, y + 4, { align: 'right' });
+        y += 14;
+      };
+
       // ── Cover page ───────────────────────────────────────────────────────
       // Dark background strip
-      doc.setFillColor(13, 17, 23);
+      doc.setFillColor(16, 8, 26);
       doc.rect(0, 0, PW, 80, 'F');
 
       // App name
@@ -69,29 +75,28 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
       doc.text('Personalised Study Plan Export', PW / 2, 43, { align: 'center' });
 
       // Gold divider
-      doc.setDrawColor(245, 158, 11);
+      doc.setDrawColor(192, 132, 252);
       doc.setLineWidth(0.8);
       doc.line(PW / 2 - 28, 50, PW / 2 + 28, 50);
 
       // Exam date
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
-      doc.setTextColor(245, 158, 11);
+      doc.setTextColor(216, 180, 254);
       doc.text(`Exam Date: ${examDate ?? 'Not set'}`, PW / 2, 60, { align: 'center' });
 
-      // Stats row
+      // General plan overview (no completion or progress information).
       y = 96;
       const statItems = [
-        { label: 'Total Days',    value: String(schedule.length) },
-        { label: 'Daily Hours',   value: `${dailyHours}h` },
-        { label: 'Total Topics',  value: String(stats?.totalTopics ?? '—') },
-        { label: 'Completion',    value: `${stats?.pct ?? 0}%` },
+        { label: 'Total Days',  value: String(schedule.length) },
+        { label: 'Daily Hours', value: `${dailyHours}h` },
+        { label: 'Subjects',    value: String(subjects?.length ?? 0) },
       ];
 
       const boxW = CW / statItems.length;
       statItems.forEach((item, i) => {
         const bx = ML + i * boxW;
-        doc.setFillColor(28, 32, 48);
+        doc.setFillColor(35, 20, 52);
         doc.roundedRect(bx, y, boxW - 3, 22, 3, 3, 'F');
 
         doc.setFont('helvetica', 'bold');
@@ -101,7 +106,7 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        doc.setTextColor(71, 85, 105);
+        doc.setTextColor(216, 180, 254);
         doc.text(item.label, bx + (boxW - 3) / 2, y + 17, { align: 'center' });
       });
 
@@ -109,44 +114,27 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
       y = 134;
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
-      doc.setTextColor(129, 140, 248);
-      doc.text('SUBJECTS', ML, y);
+      doc.setTextColor(126, 34, 206);
+      doc.text('SUBJECTS IN THIS PLAN', ML, y);
 
-      y += 5;
+      y += 8;
       subjects?.forEach(s => {
-        checkPageBreak(8);
-        const done    = s.topics.filter(t => t.status === 'done').length;
-        const pct     = s.topics.length ? Math.round((done / s.topics.length) * 100) : 0;
-        // FIX C: truncate long subject names in the cover summary (max ~55 chars fits the line)
-        const subLine = `${truncate(s.name, 40)}  ·  ${s.topics.length} topics  ·  ${pct}% done`;
-
-        // Colour dot
-        const hex = s.color || '#c084fc';
-        const r   = parseInt(hex.slice(1, 3), 16);
-        const g   = parseInt(hex.slice(3, 5), 16);
-        const b   = parseInt(hex.slice(5, 7), 16);
-        doc.setFillColor(r, g, b);
-        doc.circle(ML + 1.5, y + 1, 1.5, 'F');
-
+        const lines = doc.splitTextToSize(s.name || 'Untitled subject', CW - 10);
+        const rowHeight = Math.max(8, lines.length * 4 + 2);
+        checkPageBreak(rowHeight + 2);
+        doc.setFillColor(192, 132, 252);
+        doc.circle(ML + 1.5, y + 1, 1.3, 'F');
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
-        doc.setTextColor(148, 163, 184);
-        doc.text(subLine, ML + 5, y + 2);
-
-        // Progress bar
-        doc.setFillColor(30, 41, 59);
-        doc.roundedRect(ML + 5, y + 4, CW - 5, 2, 1, 1, 'F');
-        if (pct > 0) {
-          doc.setFillColor(r, g, b);
-          doc.roundedRect(ML + 5, y + 4, (CW - 5) * pct / 100, 2, 1, 1, 'F');
-        }
-        y += 11;
+        doc.setTextColor(71, 55, 88);
+        doc.text(lines, ML + 5, y + 2);
+        y += rowHeight;
       });
 
       // Generated stamp
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(8);
-      doc.setTextColor(51, 65, 85);
+      doc.setTextColor(95, 75, 112);
       doc.text(
         `Generated on ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`,
         PW / 2, PH - 12, { align: 'center' }
@@ -157,7 +145,7 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);
-      doc.setTextColor(241, 245, 249);
+      doc.setTextColor(35, 20, 52);
       doc.text('Full Study Schedule', ML, y);
       y += 8;
 
@@ -165,66 +153,49 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
         const dayDate  = new Date(day.date + 'T00:00:00');
         const dayLabel = dayDate.toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
         const dayHours = day.sessions.reduce((a, s) => a + s.hours, 0);
-        const rowsNeeded = 10 + day.sessions.length * 9;
-        checkPageBreak(rowsNeeded);
-
-        // Day header strip
-        doc.setFillColor(28, 32, 48);
-        doc.roundedRect(ML - 2, y - 3, CW + 4, 10, 2, 2, 'F');
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.setTextColor(241, 245, 249);
-        // FIX C: truncate day label to prevent header overflow (max ~50 chars is safe)
-        doc.text(`Day ${di + 1} — ${truncate(dayLabel, 50)}`, ML + 1, y + 4);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.setTextColor(245, 158, 11);
-        doc.text(`${dayHours.toFixed(1)}h`, PW - MR - 2, y + 4, { align: 'right' });
-        y += 13;
+        const dayTitle = `Day ${di + 1} - ${dayLabel}`;
+        drawDayHeader(dayTitle, dayHours);
 
         day.sessions.forEach(session => {
-          checkPageBreak(9);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8.5);
+          const topicLines = doc.splitTextToSize(session.topicName || 'Untitled topic', CW - 48);
+          const rowHeight = Math.max(12, topicLines.length * 4 + 8);
+          const previousPage = doc.internal.getCurrentPageInfo().pageNumber;
+          checkPageBreak(rowHeight + 3);
+          if (doc.internal.getCurrentPageInfo().pageNumber !== previousPage) {
+            drawDayHeader(dayTitle, dayHours, true);
+          }
 
           // Difficulty colour bar
           const dclr = DIFF_CLR_HEX[session.difficulty] || '#475569';
           const dr = parseInt(dclr.slice(1, 3), 16);
           const dg = parseInt(dclr.slice(3, 5), 16);
           const db = parseInt(dclr.slice(5, 7), 16);
+          // Session row grows with wrapped topic names so the subject line never overlaps.
+          doc.setFillColor(249, 246, 252);
+          doc.roundedRect(ML, y - 1, CW, rowHeight, 1.5, 1.5, 'F');
           doc.setFillColor(dr, dg, db);
-          doc.rect(ML - 2, y - 1, 2, 7, 'F');
+          doc.roundedRect(ML - 2, y - 1, 2, rowHeight, 0.8, 0.8, 'F');
 
-          // Session row background
-          doc.setFillColor(17, 24, 39);
-          doc.roundedRect(ML, y - 1, CW, 7, 1, 1, 'F');
-
-          // ── FIX C: Column budget (mm from left margin, content width = 182 mm)
-          // Hours col:      ~10 mm  (right-aligned at PW - MR - 2 = 194)
-          // Difficulty col: ~14 mm  (right-aligned at PW - MR - 14 = 182)
-          // Gap between topic/subject and right cols: 26 mm reserved
-          // Topic name column: ML+4 … PW-MR-28  → ~154 mm wide → ~52 chars @ 9pt
-          // Subject name col:  ML+4 … PW-MR-28  → same zone,  → ~60 chars @ 7.5pt
-          // These limits are conservative — actual printable width varies with font.
-
-          // Topic name — reserve right 26 mm for difficulty + hours
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9);
-          doc.setTextColor(226, 232, 240);
-          doc.text(truncate(session.topicName, 52), ML + 4, y + 3.5);
+          doc.setFontSize(8.5);
+          doc.setTextColor(35, 20, 52);
+          doc.text(topicLines, ML + 4, y + 3.5, { lineHeightFactor: 1.15 });
 
           // Subject name
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(7.5);
-          doc.setTextColor(71, 85, 105);
-          doc.text(truncate(session.subjectName, 58), ML + 4, y + 6.5);
+          doc.setFontSize(7);
+          doc.setTextColor(104, 85, 119);
+          const subjectY = y + 3.5 + (topicLines.length - 1) * 4 + 4;
+          doc.text(session.subjectName || '', ML + 4, subjectY);
 
           // Difficulty badge (right-aligned zone)
           doc.setFontSize(7);
           doc.setTextColor(dr, dg, db);
           doc.text(
-            truncate((session.difficulty ?? '').toUpperCase(), 6),
-            PW - MR - 14,
+            (session.difficulty ?? '').toUpperCase(),
+            PW - MR - 20,
             y + 3.5
           );
 
@@ -234,10 +205,10 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
           doc.setTextColor(245, 158, 11);
           doc.text(`${session.hours}h`, PW - MR - 2, y + 3.5, { align: 'right' });
 
-          y += 9;
+          y += rowHeight + 2;
         });
 
-        y += 4; // gap between days
+        y += 3; // gap between days
       });
 
       // ── Footer on every page ─────────────────────────────────────────────
@@ -246,7 +217,7 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
         doc.setPage(p);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
-        doc.setTextColor(51, 65, 85);
+        doc.setTextColor(95, 75, 112);
         doc.text(`StudyFlow AI  ·  Page ${p} of ${totalPages}`, PW / 2, PH - 5, { align: 'center' });
       }
 

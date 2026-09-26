@@ -1,5 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
-import { Brain, Sparkles, Send, RefreshCw } from 'lucide-react';
+import { Send, RefreshCw } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import Card from '../common/Card';
 import { QUICK_PROMPTS } from '../../constants';
 
@@ -13,10 +15,11 @@ function trimMessages(msgs) {
 export default function AICoachTab({ subjects, stats, examDate, dailyHours, messages, setMessages }) {
   const [input,       setInput]       = useState('');
   const [isLoading,   setIsLoading]   = useState(false);
-  const chatEndRef = useRef(null);
+  const chatHistoryRef = useRef(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const history = chatHistoryRef.current;
+    if (history) history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
   // ── Send message ──────────────────────────────────────────────────────────
@@ -68,14 +71,15 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '72vh', gap: 12 }}>
       {/* Chat history */}
-      <Card style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, padding: 20 }}>
+      <Card style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: 20 }}>
+        <div ref={chatHistoryRef} className="sf-ai-chat-history">
         {messages.map((m, i) => (
           <div key={i} className="msg-in" style={{
             display: 'flex',
             justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
           }}>
             <div style={{
-              maxWidth: '80%',
+              maxWidth: m.role === 'user' ? '80%' : '96%',
               padding: '10px 14px',
               borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
               background: m.role === 'user'
@@ -85,9 +89,21 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
               fontSize: 13,
               lineHeight: 1.6,
               color: 'var(--text-primary)',
-              whiteSpace: 'pre-wrap',
             }}>
-              {m.text}
+              {m.role === 'assistant' ? (
+                <div className="sf-ai-markdown">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      table: ({ node, ...props }) => (
+                        <div className="sf-ai-markdown-table-wrap"><table {...props} /></div>
+                      ),
+                    }}
+                  >
+                    {m.text}
+                  </ReactMarkdown>
+                </div>
+              ) : m.text}
             </div>
           </div>
         ))}
@@ -110,7 +126,7 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
             </div>
           </div>
         )}
-        <div ref={chatEndRef} />
+        </div>
       </Card>
 
       {/* Quick prompts */}

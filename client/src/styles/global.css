@@ -251,3 +251,61 @@ img, svg, canvas, video { max-width: 100%; }
 @media (max-width: 360px) {
   .sf-grid-4 { grid-template-columns: 1fr !important; }
 }
+
+/* AI Coach replies render Markdown and scroll independently from the page. */
+.sf-ai-chat-history {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.sf-ai-markdown { overflow-wrap: anywhere; }
+.sf-ai-markdown > :first-child { margin-top: 0; }
+.sf-ai-markdown > :last-child { margin-bottom: 0; }
+.sf-ai-markdown p,
+.sf-ai-markdown ul,
+.sf-ai-markdown ol,
+.sf-ai-markdown blockquote,
+.sf-ai-markdown pre,
+.sf-ai-markdown .sf-ai-markdown-table-wrap { margin: 0 0 10px; }
+.sf-ai-markdown ul,
+.sf-ai-markdown ol { padding-left: 22px; }
+.sf-ai-markdown li + li { margin-top: 4px; }
+.sf-ai-markdown h1,
+.sf-ai-markdown h2,
+.sf-ai-markdown h3,
+.sf-ai-markdown h4 { margin: 14px 0 7px; line-height: 1.35; }
+.sf-ai-markdown h1 { font-size: 1.25em; }
+.sf-ai-markdown h2 { font-size: 1.15em; }
+.sf-ai-markdown h3,
+.sf-ai-markdown h4 { font-size: 1.05em; }
+.sf-ai-markdown hr { border: 0; border-top: 1px solid var(--border-card); margin: 12px 0; }
+.sf-ai-markdown blockquote {
+  border-left: 3px solid var(--accent-soft);
+  color: var(--text-muted);
+  padding-left: 12px;
+}
+.sf-ai-markdown code {
+  background: var(--section-bg);
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  padding: 2px 5px;
+}
+.sf-ai-markdown pre {
+  background: var(--section-bg);
+  border: 1px solid var(--border-card);
+  border-radius: 8px;
+  overflow-x: auto;
+  padding: 10px 12px;
+}
+.sf-ai-markdown pre code { background: transparent; padding: 0; }
+.sf-ai-markdown-table-wrap { max-width: 100%; overflow-x: auto; }
+.sf-ai-markdown table { border-collapse: collapse; min-width: 100%; text-align: left; }
+.sf-ai-markdown th,
+.sf-ai-markdown td { border: 1px solid var(--border-card); padding: 7px 9px; }
+.sf-ai-markdown th { background: var(--section-bg); color: var(--text-bright); }
