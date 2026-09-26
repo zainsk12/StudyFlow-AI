@@ -23,8 +23,8 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
       <div className="sf-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
         <MetricCard label="Days Left"   value={stats.daysLeft}         sub="until exam"  color="#f87171" />
         <MetricCard label="Completion"  value={`${stats.pct}%`}         sub="topics done" color="#34d399" />
-        <MetricCard label="Study Hours" value={`${stats.totalHours}h`}  sub="total needed" color="#818cf8" />
-        <MetricCard label="Daily Load"  value={`${dailyHours}h`}        sub="per day"     color="#f59e0b" />
+        <MetricCard label="Study Hours" value={`${stats.totalHours}h`}  sub="total needed" color="#c084fc" />
+        <MetricCard label="Daily Load"  value={`${dailyHours}h`}        sub="per day"     color="#9333ea" />
       </div>
 
       {/* ── Charts row ──────────────────────── */}
@@ -93,7 +93,7 @@ export default function StatsTab({ subjects, stats, dailyHours }) {
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>{s.name}</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {hard   > 0 && <Pill label={`${hard} hard`}   color="#f87171" />}
-                    {medium > 0 && <Pill label={`${medium} med`}  color="#f59e0b" />}
+                    {medium > 0 && <Pill label={`${medium} med`}  color="#c026d3" />}
                     {easy   > 0 && <Pill label={`${easy} easy`}   color="#34d399" />}
                   </div>
                 </div>

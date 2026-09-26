@@ -17,11 +17,11 @@ function DayPill({ day, index, active, onClick }) {
       onClick={() => onClick(index)}
       style={{
         minWidth: 60, padding: '9px 6px',
-        background:   active ? 'rgba(245,158,11,0.1)' : 'var(--bg-card)',
-        border:       active ? '1px solid #f59e0b' : '1px solid var(--border-card)',
+        background:   active ? 'rgba(147,51,234,0.1)' : 'var(--bg-card)',
+        border:       active ? '1px solid #9333ea' : '1px solid var(--border-card)',
         borderRadius: 9, cursor: 'pointer',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-        color: active ? '#f59e0b' : 'var(--text-dimmer)',
+        color: active ? '#9333ea' : 'var(--text-dimmer)',
         transition: 'all 0.18s ease',
         flexShrink: 0,
       }}
@@ -29,15 +29,15 @@ function DayPill({ day, index, active, onClick }) {
       <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.03em' }}>
         {d.toLocaleDateString('en', { weekday: 'short' })}
       </div>
-      <div style={{ fontSize: 17, fontWeight: 700, color: active ? '#f59e0b' : 'var(--text-muted)', lineHeight: 1.1 }}>
+      <div style={{ fontSize: 17, fontWeight: 700, color: active ? '#9333ea' : 'var(--text-muted)', lineHeight: 1.1 }}>
         {d.getDate()}
       </div>
-      <div style={{ fontSize: 9, color: active ? 'rgba(245,158,11,0.7)' : 'var(--text-dimmest)' }}>
+      <div style={{ fontSize: 9, color: active ? 'rgba(147,51,234,0.7)' : 'var(--text-dimmest)' }}>
         {d.toLocaleDateString('en', { month: 'short' })}
       </div>
       <div style={{
         fontSize: 10, marginTop: 2, fontWeight: 600,
-        color: active ? '#f59e0b' : 'var(--text-dimmest)',
+        color: active ? '#9333ea' : 'var(--text-dimmest)',
       }}>
         {totalH.toFixed(1)}h
       </div>
@@ -174,7 +174,7 @@ export default function ScheduleTab({
             <div style={{ fontSize: 12, color: 'var(--text-dimmer)', marginTop: 4 }}>
               Day {dayIdx + 1} of {schedule.length}
               <span style={{ margin: '0 6px', color: 'var(--border-card)' }}>·</span>
-              <span style={{ color: '#f59e0b', fontWeight: 600 }}>{total.toFixed(1)}h</span> total
+              <span style={{ color: '#9333ea', fontWeight: 600 }}>{total.toFixed(1)}h</span> total
             </div>
           </div>
 
@@ -231,7 +231,7 @@ export default function ScheduleTab({
                 <Pill label={DIFF_LBL[s.difficulty]} color={DIFF_CLR[s.difficulty]} />
               )}
               <span style={{
-                fontSize: 14, fontWeight: 700, color: '#f59e0b',
+                fontSize: 14, fontWeight: 700, color: '#9333ea',
                 minWidth: 32, textAlign: 'right', flexShrink: 0,
               }}>
                 {s.hours}h
@@ -243,13 +243,13 @@ export default function ScheduleTab({
         {/* Tip banner */}
         <div style={{
           marginTop: 16, padding: '11px 15px',
-          background: 'rgba(129,140,248,0.06)',
-          border: '1px solid rgba(129,140,248,0.15)',
+          background: 'rgba(192,132,252,0.06)',
+          border: '1px solid rgba(192,132,252,0.15)',
           borderRadius: 9,
           display: 'flex', gap: 10, alignItems: 'flex-start',
         }}>
-          <Star size={13} color="#818cf8" style={{ marginTop: 2, flexShrink: 0 }} />
-          <div style={{ fontSize: 12, color: '#818cf8', lineHeight: 1.6 }}>
+          <Star size={13} color="#c084fc" style={{ marginTop: 2, flexShrink: 0 }} />
+          <div style={{ fontSize: 12, color: '#c084fc', lineHeight: 1.6 }}>
             Hard topics come first — your brain is sharpest at the start of a session.
             Take a 5–10 min break between each block.
           </div>

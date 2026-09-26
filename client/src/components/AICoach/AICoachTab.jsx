@@ -79,7 +79,7 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
               padding: '10px 14px',
               borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
               background: m.role === 'user'
-                ? 'linear-gradient(135deg,#818cf8,#6366f1)'
+                ? 'linear-gradient(135deg,#c084fc,#9333ea)'
                 : 'var(--bg-deep)',
               border: m.role === 'assistant' ? '1px solid var(--border-card)' : 'none',
               fontSize: 13,
@@ -123,9 +123,9 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
             disabled={isLoading}
             style={{
               fontSize: 11, padding: '5px 10px',
-              background: 'rgba(129,140,248,0.08)',
-              border: '1px solid rgba(129,140,248,0.2)',
-              borderRadius: 20, color: '#818cf8',
+              background: 'rgba(192,132,252,0.08)',
+              border: '1px solid rgba(192,132,252,0.2)',
+              borderRadius: 20, color: '#c084fc',
               transition: 'background 0.15s, opacity 0.15s',
             }}
           >
@@ -155,7 +155,7 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
           disabled={!canSend}
           style={{
             background: canSend
-              ? 'linear-gradient(135deg,#818cf8,#6366f1)'
+              ? 'linear-gradient(135deg,#c084fc,#9333ea)'
               : 'var(--border-mid)',
             border: 'none', borderRadius: 10, padding: '10px 16px',
             color: canSend ? '#fff' : 'var(--text-dimmest)',

@@ -81,10 +81,10 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 10,
-              background: 'rgba(129,140,248,0.15)', border: '1px solid rgba(129,140,248,0.25)',
+              background: 'rgba(192,132,252,0.15)', border: '1px solid rgba(192,132,252,0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <User size={16} color="#818cf8" />
+              <User size={16} color="#c084fc" />
             </div>
             <div>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #f1f5f9)' }}>My Profile</div>
@@ -111,10 +111,10 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
           }}>
             <div style={{
               width: 72, height: 72, borderRadius: '50%',
-              background: 'linear-gradient(135deg,#818cf8,#6366f1)',
+              background: 'linear-gradient(135deg,#c084fc,#9333ea)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 28, fontWeight: 800, color: '#fff',
-              boxShadow: '0 8px 32px rgba(99,102,241,0.4)',
+              boxShadow: '0 8px 32px rgba(147,51,234,0.4)',
               marginBottom: 16, flexShrink: 0,
             }}>
               {initial}
@@ -131,16 +131,16 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
                     if (e.key === 'Escape') { setEditingName(false); setNameInput(user?.name ?? ''); }
                   }}
                   style={{
-                    flex: 1, background: 'var(--input-bg, #1c2030)', border: '1px solid #818cf8',
+                    flex: 1, background: 'var(--input-bg, #1c2030)', border: '1px solid #c084fc',
                     borderRadius: 8, padding: '8px 12px',
                     color: 'var(--text-primary, #f1f5f9)', fontSize: 15, fontWeight: 600,
                     textAlign: 'center', outline: 'none',
                   }}
                 />
                 <button onClick={handleSaveName} disabled={nameSaving} style={{
-                  background: 'rgba(129,140,248,0.15)', border: '1px solid rgba(129,140,248,0.3)',
+                  background: 'rgba(192,132,252,0.15)', border: '1px solid rgba(192,132,252,0.3)',
                   borderRadius: 8, padding: '8px 10px',
-                  color: '#818cf8', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  color: '#c084fc', cursor: 'pointer', display: 'flex', alignItems: 'center',
                 }}>
                   {nameSaving ? <Loader size={14} className="spin" /> : <Check size={14} />}
                 </button>
@@ -190,8 +190,8 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
                 }}>
                   <div style={{
                     width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                    background: 'rgba(129,140,248,0.08)', border: '1px solid rgba(129,140,248,0.15)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8',
+                    background: 'rgba(192,132,252,0.08)', border: '1px solid rgba(192,132,252,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc',
                   }}>
                     {row.icon}
                   </div>
@@ -213,8 +213,8 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
               {[
                 { icon: <Target size={16} />,     label: 'Days Left',   value: daysLeft,                      color: '#f87171' },
                 { icon: <TrendingUp size={16} />, label: 'Completion',  value: `${pct}%`,                     color: '#34d399' },
-                { icon: <BookOpen size={16} />,   label: 'Topics Done', value: `${doneTopics}/${totalTopics}`, color: '#818cf8' },
-                { icon: <Clock size={16} />,      label: 'Daily Hours', value: `${dailyHours}h/day`,           color: '#f59e0b' },
+                { icon: <BookOpen size={16} />,   label: 'Topics Done', value: `${doneTopics}/${totalTopics}`, color: '#c084fc' },
+                { icon: <Clock size={16} />,      label: 'Daily Hours', value: `${dailyHours}h/day`,           color: '#9333ea' },
               ].map(s => (
                 <div key={s.label} style={{
                   padding: '14px 16px', borderRadius: 12,

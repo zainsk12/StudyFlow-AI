@@ -95,9 +95,9 @@ function UnscheduledBanner({ count, onRegenerate }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <div style={{
-      background: 'rgba(245,158,11,0.06)',
-      border: '1px solid rgba(245,158,11,0.2)',
-      borderLeft: '3px solid #f59e0b',
+      background: 'rgba(147,51,234,0.06)',
+      border: '1px solid rgba(147,51,234,0.2)',
+      borderLeft: '3px solid #9333ea',
       borderRadius: 10, overflow: 'hidden',
     }}>
       <div
@@ -107,9 +107,9 @@ function UnscheduledBanner({ count, onRegenerate }) {
           padding: '12px 16px', cursor: 'pointer',
         }}
       >
-        <AlertTriangle size={16} color="#f59e0b" style={{ flexShrink: 0 }} />
+        <AlertTriangle size={16} color="#9333ea" style={{ flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b', marginBottom: 2 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#9333ea', marginBottom: 2 }}>
             {count} topic{count > 1 ? 's' : ''} not in your current schedule
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
@@ -120,10 +120,10 @@ function UnscheduledBanner({ count, onRegenerate }) {
           onClick={e => { e.stopPropagation(); onRegenerate(); }}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(245,158,11,0.12)',
-            border: '1px solid rgba(245,158,11,0.3)',
+            background: 'rgba(147,51,234,0.12)',
+            border: '1px solid rgba(147,51,234,0.3)',
             borderRadius: 7, padding: '6px 12px',
-            color: '#f59e0b', cursor: 'pointer',
+            color: '#9333ea', cursor: 'pointer',
             fontSize: 12, fontWeight: 600, flexShrink: 0,
           }}
         >
@@ -201,7 +201,7 @@ const DayCard = memo(function DayCard({
   const borderColor = allDone
     ? '#34d399'
     : isToday
-    ? '#f59e0b'
+    ? '#9333ea'
     : isPast && doneCount > 0 && doneCount < total
     ? '#f87171'
     : 'var(--border-card)';
@@ -219,13 +219,13 @@ const DayCard = memo(function DayCard({
         {/* Day badge */}
         <div style={{
           width: 36, height: 36, borderRadius: 8, flexShrink: 0,
-          background: allDone ? 'rgba(52,211,153,0.12)' : isToday ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${allDone ? 'rgba(52,211,153,0.25)' : isToday ? 'rgba(245,158,11,0.25)' : 'var(--border-card)'}`,
+          background: allDone ? 'rgba(52,211,153,0.12)' : isToday ? 'rgba(147,51,234,0.12)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${allDone ? 'rgba(52,211,153,0.25)' : isToday ? 'rgba(147,51,234,0.25)' : 'var(--border-card)'}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.25s ease',
         }}>
           <div style={{ fontSize: 10, color: 'var(--text-dimmer)', lineHeight: 1 }}>Day</div>
-          <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1, marginTop: 1, color: allDone ? '#34d399' : isToday ? '#f59e0b' : 'var(--text-muted)', transition: 'color 0.25s ease' }}>
+          <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1, marginTop: 1, color: allDone ? '#34d399' : isToday ? '#9333ea' : 'var(--text-muted)', transition: 'color 0.25s ease' }}>
             {dayNumber}
           </div>
         </div>
@@ -235,7 +235,7 @@ const DayCard = memo(function DayCard({
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-bright)' }}>{dateStr}</span>
             {isToday && !allDone && (
-              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(245,158,11,0.15)', color: '#f59e0b', padding: '1px 7px', borderRadius: 4 }}>TODAY</span>
+              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(147,51,234,0.15)', color: '#9333ea', padding: '1px 7px', borderRadius: 4 }}>TODAY</span>
             )}
             {isPast && !allDone && doneCount > 0 && (
               <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(248,113,113,0.12)', color: '#f87171', padding: '1px 7px', borderRadius: 4 }}>INCOMPLETE</span>
@@ -248,7 +248,7 @@ const DayCard = memo(function DayCard({
             <div style={{ flex: 1, background: 'var(--bg-deep)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 4, width: `${pct}%`,
-                background: allDone ? '#34d399' : isToday ? '#f59e0b' : '#818cf8',
+                background: allDone ? '#34d399' : isToday ? '#9333ea' : '#c084fc',
                 transition: 'width 0.35s ease, background 0.25s ease',
               }} />
             </div>
@@ -446,7 +446,7 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}>
           <span style={{ color: 'var(--text-dim)' }}>{stats.doneTopics} of {stats.totalTopics} topics done</span>
-          <span style={{ color: '#f59e0b', fontWeight: 700 }}>{stats.pct}%</span>
+          <span style={{ color: '#9333ea', fontWeight: 700 }}>{stats.pct}%</span>
         </div>
         <ProgressBar pct={stats.pct} height={10} />
         <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-dimmer)' }}>
@@ -474,9 +474,9 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
               fontSize: 12, fontWeight: 600,
-              background: view === 'schedule' ? 'rgba(245,158,11,0.1)' : 'transparent',
-              border: `1px solid ${view === 'schedule' ? 'rgba(245,158,11,0.3)' : 'var(--border-card)'}`,
-              color: view === 'schedule' ? '#f59e0b' : 'var(--text-dimmer)',
+              background: view === 'schedule' ? 'rgba(147,51,234,0.1)' : 'transparent',
+              border: `1px solid ${view === 'schedule' ? 'rgba(147,51,234,0.3)' : 'var(--border-card)'}`,
+              color: view === 'schedule' ? '#9333ea' : 'var(--text-dimmer)',
             }}
           >
             <Calendar size={13} /> By Schedule
@@ -487,9 +487,9 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
               fontSize: 12, fontWeight: 600,
-              background: view === 'subject' ? 'rgba(129,140,248,0.1)' : 'transparent',
-              border: `1px solid ${view === 'subject' ? 'rgba(129,140,248,0.3)' : 'var(--border-card)'}`,
-              color: view === 'subject' ? '#818cf8' : 'var(--text-dimmer)',
+              background: view === 'subject' ? 'rgba(192,132,252,0.1)' : 'transparent',
+              border: `1px solid ${view === 'subject' ? 'rgba(192,132,252,0.3)' : 'var(--border-card)'}`,
+              color: view === 'subject' ? '#c084fc' : 'var(--text-dimmer)',
             }}
           >
             <BookOpen size={13} /> By Subject

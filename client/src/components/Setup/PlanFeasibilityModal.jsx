@@ -126,7 +126,7 @@ export default function PlanFeasibilityModal({
         {/* Header */}
         <button onClick={onClose} style={styles.closeBtn}><X size={18} /></button>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-          <div style={styles.iconBox}><AlertTriangle size={22} color="#f59e0b" /></div>
+          <div style={styles.iconBox}><AlertTriangle size={22} color="#9333ea" /></div>
           <div>
             <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 4 }}>
               Not enough time for all topics
@@ -146,7 +146,7 @@ export default function PlanFeasibilityModal({
         {/* Summary bar */}
         <div className="sf-grid-4" style={styles.summaryRow}>
           {[
-            { label: 'Days left',     value: `${daysLeft}d`,       color: '#f59e0b' },
+            { label: 'Days left',     value: `${daysLeft}d`,       color: '#9333ea' },
             { label: 'Hrs available', value: `${availableHours}h`, color: '#60a5fa' },
             { label: 'Hrs needed',    value: `${totalHours}h`,     color: '#f87171' },
             { label: 'Shortfall',     value: `${hoursShortfall}h`, color: hoursShortfall > 0 ? '#f87171' : '#34d399' },
@@ -173,13 +173,13 @@ export default function PlanFeasibilityModal({
 
         {/* PATH 1: Increase daily hours */}
         <Accordion id="hours" expanded={expanded} setExpanded={setExpanded}
-          icon={<Clock size={14} color="#818cf8" />}
+          icon={<Clock size={14} color="#c084fc" />}
           label="Increase daily study hours"
           badge={requiredDailyHours ? `Needs ≥ ${requiredDailyHours}h/day` : undefined}
-          badgeColor="#818cf8"
+          badgeColor="#c084fc"
         >
           <p style={styles.hint}>
-            Currently <b style={{ color: '#f59e0b' }}>{dailyHours}h/day</b> × {daysLeft} days = {availableHours}h.
+            Currently <b style={{ color: '#9333ea' }}>{dailyHours}h/day</b> × {daysLeft} days = {availableHours}h.
             Need at least <b style={{ color: '#34d399' }}>{requiredDailyHours}h/day</b> for all {totalTopics} topics.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
@@ -187,7 +187,7 @@ export default function PlanFeasibilityModal({
               onChange={e => setNewHours(+e.target.value)} style={{ flex: 1 }} />
             <span style={{
               minWidth: 46, textAlign: 'center', fontSize: 20, fontWeight: 800,
-              color: newHours >= (requiredDailyHours ?? 0) ? '#34d399' : '#f59e0b',
+              color: newHours >= (requiredDailyHours ?? 0) ? '#34d399' : '#9333ea',
             }}>{newHours}h</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-dimmest)', marginBottom: 10 }}>
@@ -198,7 +198,7 @@ export default function PlanFeasibilityModal({
             : <div style={styles.hintAmber}>Still {fmt(totalHours - newHours * daysLeft)}h short — slide to at least {requiredDailyHours}h.</div>
           }
           <button onClick={applyHours}
-            style={{ ...styles.actionBtn, background: 'linear-gradient(135deg,#818cf8,#6366f1)' }}>
+            style={{ ...styles.actionBtn, background: 'linear-gradient(135deg,#c084fc,#9333ea)' }}>
             Apply {newHours}h/day
           </button>
         </Accordion>
@@ -211,7 +211,7 @@ export default function PlanFeasibilityModal({
           badgeColor="#60a5fa"
         >
           <p style={styles.hint}>
-            At <b style={{ color: '#f59e0b' }}>{dailyHours}h/day</b> you need{' '}
+            At <b style={{ color: '#9333ea' }}>{dailyHours}h/day</b> you need{' '}
             <b style={{ color: '#34d399' }}>{daysNeeded} days</b>. Suggested date:{' '}
             <b style={{ color: '#34d399' }}>{suggestedDate}</b> or later.
           </p>
@@ -241,7 +241,7 @@ export default function PlanFeasibilityModal({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 12, color: 'var(--text-dimmer)' }}>{toRemove.size} selected · {fmt(hoursFreed)}h freed</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: removalSolvesGap ? '#34d399' : '#f59e0b' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: removalSolvesGap ? '#34d399' : '#9333ea' }}>
               {removalSolvesGap ? '✓ Gap closed!' : `${fmt(hoursShortfall - hoursFreed)}h still needed`}
             </span>
           </div>
@@ -292,7 +292,7 @@ export default function PlanFeasibilityModal({
             flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: hasChanges
               ? 'linear-gradient(135deg,#34d399,#10b981)'
-              : 'linear-gradient(135deg,#f59e0b,#d97706)',
+              : 'linear-gradient(135deg,#9333ea,#7e22ce)',
             border: 'none', borderRadius: 9, padding: '12px 16px',
             color: 'var(--bg-base)', fontSize: 14, fontWeight: 700, cursor: 'pointer',
           }}>
@@ -376,7 +376,7 @@ const styles = {
   },
   iconBox: {
     width: 44, height: 44, borderRadius: 13, flexShrink: 0,
-    background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)',
+    background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.25)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 16 },
@@ -395,8 +395,8 @@ const styles = {
     border: '1px solid rgba(52,211,153,0.18)', borderRadius: 6, padding: '6px 10px', marginBottom: 10,
   },
   hintAmber: {
-    fontSize: 12, color: '#f59e0b', background: 'rgba(245,158,11,0.07)',
-    border: '1px solid rgba(245,158,11,0.18)', borderRadius: 6, padding: '6px 10px', marginBottom: 10,
+    fontSize: 12, color: '#9333ea', background: 'rgba(147,51,234,0.07)',
+    border: '1px solid rgba(147,51,234,0.18)', borderRadius: 6, padding: '6px 10px', marginBottom: 10,
   },
   actionBtn: {
     width: '100%', border: 'none', borderRadius: 8,

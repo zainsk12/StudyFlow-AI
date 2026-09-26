@@ -95,7 +95,7 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
         fontSize: 13, fontWeight: 500,
         transition: 'background 0.15s',
       }}
-      onMouseEnter={e => e.currentTarget.style.background = danger ? 'rgba(248,113,113,0.08)' : 'rgba(129,140,248,0.07)'}
+      onMouseEnter={e => e.currentTarget.style.background = danger ? 'rgba(248,113,113,0.08)' : 'rgba(192,132,252,0.07)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
       <span style={{ color: danger ? '#f87171' : 'var(--text-dim, #64748b)' }}>{icon}</span>
@@ -112,13 +112,13 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
         style={{
           width: 36, height: 36, borderRadius: '50%',
           background: open
-            ? 'linear-gradient(135deg,#a5b4fc,#818cf8)'
-            : 'linear-gradient(135deg,#818cf8,#6366f1)',
-          border: `2px solid ${open ? '#818cf8' : 'transparent'}`,
+            ? 'linear-gradient(135deg,#e879f9,#c084fc)'
+            : 'linear-gradient(135deg,#c084fc,#9333ea)',
+          border: `2px solid ${open ? '#c084fc' : 'transparent'}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 14, fontWeight: 800, color: '#fff',
           cursor: 'pointer', flexShrink: 0,
-          boxShadow: open ? '0 0 0 3px rgba(129,140,248,0.25)' : 'none',
+          boxShadow: open ? '0 0 0 3px rgba(192,132,252,0.25)' : 'none',
           transition: 'all 0.2s',
         }}
       >
@@ -148,7 +148,7 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-                background: 'linear-gradient(135deg,#818cf8,#6366f1)',
+                background: 'linear-gradient(135deg,#c084fc,#9333ea)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 15, fontWeight: 800, color: '#fff',
               }}>
@@ -193,8 +193,8 @@ export default function Header({
   const metrics = [
     { label: 'Days Left', value: stats.daysLeft,                            color: '#f87171' },
     { label: 'Progress',  value: `${stats.pct}%`,                           color: '#34d399' },
-    { label: 'Topics',    value: `${stats.doneTopics}/${stats.totalTopics}`, color: '#818cf8' },
-    { label: 'Hours',     value: `${stats.totalHours}h`,                    color: '#f59e0b' },
+    { label: 'Topics',    value: `${stats.doneTopics}/${stats.totalTopics}`, color: '#c084fc' },
+    { label: 'Hours',     value: `${stats.totalHours}h`,                    color: '#9333ea' },
   ];
 
   return (
@@ -211,7 +211,7 @@ export default function Header({
             {/* Logo */}
             <div style={{
               width: 38, height: 38,
-              background: 'linear-gradient(135deg,#f59e0b,#d97706)',
+              background: 'linear-gradient(135deg,#9333ea,#7e22ce)',
               borderRadius: 10, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
@@ -262,7 +262,7 @@ export default function Header({
                   padding: '9px 18px',
                   background: 'transparent', border: 'none',
                   borderBottom: '2px solid transparent',
-                  color: tab === t.id ? '#f59e0b' : 'var(--text-muted)',
+                  color: tab === t.id ? '#9333ea' : 'var(--text-muted)',
                   cursor: 'pointer', fontSize: 13, fontWeight: 500,
                   borderRadius: '8px 8px 0 0',
                 }}
@@ -321,8 +321,8 @@ export default function Header({
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                  background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8',
+                  background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc',
                 }}>
                   <Settings size={15} />
                 </div>

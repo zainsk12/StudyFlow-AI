@@ -203,7 +203,7 @@ export default function LoginPage({ onSwitch }) {
             {/* Forgot password link */}
             <div style={{ textAlign: 'right', marginTop: 6, marginBottom: 18 }}>
               <span
-                style={{ fontSize: 12, color: '#818cf8', cursor: 'pointer', fontWeight: 500 }}
+                style={{ fontSize: 12, color: '#c084fc', cursor: 'pointer', fontWeight: 500 }}
                 onClick={() => { setFpEmail(form.email); setScreen('forgot_email'); setFpError(''); }}
               >
                 Forgot password?
@@ -281,7 +281,7 @@ export default function LoginPage({ onSwitch }) {
             <p style={{ textAlign: 'center', marginTop: 18, fontSize: 12, color: 'var(--text-dimmer)' }}>
               Didn't receive it?{' '}
               <span
-                style={{ color: fpResendCool ? 'var(--text-dimmest)' : '#818cf8', cursor: fpResendCool ? 'not-allowed' : 'pointer', fontWeight: 500 }}
+                style={{ color: fpResendCool ? 'var(--text-dimmest)' : '#c084fc', cursor: fpResendCool ? 'not-allowed' : 'pointer', fontWeight: 500 }}
                 onClick={() => { if (!fpResendCool) { setScreen('forgot_email'); setFpOtp(''); setFpError(''); } }}
               >
                 {fpResendCool ? 'Resend available in 60s' : 'Resend code'}
@@ -318,7 +318,7 @@ export default function LoginPage({ onSwitch }) {
             {resetHint && (
               <div style={{
                 fontSize: 11, marginBottom: 16, paddingLeft: 2, marginTop: 6,
-                color: resetHint.ok ? '#34d399' : '#f59e0b',
+                color: resetHint.ok ? '#34d399' : '#9333ea',
               }}>
                 {resetHint.text}
               </div>
@@ -375,7 +375,7 @@ const s = {
   page:      { minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 },
   card:      { background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 16, padding: '40px 36px', width: '100%', maxWidth: 420 },
   logoRow:   { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 },
-  logoIcon:  { width: 44, height: 44, background: 'linear-gradient(135deg,#f59e0b,#d97706)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  logoIcon:  { width: 44, height: 44, background: 'linear-gradient(135deg,#9333ea,#7e22ce)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   logoTitle: { fontSize: 20, fontWeight: 700, color: 'var(--text-bright)', fontFamily: 'Georgia, serif' },
   logoSub:   { fontSize: 11, color: 'var(--text-dimmer)', marginTop: 2 },
   heading:   { fontSize: 24, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 6 },
@@ -385,8 +385,8 @@ const s = {
   input:     { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border-card)', borderRadius: 8, padding: '11px 14px', color: 'var(--text-primary)', fontSize: 14, marginBottom: 18, display: 'block', boxSizing: 'border-box', outline: 'none' },
   inputWrap: { position: 'relative', marginBottom: 4 },
   eyeBtn:    { position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'var(--text-dimmer)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 2 },
-  btn:       { width: '100%', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0d1117', border: 'none', borderRadius: 8, padding: '13px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
+  btn:       { width: '100%', background: 'linear-gradient(135deg,#9333ea,#7e22ce)', color: '#0d1117', border: 'none', borderRadius: 8, padding: '13px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
   switchText:{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--text-dim)' },
-  link:      { color: '#f59e0b', cursor: 'pointer', fontWeight: 600 },
+  link:      { color: '#9333ea', cursor: 'pointer', fontWeight: 600 },
   backBtn:   { display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 13, padding: '0 0 20px', marginLeft: -4 },
 };

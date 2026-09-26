@@ -83,7 +83,7 @@ export default function SmartRegenBanner({
             <span style={{ color: '#f87171', fontWeight: 600 }}>{behindCount} topic{behindCount > 1 ? 's' : ''}</span> should
             have been completed by now but {behindCount > 1 ? 'are' : 'is'} still pending.
             AI can rebuild your plan to fit everything into the remaining{' '}
-            <span style={{ color: '#f59e0b', fontWeight: 600 }}>{daysLeft} day{daysLeft !== 1 ? 's' : ''}</span>.
+            <span style={{ color: '#9333ea', fontWeight: 600 }}>{daysLeft} day{daysLeft !== 1 ? 's' : ''}</span>.
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button

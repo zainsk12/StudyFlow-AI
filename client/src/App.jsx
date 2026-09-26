@@ -116,7 +116,8 @@ useEffect(() => {
   return (
     <div style={{
       fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif",
-      background: 'var(--bg-base)', minHeight: '100vh', color: 'var(--text-primary)',
+      background: 'radial-gradient(ellipse at 50% -15%, rgba(147,51,234,0.14), transparent 58%), var(--bg-base)',
+      minHeight: '100vh', color: 'var(--text-primary)',
     }}>
       {/*
         Header owns the user avatar dropdown.
@@ -135,8 +136,8 @@ useEffect(() => {
         {streak > 0 && (
           <div style={{ textAlign: 'center', marginBottom: 12 }}>
             <span style={{
-              background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)',
-              borderRadius: 20, padding: '4px 14px', fontSize: 13, color: '#f59e0b',
+              background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.2)',
+              borderRadius: 20, padding: '4px 14px', fontSize: 13, color: '#9333ea',
             }}>
               🔥 {streak}-day study streak
             </span>

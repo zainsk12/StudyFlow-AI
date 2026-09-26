@@ -2,8 +2,8 @@
 import { useState, useRef } from 'react';
 import { FileUp, X, CheckCircle2, Circle, AlertCircle, FileText, Sparkles } from 'lucide-react';
 
-const COLORS   = ['#f59e0b','#818cf8','#34d399','#f87171','#38bdf8','#a78bfa','#fb923c','#4ade80'];
-const DIFF_CLR = { easy: '#34d399', medium: '#f59e0b', hard: '#f87171' };
+const COLORS   = ['#9333ea','#c084fc','#34d399','#f87171','#38bdf8','#d8b4fe','#e879f9','#4ade80'];
+const DIFF_CLR = { easy: '#34d399', medium: '#c026d3', hard: '#f87171' };
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
@@ -159,10 +159,10 @@ export default function SyllabusImport({ onImport }) {
         onClick={() => setOpen(true)}
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          background: 'rgba(129,140,248,0.08)',
-          border: '1px solid rgba(129,140,248,0.25)',
+          background: 'rgba(192,132,252,0.08)',
+          border: '1px solid rgba(192,132,252,0.25)',
           borderRadius: 8, padding: '6px 14px',
-          color: '#818cf8', cursor: 'pointer',
+          color: '#c084fc', cursor: 'pointer',
           fontSize: 12, fontWeight: 500,
         }}
       >
@@ -190,12 +190,12 @@ export default function SyllabusImport({ onImport }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
                   width: 34, height: 34,
-                  background: 'rgba(129,140,248,0.12)',
-                  border: '1px solid rgba(129,140,248,0.2)',
+                  background: 'rgba(192,132,252,0.12)',
+                  border: '1px solid rgba(192,132,252,0.2)',
                   borderRadius: 9, display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <FileText size={16} color="#818cf8" />
+                  <FileText size={16} color="#c084fc" />
                 </div>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-bright)' }}>Import Syllabus</div>
@@ -218,19 +218,19 @@ export default function SyllabusImport({ onImport }) {
                   onDrop={e => { e.preventDefault(); setDragging(false); processFile(e.dataTransfer.files[0]); }}
                   onClick={() => fileRef.current.click()}
                   style={{
-                    border: `2px dashed ${dragging ? '#818cf8' : 'var(--border-card)'}`,
+                    border: `2px dashed ${dragging ? '#c084fc' : 'var(--border-card)'}`,
                     borderRadius: 12, padding: '48px 24px',
                     textAlign: 'center', cursor: 'pointer',
                     transition: 'all 0.2s',
-                    background: dragging ? 'rgba(129,140,248,0.04)' : 'transparent',
+                    background: dragging ? 'rgba(192,132,252,0.04)' : 'transparent',
                   }}
                 >
-                  <FileUp size={36} color={dragging ? '#818cf8' : 'var(--text-dimmest)'} style={{ margin: '0 auto 14px' }} />
+                  <FileUp size={36} color={dragging ? '#c084fc' : 'var(--text-dimmest)'} style={{ margin: '0 auto 14px' }} />
                   <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
                     {dragging ? 'Drop your PDF here' : 'Drop your syllabus PDF here'}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-dimmer)', marginBottom: 16 }}>or click to browse</div>
-                  <div style={{ display: 'inline-block', background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.2)', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: '#818cf8' }}>
+                  <div style={{ display: 'inline-block', background: 'rgba(192,132,252,0.1)', border: '1px solid rgba(192,132,252,0.2)', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: '#c084fc' }}>
                     PDF up to 10 MB
                   </div>
                   <input ref={fileRef} type="file" accept=".pdf,application/pdf" style={{ display: 'none' }}
@@ -245,7 +245,7 @@ export default function SyllabusImport({ onImport }) {
                     <div style={{
                       width: 56, height: 56, borderRadius: '50%',
                       border: '3px solid var(--border-mid)',
-                      borderTop: '3px solid #818cf8',
+                      borderTop: '3px solid #c084fc',
                       margin: '0 auto 16px',
                       animation: 'spin 0.9s linear infinite',
                     }} />
@@ -258,17 +258,17 @@ export default function SyllabusImport({ onImport }) {
                     <div style={{
                       height: '100%',
                       width: `${progress}%`,
-                      background: 'linear-gradient(90deg, #6366f1, #818cf8)',
+                      background: 'linear-gradient(90deg, #9333ea, #c084fc)',
                       borderRadius: 8,
                       transition: 'width 0.4s ease',
                     }} />
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-dimmest)' }}>
-                    <span style={{ color: progress >=  5 ? '#818cf8' : 'var(--text-dimmest)' }}>Reading PDF</span>
-                    <span style={{ color: progress >= 20 ? '#818cf8' : 'var(--text-dimmest)' }}>Extracting text</span>
-                    <span style={{ color: progress >= 70 ? '#818cf8' : 'var(--text-dimmest)' }}>AI analysis</span>
-                    <span style={{ color: progress >= 90 ? '#818cf8' : 'var(--text-dimmest)' }}>Preparing results</span>
+                    <span style={{ color: progress >=  5 ? '#c084fc' : 'var(--text-dimmest)' }}>Reading PDF</span>
+                    <span style={{ color: progress >= 20 ? '#c084fc' : 'var(--text-dimmest)' }}>Extracting text</span>
+                    <span style={{ color: progress >= 70 ? '#c084fc' : 'var(--text-dimmest)' }}>AI analysis</span>
+                    <span style={{ color: progress >= 90 ? '#c084fc' : 'var(--text-dimmest)' }}>Preparing results</span>
                   </div>
 
                   <div style={{ textAlign: 'right', fontSize: 11, color: 'var(--text-dimmer)', marginTop: 6 }}>
@@ -286,8 +286,8 @@ export default function SyllabusImport({ onImport }) {
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#f87171', marginBottom: 8 }}>Something went wrong</div>
                   <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 24 }}>{error}</div>
                   <button onClick={reset} style={{
-                    background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.2)',
-                    borderRadius: 8, padding: '8px 20px', color: '#818cf8', cursor: 'pointer', fontSize: 13,
+                    background: 'rgba(192,132,252,0.1)', border: '1px solid rgba(192,132,252,0.2)',
+                    borderRadius: 8, padding: '8px 20px', color: '#c084fc', cursor: 'pointer', fontSize: 13,
                   }}>
                     Try Again
                   </button>
@@ -298,7 +298,7 @@ export default function SyllabusImport({ onImport }) {
               {status === 'preview' && (
                 <div>
                   <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 14 }}>
-                    AI found <span style={{ color: '#818cf8', fontWeight: 600 }}>{subjects.length} subjects</span> — select what to import
+                    AI found <span style={{ color: '#c084fc', fontWeight: 600 }}>{subjects.length} subjects</span> — select what to import
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {subjects.map((s, si) => {
@@ -306,7 +306,7 @@ export default function SyllabusImport({ onImport }) {
                       return (
                         <div key={si} style={{
                           background: 'var(--bg-deep)',
-                          border: `1px solid ${allOn ? 'rgba(129,140,248,0.25)' : 'var(--border-mid)'}`,
+                          border: `1px solid ${allOn ? 'rgba(192,132,252,0.25)' : 'var(--border-mid)'}`,
                           borderLeft: `3px solid ${COLORS[si % COLORS.length]}`,
                           borderRadius: 10, padding: '12px 14px',
                         }}>
@@ -315,7 +315,7 @@ export default function SyllabusImport({ onImport }) {
                             onClick={() => toggleSubject(si)}
                           >
                             {allOn
-                              ? <CheckCircle2 size={16} color="#818cf8" />
+                              ? <CheckCircle2 size={16} color="#c084fc" />
                               : <Circle       size={16} color="var(--text-dimmest)" />}
                             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-bright)', flex: 1 }}>{s.name}</span>
                             <span style={{ fontSize: 11, color: 'var(--text-dimmer)' }}>{s.topics.length} topics</span>
@@ -362,7 +362,7 @@ export default function SyllabusImport({ onImport }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
                 <span style={{ fontSize: 12, color: 'var(--text-dimmer)' }}>
-                  <span style={{ color: '#818cf8', fontWeight: 600 }}>{totalSelected}</span> topics selected
+                  <span style={{ color: '#c084fc', fontWeight: 600 }}>{totalSelected}</span> topics selected
                 </span>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={close} style={{
@@ -377,7 +377,7 @@ export default function SyllabusImport({ onImport }) {
                     disabled={totalSelected === 0}
                     style={{
                       background: totalSelected > 0
-                        ? 'linear-gradient(135deg,#818cf8,#6366f1)'
+                        ? 'linear-gradient(135deg,#c084fc,#9333ea)'
                         : 'var(--border-mid)',
                       border: 'none', borderRadius: 8, padding: '8px 20px',
                       color: totalSelected > 0 ? '#fff' : 'var(--text-dimmest)',

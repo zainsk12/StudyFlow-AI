@@ -6,13 +6,13 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
   const isManual   = reason === 'manual';
 
   const getIcon = () => {
-    if (isExamOver) return <AlertTriangle size={24} color="#818cf8" />;
+    if (isExamOver) return <AlertTriangle size={24} color="#c084fc" />;
     if (isAllDone)  return <span style={{ fontSize: 24 }}>🎉</span>;
     return <Trash2 size={24} color="#f87171" />;
   };
 
   const getIconBg = () => {
-    if (isExamOver) return { bg: 'rgba(129,140,248,0.1)', border: 'rgba(129,140,248,0.2)' };
+    if (isExamOver) return { bg: 'rgba(192,132,252,0.1)', border: 'rgba(192,132,252,0.2)' };
     if (isAllDone)  return { bg: 'rgba(52,211,153,0.1)',  border: 'rgba(52,211,153,0.2)'  };
     return              { bg: 'rgba(248,113,113,0.1)',  border: 'rgba(248,113,113,0.2)'  };
   };
@@ -26,7 +26,7 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
   const getMessage = () => {
     if (isExamOver) return (
       <>
-        Your exam date <span style={{ color: '#818cf8', fontWeight: 600 }}>{examDate}</span> has
+        Your exam date <span style={{ color: '#c084fc', fontWeight: 600 }}>{examDate}</span> has
         passed. Would you like to clear all subjects and topics to start fresh for your next exam?
       </>
     );
@@ -39,7 +39,7 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
     return (
       <>
         You currently have{' '}
-        <span style={{ color: '#f59e0b', fontWeight: 600 }}>{pct}% progress</span> on your study
+        <span style={{ color: '#9333ea', fontWeight: 600 }}>{pct}% progress</span> on your study
         plan. Are you sure you want to clear all subjects, topics, and your schedule?
         {pct > 0 && (
           <><br /><br />
@@ -52,7 +52,7 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
   };
 
   const getBtnColor = () => {
-    if (isExamOver) return 'linear-gradient(135deg,#818cf8,#6366f1)';
+    if (isExamOver) return 'linear-gradient(135deg,#c084fc,#9333ea)';
     if (isAllDone)  return 'linear-gradient(135deg,#34d399,#10b981)';
     return 'linear-gradient(135deg,#f87171,#ef4444)';
   };

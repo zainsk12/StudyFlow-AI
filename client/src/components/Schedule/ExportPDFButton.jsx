@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { Download, Loader } from 'lucide-react';
 
-const DIFF_CLR_HEX = { easy: '#34d399', medium: '#f59e0b', hard: '#f87171' };
+const DIFF_CLR_HEX = { easy: '#34d399', medium: '#c026d3', hard: '#f87171' };
 
 // ── FIX C: Truncate long strings before passing to doc.text() ─────────────
 // jsPDF does not word-wrap or clip text — long strings simply overflow their
@@ -121,7 +121,7 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
         const subLine = `${truncate(s.name, 40)}  ·  ${s.topics.length} topics  ·  ${pct}% done`;
 
         // Colour dot
-        const hex = s.color || '#818cf8';
+        const hex = s.color || '#c084fc';
         const r   = parseInt(hex.slice(1, 3), 16);
         const g   = parseInt(hex.slice(3, 5), 16);
         const b   = parseInt(hex.slice(5, 7), 16);
@@ -269,11 +269,11 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
         display:      'flex',
         alignItems:   'center',
         gap:          7,
-        background:   'rgba(129,140,248,0.08)',
-        border:       '1px solid rgba(129,140,248,0.25)',
+        background:   'rgba(192,132,252,0.08)',
+        border:       '1px solid rgba(192,132,252,0.25)',
         borderRadius: 8,
         padding:      '8px 16px',
-        color:        '#818cf8',
+        color:        '#c084fc',
         fontSize:     13,
         fontWeight:   600,
         cursor:       loading || !schedule?.length ? 'not-allowed' : 'pointer',

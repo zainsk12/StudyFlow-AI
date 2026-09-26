@@ -40,8 +40,8 @@ const Row = ({ icon, label, children, last }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{
         width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-        background: 'rgba(129,140,248,0.08)', border: '1px solid rgba(129,140,248,0.12)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8',
+        background: 'rgba(192,132,252,0.08)', border: '1px solid rgba(192,132,252,0.12)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc',
       }}>
         {icon}
       </div>
@@ -56,7 +56,7 @@ const Toggle = ({ value, onChange }) => (
     onClick={() => onChange(!value)}
     style={{
       width: 40, height: 22, borderRadius: 11,
-      background: value ? '#6366f1' : 'var(--border-card)',
+      background: value ? '#9333ea' : 'var(--border-card)',
       border: 'none', cursor: 'pointer', position: 'relative',
       transition: 'background 0.2s', flexShrink: 0,
     }}
@@ -84,7 +84,7 @@ const inputStyle = {
 const btnPrimary = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   padding: '9px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-  fontSize: 13, fontWeight: 600, background: '#6366f1', color: '#fff',
+  fontSize: 13, fontWeight: 600, background: '#9333ea', color: '#fff',
 };
 
 const btnDanger = {
@@ -112,9 +112,9 @@ function AppearanceSection() {
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               gap: 6, padding: '12px 8px', borderRadius: 10,
-              border: theme === o.id ? '1.5px solid #6366f1' : '1px solid var(--border-mid)',
-              background: theme === o.id ? 'rgba(99,102,241,0.1)' : 'var(--bg-card)',
-              color: theme === o.id ? '#818cf8' : 'var(--text-dim)',
+              border: theme === o.id ? '1.5px solid #9333ea' : '1px solid var(--border-mid)',
+              background: theme === o.id ? 'rgba(147,51,234,0.1)' : 'var(--bg-card)',
+              color: theme === o.id ? '#c084fc' : 'var(--text-dim)',
               cursor: 'pointer', fontSize: 12, fontWeight: 600,
               transition: 'all 0.15s',
             }}
@@ -122,7 +122,7 @@ function AppearanceSection() {
             {o.icon}
             {o.label}
             {theme === o.id && (
-              <Check size={10} style={{ color: '#818cf8' }} />
+              <Check size={10} style={{ color: '#c084fc' }} />
             )}
           </button>
         ))}
@@ -275,8 +275,8 @@ function AccountSection() {
               <>
                 <div style={{
                   padding: '10px 12px', borderRadius: 8,
-                  background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)',
-                  fontSize: 12, color: '#818cf8',
+                  background: 'rgba(147,51,234,0.06)', border: '1px solid rgba(147,51,234,0.2)',
+                  fontSize: 12, color: '#c084fc',
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
                   <Lock size={13} /> Enter the 6-digit code sent to your email
@@ -291,7 +291,7 @@ function AccountSection() {
                   style={{
                     ...inputStyle,
                     letterSpacing: '0.3em', fontSize: 18, fontWeight: 700,
-                    textAlign: 'center', color: '#818cf8',
+                    textAlign: 'center', color: '#c084fc',
                   }}
                 />
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -390,9 +390,9 @@ function PreferencesSection({ settings, onChange }) {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Clock size={13} color="#818cf8" /> Study Reminder Time
+                <Clock size={13} color="#c084fc" /> Study Reminder Time
               </label>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#818cf8' }}>{settings.reminderTime}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#c084fc' }}>{settings.reminderTime}</span>
             </div>
             <input
               type="time"
@@ -405,15 +405,15 @@ function PreferencesSection({ settings, onChange }) {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <BookOpen size={13} color="#818cf8" /> Default Study Hours / Day
+                <BookOpen size={13} color="#c084fc" /> Default Study Hours / Day
               </label>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#818cf8' }}>{settings.defaultHours}h</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#c084fc' }}>{settings.defaultHours}h</span>
             </div>
             <input
               type="range" min={1} max={12} step={0.5}
               value={settings.defaultHours}
               onChange={e => onChange({ ...settings, defaultHours: Number(e.target.value) })}
-              style={{ width: '100%', accentColor: '#6366f1' }}
+              style={{ width: '100%', accentColor: '#9333ea' }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
               <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>1h</span>
@@ -462,8 +462,8 @@ export default function SettingsPanel() {
   const navItemStyle = (id) => ({
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '10px 14px', cursor: 'pointer', borderRadius: 8,
-    background: active === id ? 'rgba(99,102,241,0.1)' : 'transparent',
-    color: active === id ? '#818cf8' : 'var(--text-muted)',
+    background: active === id ? 'rgba(147,51,234,0.1)' : 'transparent',
+    color: active === id ? '#c084fc' : 'var(--text-muted)',
     fontSize: 13, fontWeight: active === id ? 600 : 400,
     border: 'none', width: '100%', textAlign: 'left',
     transition: 'all 0.12s',

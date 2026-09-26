@@ -136,7 +136,7 @@ export default function SignupPage({ onSwitch }) {
         {hint && (
           <div style={{
             fontSize: 11, marginBottom: 18, paddingLeft: 2,
-            color: hint.ok ? '#34d399' : '#f59e0b',
+            color: hint.ok ? '#34d399' : '#9333ea',
           }}>
             {hint.text}
           </div>
@@ -179,7 +179,7 @@ const styles = {
   page:      { minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 },
   card:      { background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 16, padding: '40px 36px', width: '100%', maxWidth: 420 },
   logoRow:   { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 },
-  logoIcon:  { width: 44, height: 44, background: 'linear-gradient(135deg,#f59e0b,#d97706)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  logoIcon:  { width: 44, height: 44, background: 'linear-gradient(135deg,#9333ea,#7e22ce)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   logoTitle: { fontSize: 20, fontWeight: 700, color: 'var(--text-bright)', fontFamily: 'Georgia, serif' },
   logoSub:   { fontSize: 11, color: 'var(--text-dimmer)', marginTop: 2 },
   heading:   { fontSize: 24, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 6 },
@@ -187,8 +187,8 @@ const styles = {
   error:     { background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 20 },
   label:     { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 },
   input:     { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border-card)', borderRadius: 8, padding: '11px 14px', color: 'var(--text-primary)', fontSize: 14, marginBottom: 18, display: 'block', boxSizing: 'border-box' },
-  btn:       { width: '100%', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0d1117', border: 'none', borderRadius: 8, padding: '13px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
+  btn:       { width: '100%', background: 'linear-gradient(135deg,#9333ea,#7e22ce)', color: '#0d1117', border: 'none', borderRadius: 8, padding: '13px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
   switchText:{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--text-dim)' },
-  link:      { color: '#f59e0b', cursor: 'pointer', fontWeight: 600 },
+  link:      { color: '#9333ea', cursor: 'pointer', fontWeight: 600 },
   eyeBtn:    { position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'var(--text-dimmer)', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center' },
 };
