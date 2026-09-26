@@ -177,6 +177,7 @@ export function useStudyPlanner(userId) {
   const [overflowCount, setOverflowCount] = useState(savedAtMount?.overflowCount ?? 0);
   const [streak, setStreak] = useState(() => uid ? loadStreak(uid).count : 0);
   const [streakLastDate, setStreakLastDate] = useState(() => uid ? loadStreak(uid).lastDate : null);
+  const [saveStatus, setSaveStatus] = useState('saved');
 
   const [lastAddedSubjectId, setLastAddedSubjectId] = useState(null);
   const [lastAddedTopicId,   setLastAddedTopicId]   = useState(null);
@@ -190,6 +191,12 @@ export function useStudyPlanner(userId) {
   // render so a timer cannot send that snapshot after an account switch.
   const activeUidRef   = useRef(uid);
   activeUidRef.current = uid;
+  const pendingSaveRef = useRef(null);
+  const retryTimerRef = useRef(null);
+  const retryAttemptRef = useRef(0);
+  const saveGenerationRef = useRef(0);
+  const saveInFlightRef = useRef(null);
+  const attemptSaveRef = useRef(null);
 
   // ── Module 2: sync engine state ───────────────────────────────────────────
   // The last server `version` this tab has confirmed (via hydration, a
@@ -214,6 +221,48 @@ export function useStudyPlanner(userId) {
       streak: { count: streak, lastDate: streakLastDate },
     };
   }, [subjects, examDate, dailyHours, schedule, dayIdx, overflowCount, streak, streakLastDate]);
+
+  // Keep the newest local snapshot pending until the server confirms it. A
+  // failed request is retried with capped backoff and is never replaced by a
+  // cross-device download while it remains unsynced.
+  attemptSaveRef.current = async () => {
+    const pending = pendingSaveRef.current;
+    if (!pending || !persistEnabled.current || activeUidRef.current !== pending.uid || saveInFlightRef.current) return;
+
+    const requestToken = {};
+    saveInFlightRef.current = requestToken;
+    const result = await pushFullPlan(pending.payload);
+    if (saveInFlightRef.current === requestToken) saveInFlightRef.current = null;
+    if (activeUidRef.current !== pending.uid) return;
+
+    if (result?.version !== undefined) {
+      serverVersionRef.current = result.version;
+      if (saveGenerationRef.current === pending.generation) {
+        pendingSaveRef.current = null;
+        retryAttemptRef.current = 0;
+        setSaveStatus('saved');
+      } else {
+        // A newer edit arrived while this request was in flight. Send that
+        // latest snapshot now instead of marking the planner as fully saved.
+        attemptSaveRef.current?.();
+      }
+      return;
+    }
+
+    if (saveGenerationRef.current !== pending.generation) {
+      attemptSaveRef.current?.();
+      return;
+    }
+
+    setSaveStatus('error');
+    const delays = [2000, 5000, 15000, 30000, 60000];
+    const delay = delays[Math.min(retryAttemptRef.current, delays.length - 1)];
+    retryAttemptRef.current += 1;
+    retryTimerRef.current = setTimeout(() => {
+      retryTimerRef.current = null;
+      attemptSaveRef.current?.();
+    }, delay);
+  };
 
   // ── beforeunload flush ────────────────────────────────────────────────────
   // The persist effect debounces server saves by 2 s. If the user refreshes
@@ -264,6 +313,13 @@ export function useStudyPlanner(userId) {
     persistEnabled.current = false;
     clearTimeout(debounceRef.current);
     debounceRef.current = null;
+    clearTimeout(retryTimerRef.current);
+    retryTimerRef.current = null;
+    pendingSaveRef.current = null;
+    saveInFlightRef.current = null;
+    retryAttemptRef.current = 0;
+    saveGenerationRef.current += 1;
+    setSaveStatus('saved');
     serverVersionRef.current = 0;
     isSyncingRef.current = false;
     skipNextPersistRef.current = false;
@@ -320,6 +376,8 @@ export function useStudyPlanner(userId) {
       active = false;
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
       persistEnabled.current = false;
     };
   }, [uid]);
@@ -349,6 +407,13 @@ export function useStudyPlanner(userId) {
     // localStorage: always immediate (fast, synchronous)
     saveToStorage(uid, payload);
 
+    const generation = ++saveGenerationRef.current;
+    pendingSaveRef.current = { uid, payload, generation };
+    retryAttemptRef.current = 0;
+    clearTimeout(retryTimerRef.current);
+    retryTimerRef.current = null;
+    setSaveStatus('saving');
+
     // Server: debounced — the beforeunload flush handles the "refresh too fast"
     // edge case so we can keep a comfortable 2 s window here.
     clearTimeout(debounceRef.current);
@@ -359,11 +424,7 @@ export function useStudyPlanner(userId) {
         debounceRef.current = null;
         return;
       }
-      pushFullPlan(payload).then(result => {
-        // Module 2: remember the version the server settled on so the next
-        // sync-status check knows this upload already happened.
-        if (result?.version !== undefined) serverVersionRef.current = result.version;
-      });
+      attemptSaveRef.current?.();
       // Release the debounce guard as soon as the request is sent (not when
       // it resolves) — sync-status polling only needs to know a save isn't
       // about to overwrite it a moment later, not wait on the network.
@@ -385,15 +446,16 @@ export function useStudyPlanner(userId) {
     // new server version instead of racing a download against it. This is
     // also what keeps offline edits intact: nothing here can overwrite
     // unsaved local changes.
-    if (debounceRef.current) return;
+    if (debounceRef.current || pendingSaveRef.current || saveInFlightRef.current) return;
 
     const status = await fetchSyncStatus(serverVersionRef.current);
+    if (activeUidRef.current !== uid || !persistEnabled.current || debounceRef.current || pendingSaveRef.current || saveInFlightRef.current) return;
     if (!status || !status.exists || !status.serverNewer) return;
 
     isSyncingRef.current = true;
     try {
       const serverData = await fetchFullPlan();
-      if (serverData) {
+      if (serverData && activeUidRef.current === uid && persistEnabled.current && !debounceRef.current && !pendingSaveRef.current) {
         skipNextPersistRef.current = true;
         setSubjects(serverData.subjects      ?? []);
         setExamDate(serverData.examDate      ?? defaultExamDate());
@@ -425,6 +487,13 @@ export function useStudyPlanner(userId) {
   useEffect(() => {
     if (!uid) return;
 
+    const onOnline = () => {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+      attemptSaveRef.current?.();
+    };
+    window.addEventListener('online', onOnline);
+
     const POLL_MS = 20000;
     const interval = setInterval(checkSyncStatus, POLL_MS);
 
@@ -436,6 +505,7 @@ export function useStudyPlanner(userId) {
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener('online', onOnline);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('focus', checkSyncStatus);
     };
@@ -597,7 +667,6 @@ export function useStudyPlanner(userId) {
     setLastAddedTopicId(null);
     if (uid) {
       saveToStorage(uid, empty);
-      pushFullPlan(empty);
       saveStreak(uid, { count: 0, lastDate: null });
       setStreak(0);
       setStreakLastDate(null);
@@ -615,5 +684,6 @@ export function useStudyPlanner(userId) {
     importSubjects,
     clearAll, unmarkAll,
     streak,
+    saveStatus,
   };
 }

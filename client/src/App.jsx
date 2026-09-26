@@ -48,7 +48,7 @@ export default function App() {
     addSubject, removeSubject, updateSubject,
     addTopic,   removeTopic,   updateTopic,
     importSubjects, clearAll, unmarkAll,
-    streak,
+    streak, saveStatus,
   } = planner;
 
   // ── Handlers ────────────────────────────────────────────────────────────
@@ -129,6 +129,17 @@ useEffect(() => {
         subjects={subjects}
         examDate={examDate}
       />
+
+      {saveStatus === 'error' && (
+        <div role="status" aria-live="polite" style={{
+          maxWidth: 912, margin: '12px auto 0', padding: '10px 14px',
+          border: '1px solid rgba(251,191,36,0.35)', borderRadius: 10,
+          background: 'rgba(251,191,36,0.08)', color: 'var(--text-primary)',
+          fontSize: 13,
+        }}>
+          Your latest changes are saved on this device. StudyFlow will keep trying to sync them.
+        </div>
+      )}
 
       {/* Single-column content — full 960 px restored */}
       <div className="sf-content" style={{ maxWidth: 960, margin: '0 auto', padding: '24px 24px 48px' }}>

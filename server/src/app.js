@@ -22,7 +22,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
 const app  = express();
-connectDB();
 const PORT = process.env.PORT || 5000;
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -176,10 +175,17 @@ if (existsSync(clientDist)) {
 app.use((_req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`\n🚀  StudyFlow AI server running on http://localhost:${PORT}\n`);
-  console.log(`[CORS] Allowed origins: ${getAllowedOrigins().join(', ')}\n`);
+export async function startServer() {
+  await connectDB();
+  return app.listen(PORT, () => {
+    console.log(`\n🚀  StudyFlow AI server running on http://localhost:${PORT}\n`);
+    console.log(`[CORS] Allowed origins: ${getAllowedOrigins().join(', ')}\n`);
+  });
+}
 
+startServer().catch((error) => {
+  console.error('[server] Startup failed:', error);
+  process.exit(1);
 });
 
 export default app;
