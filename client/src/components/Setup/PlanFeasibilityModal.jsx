@@ -278,7 +278,7 @@ export default function PlanFeasibilityModal({
           <button onClick={applyRemove} disabled={toRemove.size === 0}
             style={{
               ...styles.actionBtn,
-              background: toRemove.size > 0 ? 'linear-gradient(135deg,#f87171,#ef4444)' : '#1a2235',
+              background: toRemove.size > 0 ? 'linear-gradient(135deg,#f87171,#ef4444)' : 'var(--border-mid)',
               color: toRemove.size > 0 ? '#fff' : 'var(--text-dimmest)',
               cursor: toRemove.size > 0 ? 'pointer' : 'not-allowed',
             }}>
@@ -325,9 +325,9 @@ function Accordion({ id, expanded, setExpanded, icon, label, badge, badgeColor, 
   const open = expanded === id;
   return (
     <div style={{
-      border: `1px solid ${open ? 'var(--border-card)' : '#1a2235'}`,
+      border: `1px solid ${open ? 'var(--border-card)' : 'var(--border-mid)'}`,
       borderRadius: 10, marginBottom: 8, overflow: 'hidden',
-      background: open ? '#141924' : 'var(--bg-deep)',
+      background: open ? 'var(--section-bg)' : 'var(--bg-deep)',
     }}>
       <button onClick={() => setExpanded(open ? null : id)} style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 10,
@@ -336,7 +336,7 @@ function Accordion({ id, expanded, setExpanded, icon, label, badge, badgeColor, 
       }}>
         <div style={{
           width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-          background: 'rgba(255,255,255,0.04)',
+          background: 'var(--bg-card)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>{icon}</div>
         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>

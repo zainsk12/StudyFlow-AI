@@ -11,7 +11,6 @@ import StatsTab                 from './components/Stats/StatsTab';
 import AICoachTab               from './components/AICoach/AICoachTab';
 import ClearDataModal           from './components/common/ClearDataModal';
 import PlanFeasibilityModal     from './components/Setup/PlanFeasibilityModal';
-import { FOCUS_SEC, BREAK_SEC } from './components/Schedule/PomodoroTimer';
 import { useStudyPlanner }      from './hooks/useStudyPlanner';
 import { AI_WELCOME }           from './constants';
 import './styles/global.css';
@@ -38,12 +37,6 @@ export default function App() {
     if (!user) setChatMessages([{ role: 'assistant', text: AI_WELCOME }]);
   }, [user]);
 
-  // ── 🍅 Pomodoro — lifted so the timer never resets on tab switch ────────
-  const [pomoPhase,     setPomoPhase]     = useState('idle');
-  const [pomoFocusLeft, setPomoFocusLeft] = useState(FOCUS_SEC);
-  const [pomoBreakLeft, setPomoBreakLeft] = useState(BREAK_SEC);
-  const [pomoSessions,  setPomoSessions]  = useState(0);
-
   // ── Study planner ───────────────────────────────────────────────────────
   const planner = useStudyPlanner(user?._id);
   const {
@@ -57,9 +50,6 @@ export default function App() {
     importSubjects, clearAll, unmarkAll,
     streak,
   } = planner;
-
-  // Current topic shown inside the Pomodoro timer
-  const currentTopicName = schedule[dayIdx]?.sessions?.[0]?.topicName ?? null;
 
   // ── Handlers ────────────────────────────────────────────────────────────
   const handleGenerate       = () => { generatePlan(); setTab('schedule'); };
@@ -112,8 +102,8 @@ useEffect(() => {
 }, [clearModalInfo, showFeasibility]);
 
   if (loading) return (
-    <div style={{ minHeight:'100vh', background:'#0d1117', display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <div style={{ color:'#475569', fontSize:14 }}>Loading…</div>
+    <div style={{ minHeight:'100vh', background:'var(--bg-base)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ color:'var(--text-dimmer)', fontSize:14 }}>Loading…</div>
     </div>
   );
 
@@ -126,21 +116,15 @@ useEffect(() => {
   return (
     <div style={{
       fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif",
-      background: '#0d1117', minHeight: '100vh', color: '#e2e8f0',
+      background: 'var(--bg-base)', minHeight: '100vh', color: 'var(--text-primary)',
     }}>
       {/*
-        Header owns the Pomodoro pill (dropdown) and the user avatar (dropdown).
-        All timer state is lifted here so it survives tab switches.
+        Header owns the user avatar dropdown.
         subjects + examDate are passed so ProfileModal can show study overview.
       */}
       <Header
         tab={tab} setTab={setTab}
         stats={stats} dailyHours={dailyHours}
-        pomoPhase={pomoPhase}         setPomoPhase={setPomoPhase}
-        pomoFocusLeft={pomoFocusLeft} setPomoFocusLeft={setPomoFocusLeft}
-        pomoBreakLeft={pomoBreakLeft} setPomoBreakLeft={setPomoBreakLeft}
-        pomoSessions={pomoSessions}   setPomoSessions={setPomoSessions}
-        currentTopicName={currentTopicName}
         subjects={subjects}
         examDate={examDate}
       />

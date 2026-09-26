@@ -80,11 +80,11 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
               borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
               background: m.role === 'user'
                 ? 'linear-gradient(135deg,#818cf8,#6366f1)'
-                : '#1c2030',
-              border: m.role === 'assistant' ? '1px solid #252d42' : 'none',
+                : 'var(--bg-deep)',
+              border: m.role === 'assistant' ? '1px solid var(--border-card)' : 'none',
               fontSize: 13,
               lineHeight: 1.6,
-              color: '#e2e8f0',
+              color: 'var(--text-primary)',
               whiteSpace: 'pre-wrap',
             }}>
               {m.text}
@@ -95,13 +95,13 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
         {isLoading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <div style={{
-              padding: '10px 16px', background: '#1c2030',
-              border: '1px solid #252d42', borderRadius: '16px 16px 16px 4px',
+              padding: '10px 16px', background: 'var(--bg-deep)',
+              border: '1px solid var(--border-card)', borderRadius: '16px 16px 16px 4px',
               display: 'flex', gap: 4, alignItems: 'center',
             }}>
               {[0, 1, 2].map(i => (
                 <span key={i} style={{
-                  width: 6, height: 6, borderRadius: '50%', background: '#475569',
+                  width: 6, height: 6, borderRadius: '50%', background: 'var(--text-dimmer)',
                   display: 'inline-block',
                   animation: 'sfTyping 1s infinite',
                   animationDelay: `${i * 0.2}s`,
@@ -143,9 +143,9 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
           disabled={isLoading}
           placeholder="Ask your AI coach anything…"
           style={{
-            flex: 1, background: '#1c2030', border: '1px solid #252d42',
+            flex: 1, background: 'var(--input-bg)', border: '1px solid var(--border-card)',
             borderRadius: 10, padding: '10px 14px',
-            color: '#e2e8f0', fontSize: 13, outline: 'none',
+            color: 'var(--text-primary)', fontSize: 13, outline: 'none',
             transition: 'border-color 0.15s',
             opacity: isLoading ? 0.6 : 1,
           }}
@@ -156,9 +156,9 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
           style={{
             background: canSend
               ? 'linear-gradient(135deg,#818cf8,#6366f1)'
-              : '#1e293b',
+              : 'var(--border-mid)',
             border: 'none', borderRadius: 10, padding: '10px 16px',
-            color: canSend ? '#fff' : '#334155',
+            color: canSend ? '#fff' : 'var(--text-dimmest)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'background 0.15s, opacity 0.15s',
           }}

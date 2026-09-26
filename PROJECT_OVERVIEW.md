@@ -8,7 +8,7 @@ StudyFlow AI is a web application for planning exam study, tracking topic comple
 
 - Create subjects and topics, with difficulty levels, and build a schedule from the exam date and available study hours.
 - View daily sessions and mark topics complete; review progress, statistics, and study streaks.
-- Use a Pomodoro timer and export a schedule to PDF.
+- Export a schedule to PDF.
 - Use the AI coach, import a PDF syllabus to extract structured subjects and topics, and get AI advice when regenerating a schedule. These AI features are available to all signed-in users.
 
 The schedule builder and progress calculations are in the browser. The server provides schedule persistence and synchronization endpoints; schedule generation is not performed through a server generation endpoint by the current client.
@@ -70,7 +70,7 @@ The planner hook initializes from the current user's localStorage snapshot, then
 
 ## Client responsibilities
 
-- `App.jsx` coordinates the signed-in and signed-out experiences, tab navigation, app-level dialogs, and shared Pomodoro state.
+- `App.jsx` coordinates the signed-in and signed-out experiences, tab navigation, and app-level dialogs.
 - `AuthContext.jsx` manages session state and account information through the authentication API.
 - `ThemeContext.jsx` provides dark, light, and system theme selection.
 - `useStudyPlanner.js` owns planner state, local/server hydration and persistence, and study actions.

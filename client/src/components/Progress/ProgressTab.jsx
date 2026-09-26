@@ -280,7 +280,7 @@ const DayCard = memo(function DayCard({
 
       {/* Topic list */}
       {expanded && (
-        <div style={{ borderTop: '1px solid #1a2035', padding: '8px 16px 14px', animation: 'fadeSlideIn 0.18s ease' }}>
+        <div style={{ borderTop: '1px solid var(--border-mid)', padding: '8px 16px 14px', animation: 'fadeSlideIn 0.18s ease' }}>
           <div style={{
             display: 'flex', gap: 16, marginBottom: 10,
             padding: '8px 12px', background: 'rgba(255,255,255,0.02)',
@@ -522,7 +522,7 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
               borderLeft: '3px solid var(--text-dimmer)',
               borderRadius: 10, overflow: 'hidden',
             }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a2035' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-mid)' }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-dim)', marginBottom: 2 }}>
                   📋 Unscheduled Topics ({unscheduledTopics.length})
                 </div>

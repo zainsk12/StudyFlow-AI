@@ -14,7 +14,6 @@
 | Daily Schedule View | Scrollable day strip with session cards showing subject, topic, difficulty, and hours |
 | Progress Tracker | One-click topic completion with per-subject and overall progress bars |
 | Stats Dashboard | Donut chart (hours/subject), stacked bar (done vs pending), difficulty breakdown |
-| Pomodoro timer | Built into the header |
 | Export schedule to PDF | Client-side via `jspdf` |
 | Study streak counter | localStorage-based |
 

@@ -7,6 +7,7 @@
 }
 
 :root {
+  color-scheme: dark;
   --bg-base:      #0d1117;
   --bg-card:      #1c2030;
   --bg-deep:      #111827;
@@ -32,6 +33,7 @@
 
 /* Light theme overrides */
 [data-theme="light"] {
+  color-scheme: light;
   --bg-base:      #f1f5f9;
   --bg-card:      #ffffff;
   --bg-deep:      #f8fafc;
@@ -41,8 +43,8 @@
   --text-primary: #0f172a;
   --text-muted:   #475569;
   --text-dim:     #64748b;
-  --text-dimmer:  #94a3b8;
-  --text-dimmest: #cbd5e1;
+  --text-dimmer:  #64748b;
+  --text-dimmest: #94a3b8;
   --text-bright:  #0f172a;
   --text-soft:    #334155;
   --modal-bg:     #ffffff;
@@ -63,8 +65,8 @@ body {
 
 /* Scrollbar */
 ::-webkit-scrollbar       { width: 4px; }
-::-webkit-scrollbar-track { background: #151c2c; }
-::-webkit-scrollbar-thumb { background: #2d3a55; border-radius: 2px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
 
 /* Hide horizontal scrollbar on day strip */
 ::-webkit-scrollbar:horizontal { height: 0; }
@@ -84,6 +86,7 @@ input[type="range"] { accent-color: var(--accent); }
 
 /* ── Hover utilities ─────────────────────────────────────────────────────── */
 .hover-row:hover    { background: rgba(255,255,255,0.03) !important; cursor: pointer; }
+[data-theme="light"] .hover-row:hover { background: rgba(15,23,42,0.04) !important; }
 .rm-btn             { opacity: 0; transition: opacity 0.15s; }
 .parent-row:hover .rm-btn { opacity: 1; }
 .chip-btn:hover     { background: rgba(245,158,11,0.15) !important; }
@@ -214,8 +217,8 @@ img, svg, canvas, video { max-width: 100%; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    COMPONENT REFLOW (roadmap task 2.2)
-   Collapse fixed grids, stack the settings layout, and keep the Pomodoro
-   dropdown on-screen. Desktop (> 768px) is untouched — all rules are gated.
+   Collapse fixed grids and stack the settings layout. Desktop (> 768px) is
+   untouched — all rules are gated.
    `!important` is required only to override the components' inline grid/style.
    ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -237,14 +240,6 @@ img, svg, canvas, video { max-width: 100%; }
   }
   .sf-settings-nav::-webkit-scrollbar { height: 0; }
   .sf-settings-nav > button { flex-shrink: 0; }
-
-  /* Header Pomodoro dropdown: anchor to the right edge instead of a fixed
-     desktop offset so it stays fully on-screen down to 320px. */
-  .sf-pomo-panel {
-    right: 8px !important;
-    left: auto !important;
-    max-width: calc(100vw - 16px) !important;
-  }
 }
 
 /* Difficulty cards (3-up) stay readable on the narrowest phones */

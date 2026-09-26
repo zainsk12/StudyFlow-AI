@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Target, Calendar, CheckCircle2, BarChart2, Brain, LogOut, User, Settings } from 'lucide-react';
 import { TABS }          from '../../constants';
 import { useAuth }       from '../../context/AuthContext';
-import PomodoroTimer     from '../Schedule/PomodoroTimer';
 import ProfileModal      from './ProfileModal';
 import SettingsPanel     from './SettingsPanel';
 
@@ -183,12 +182,6 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
 // ── Main Header ───────────────────────────────────────────────────────────
 export default function Header({
   tab, setTab, stats, dailyHours,
-  // Pomodoro state from App.jsx
-  pomoPhase, setPomoPhase,
-  pomoFocusLeft, setPomoFocusLeft,
-  pomoBreakLeft, setPomoBreakLeft,
-  pomoSessions, setPomoSessions,
-  currentTopicName,
   // Data for profile modal
   subjects, examDate,
 }) {
@@ -247,18 +240,6 @@ export default function Header({
               {/* Divider */}
               <div style={{ width: 1, height: 32, background: 'var(--border-mid, #1e293b)', flexShrink: 0 }} />
 
-              {/* ── Pomodoro pill ── */}
-              <PomodoroTimer
-                phase={pomoPhase}           setPhase={setPomoPhase}
-                focusLeft={pomoFocusLeft}   setFocusLeft={setPomoFocusLeft}
-                breakLeft={pomoBreakLeft}   setBreakLeft={setPomoBreakLeft}
-                sessions={pomoSessions}     setSessions={setPomoSessions}
-                currentTopicName={currentTopicName}
-              />
-
-              {/* Divider */}
-              <div style={{ width: 1, height: 32, background: 'var(--border-mid, #1e293b)', flexShrink: 0 }} />
-
               {/* ── Avatar dropdown ── */}
               <UserMenu
                 user={user}
@@ -281,7 +262,7 @@ export default function Header({
                   padding: '9px 18px',
                   background: 'transparent', border: 'none',
                   borderBottom: '2px solid transparent',
-                  color: tab === t.id ? '#f59e0b' : '#475569',
+                  color: tab === t.id ? '#f59e0b' : 'var(--text-muted)',
                   cursor: 'pointer', fontSize: 13, fontWeight: 500,
                   borderRadius: '8px 8px 0 0',
                 }}

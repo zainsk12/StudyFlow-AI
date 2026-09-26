@@ -33,12 +33,12 @@ export default class ErrorBoundary extends Component {
 
     return (
       <div style={{
-        minHeight: '100vh', background: '#0d1117',
+        minHeight: '100vh', background: 'var(--bg-base)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 24, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif",
       }}>
         <div style={{
-          background: '#1c2030', border: '1px solid rgba(248,113,113,0.25)',
+          background: 'var(--bg-card)', border: '1px solid rgba(248,113,113,0.25)',
           borderRadius: 16, padding: '40px 36px', maxWidth: 440, width: '100%',
           textAlign: 'center',
         }}>
@@ -49,19 +49,19 @@ export default class ErrorBoundary extends Component {
             fontSize: 26,
           }}>⚠️</div>
 
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 8 }}>
             Something went wrong
           </div>
           <div style={{
-            fontSize: 13, color: '#64748b', lineHeight: 1.6, marginBottom: 8,
+            fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.6, marginBottom: 8,
           }}>
             An unexpected error occurred. Your study data is safe — it's stored
             in your account and will reload automatically.
           </div>
           {this.state.message && (
             <div style={{
-              fontSize: 11, color: '#475569', background: '#111827',
-              border: '1px solid #252d42', borderRadius: 8,
+              fontSize: 11, color: 'var(--text-dimmer)', background: 'var(--bg-deep)',
+              border: '1px solid var(--border-card)', borderRadius: 8,
               padding: '8px 12px', marginBottom: 24,
               fontFamily: 'monospace', textAlign: 'left', wordBreak: 'break-word',
             }}>
