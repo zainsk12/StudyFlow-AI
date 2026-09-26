@@ -125,7 +125,7 @@ export default function PlanFeasibilityModal({
         {/* Header */}
         <button onClick={onClose} style={styles.closeBtn}><X size={18} /></button>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-          <div style={styles.iconBox}><AlertTriangle size={22} color="#9333ea" /></div>
+          <div style={styles.iconBox}><AlertTriangle size={22} color="var(--accent)" /></div>
           <div>
             <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 4 }}>
               Not enough time for all topics
@@ -134,7 +134,7 @@ export default function PlanFeasibilityModal({
               {/* Use liveOverflowCount (computed from current settings) instead of
                   the stale overflowCount prop so the header always reflects the
                   actual gap given current dailyHours and examDate.              */}
-              <span style={{ color: '#f87171', fontWeight: 600 }}>
+              <span style={{ color: 'var(--red)', fontWeight: 600 }}>
                 ~{liveOverflowCount} topic{liveOverflowCount !== 1 ? 's' : ''}
               </span>{' '}
               won't fit before your exam. Adjust below, then click <strong style={{ color: 'var(--text-bright)' }}>Generate New Plan</strong>.
@@ -145,10 +145,10 @@ export default function PlanFeasibilityModal({
         {/* Summary bar */}
         <div className="sf-grid-4" style={styles.summaryRow}>
           {[
-            { label: 'Days left',     value: `${daysLeft}d`,       color: '#9333ea' },
-            { label: 'Hrs available', value: `${availableHours}h`, color: '#60a5fa' },
-            { label: 'Hrs needed',    value: `${totalHours}h`,     color: '#f87171' },
-            { label: 'Shortfall',     value: `${hoursShortfall}h`, color: hoursShortfall > 0 ? '#f87171' : '#34d399' },
+            { label: 'Days left',     value: `${daysLeft}d`,       color: 'var(--accent)' },
+            { label: 'Hrs available', value: `${availableHours}h`, color: 'var(--accent-hover)' },
+            { label: 'Hrs needed',    value: `${totalHours}h`,     color: 'var(--red)' },
+            { label: 'Shortfall',     value: `${hoursShortfall}h`, color: hoursShortfall > 0 ? 'var(--red)' : 'var(--green)' },
           ].map(i => (
             <div key={i.label} style={styles.summaryCell}>
               <div style={{ fontSize: 16, fontWeight: 800, color: i.color }}>{i.value}</div>
@@ -160,8 +160,8 @@ export default function PlanFeasibilityModal({
         {/* Applied success notice */}
         {applied && (
           <div style={styles.successBanner}>
-            <CheckCircle2 size={15} color="#34d399" style={{ flexShrink: 0, marginTop: 1 }} />
-            <span style={{ fontSize: 13, color: '#34d399' }}>
+            <CheckCircle2 size={15} color="var(--green)" style={{ flexShrink: 0, marginTop: 1 }} />
+            <span style={{ fontSize: 13, color: 'var(--green)' }}>
               {applied === 'hours'  && `Daily hours updated to ${newHours}h/day.`}
               {applied === 'date'   && `Exam date updated to ${newDate}.`}
               {applied === 'remove' && `${toRemove.size} topic${toRemove.size !== 1 ? 's' : ''} removed.`}
@@ -172,21 +172,21 @@ export default function PlanFeasibilityModal({
 
         {/* PATH 1: Increase daily hours */}
         <Accordion id="hours" expanded={expanded} setExpanded={setExpanded}
-          icon={<Clock size={14} color="#c084fc" />}
+          icon={<Clock size={14} color="var(--accent-soft)" />}
           label="Increase daily study hours"
           badge={requiredDailyHours ? `Needs ≥ ${requiredDailyHours}h/day` : undefined}
-          badgeColor="#c084fc"
+          badgeColor="var(--accent-soft)"
         >
           <p style={styles.hint}>
-            Currently <b style={{ color: '#9333ea' }}>{dailyHours}h/day</b> × {daysLeft} days = {availableHours}h.
-            Need at least <b style={{ color: '#34d399' }}>{requiredDailyHours}h/day</b> for all {totalTopics} topics.
+            Currently <b style={{ color: 'var(--accent)' }}>{dailyHours}h/day</b> × {daysLeft} days = {availableHours}h.
+            Need at least <b style={{ color: 'var(--green)' }}>{requiredDailyHours}h/day</b> for all {totalTopics} topics.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
             <input type="range" min={1} max={12} step={0.5} value={newHours}
               onChange={e => setNewHours(+e.target.value)} style={{ flex: 1 }} />
             <span style={{
               minWidth: 46, textAlign: 'center', fontSize: 20, fontWeight: 800,
-              color: newHours >= (requiredDailyHours ?? 0) ? '#34d399' : '#9333ea',
+              color: newHours >= (requiredDailyHours ?? 0) ? 'var(--green)' : 'var(--accent)',
             }}>{newHours}h</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-dimmest)', marginBottom: 10 }}>
@@ -197,22 +197,22 @@ export default function PlanFeasibilityModal({
             : <div style={styles.hintAmber}>Still {fmt(totalHours - newHours * daysLeft)}h short — slide to at least {requiredDailyHours}h.</div>
           }
           <button onClick={applyHours}
-            style={{ ...styles.actionBtn, background: 'linear-gradient(135deg,#c084fc,#9333ea)' }}>
+            style={{ ...styles.actionBtn, background: 'linear-gradient(135deg,var(--accent-soft),var(--accent))' }}>
             Apply {newHours}h/day
           </button>
         </Accordion>
 
         {/* PATH 2: Move exam date */}
         <Accordion id="date" expanded={expanded} setExpanded={setExpanded}
-          icon={<CalendarDays size={14} color="#60a5fa" />}
+          icon={<CalendarDays size={14} color="var(--accent-hover)" />}
           label="Move your target / exam date"
           badge={daysNeeded ? `Needs ${daysNeeded} days` : undefined}
-          badgeColor="#60a5fa"
+          badgeColor="var(--accent-hover)"
         >
           <p style={styles.hint}>
-            At <b style={{ color: '#9333ea' }}>{dailyHours}h/day</b> you need{' '}
-            <b style={{ color: '#34d399' }}>{daysNeeded} days</b>. Suggested date:{' '}
-            <b style={{ color: '#34d399' }}>{suggestedDate}</b> or later.
+            At <b style={{ color: 'var(--accent)' }}>{dailyHours}h/day</b> you need{' '}
+            <b style={{ color: 'var(--green)' }}>{daysNeeded} days</b>. Suggested date:{' '}
+            <b style={{ color: 'var(--green)' }}>{suggestedDate}</b> or later.
           </p>
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 6 }}>Choose new date</div>
@@ -226,21 +226,21 @@ export default function PlanFeasibilityModal({
             : <div style={styles.hintAmber}>Still short — need at least {daysNeeded} days from today.</div>
           }
           <button onClick={applyDate}
-            style={{ ...styles.actionBtn, background: 'linear-gradient(135deg,#60a5fa,#3b82f6)' }}>
+            style={{ ...styles.actionBtn, background: 'linear-gradient(135deg,var(--accent-hover),var(--accent))' }}>
             Apply New Date
           </button>
         </Accordion>
 
         {/* PATH 3: Remove topics */}
         <Accordion id="remove" expanded={expanded} setExpanded={setExpanded}
-          icon={<Trash2 size={14} color="#f87171" />}
+          icon={<Trash2 size={14} color="var(--red)" />}
           label="Remove lower-priority topics"
           badge={`Free up ${hoursShortfall}h`}
-          badgeColor="#f87171"
+          badgeColor="var(--red)"
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 12, color: 'var(--text-dimmer)' }}>{toRemove.size} selected · {fmt(hoursFreed)}h freed</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: removalSolvesGap ? '#34d399' : '#9333ea' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: removalSolvesGap ? 'var(--green)' : 'var(--accent)' }}>
               {removalSolvesGap ? '✓ Gap closed!' : `${fmt(hoursShortfall - hoursFreed)}h still needed`}
             </span>
           </div>
@@ -251,12 +251,12 @@ export default function PlanFeasibilityModal({
               return (
                 <label key={`${t.subjectId}-${t.id}`} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  background: checked ? 'rgba(248,113,113,0.08)' : 'var(--bg-deep)',
-                  border: checked ? '1px solid rgba(248,113,113,0.3)' : '1px solid var(--border-mid)',
+                  background: checked ? 'rgba(251,113,133,0.08)' : 'var(--bg-deep)',
+                  border: checked ? '1px solid rgba(251,113,133,0.3)' : '1px solid var(--border-mid)',
                   borderRadius: 8, padding: '8px 11px', cursor: 'pointer',
                 }}>
                   <input type="checkbox" checked={checked} onChange={() => toggleRemove(t)}
-                    style={{ accentColor: '#f87171', width: 14, height: 14, flexShrink: 0 }} />
+                    style={{ accentColor: 'var(--red)', width: 14, height: 14, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: 13, color: checked ? 'var(--text-dim)' : 'var(--text-primary)',
@@ -277,7 +277,7 @@ export default function PlanFeasibilityModal({
           <button onClick={applyRemove} disabled={toRemove.size === 0}
             style={{
               ...styles.actionBtn,
-              background: toRemove.size > 0 ? 'linear-gradient(135deg,#f87171,#ef4444)' : 'var(--border-mid)',
+              background: toRemove.size > 0 ? 'linear-gradient(135deg,var(--red),var(--red))' : 'var(--border-mid)',
               color: toRemove.size > 0 ? '#fff' : 'var(--text-dimmest)',
               cursor: toRemove.size > 0 ? 'pointer' : 'not-allowed',
             }}>
@@ -290,8 +290,8 @@ export default function PlanFeasibilityModal({
           <button onClick={onGenerateNew} style={{
             flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: hasChanges
-              ? 'linear-gradient(135deg,#34d399,#10b981)'
-              : 'linear-gradient(135deg,#9333ea,#7e22ce)',
+              ? 'linear-gradient(135deg,var(--green),var(--green-dark))'
+              : 'linear-gradient(135deg,var(--accent),var(--accent-dark))',
             border: 'none', borderRadius: 9, padding: '12px 16px',
             color: 'var(--bg-base)', fontSize: 14, fontWeight: 700, cursor: 'pointer',
           }}>
@@ -375,7 +375,7 @@ const styles = {
   },
   iconBox: {
     width: 44, height: 44, borderRadius: 13, flexShrink: 0,
-    background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.25)',
+    background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 16 },
@@ -385,17 +385,17 @@ const styles = {
   },
   successBanner: {
     display: 'flex', alignItems: 'flex-start', gap: 8,
-    background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.22)',
+    background: 'rgba(45,212,191,0.07)', border: '1px solid rgba(45,212,191,0.22)',
     borderRadius: 8, padding: '10px 13px', marginBottom: 12,
   },
   hint: { fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5, marginBottom: 12, marginTop: 0 },
   hintGreen: {
-    fontSize: 12, color: '#34d399', background: 'rgba(52,211,153,0.07)',
-    border: '1px solid rgba(52,211,153,0.18)', borderRadius: 6, padding: '6px 10px', marginBottom: 10,
+    fontSize: 12, color: 'var(--green)', background: 'rgba(45,212,191,0.07)',
+    border: '1px solid rgba(45,212,191,0.18)', borderRadius: 6, padding: '6px 10px', marginBottom: 10,
   },
   hintAmber: {
-    fontSize: 12, color: '#9333ea', background: 'rgba(147,51,234,0.07)',
-    border: '1px solid rgba(147,51,234,0.18)', borderRadius: 6, padding: '6px 10px', marginBottom: 10,
+    fontSize: 12, color: 'var(--accent)', background: 'rgba(99,102,241,0.07)',
+    border: '1px solid rgba(99,102,241,0.18)', borderRadius: 6, padding: '6px 10px', marginBottom: 10,
   },
   actionBtn: {
     width: '100%', border: 'none', borderRadius: 8,

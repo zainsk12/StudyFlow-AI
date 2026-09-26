@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { Download, Loader } from 'lucide-react';
 
-const DIFF_CLR_HEX = { easy: '#34d399', medium: '#c026d3', hard: '#f87171' };
+const DIFF_CLR_HEX = { easy: '#0f766e', medium: '#6d5ce8', hard: '#be123c' };
 
 export default function ExportPDFButton({ schedule, subjects, examDate, dailyHours }) {
   const [loading, setLoading] = useState(false);
@@ -168,7 +168,7 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
           }
 
           // Difficulty colour bar
-          const dclr = DIFF_CLR_HEX[session.difficulty] || '#475569';
+          const dclr = DIFF_CLR_HEX[session.difficulty] || '#9aa6d5';
           const dr = parseInt(dclr.slice(1, 3), 16);
           const dg = parseInt(dclr.slice(3, 5), 16);
           const db = parseInt(dclr.slice(5, 7), 16);
@@ -240,11 +240,11 @@ export default function ExportPDFButton({ schedule, subjects, examDate, dailyHou
         display:      'flex',
         alignItems:   'center',
         gap:          7,
-        background:   'rgba(192,132,252,0.08)',
-        border:       '1px solid rgba(192,132,252,0.25)',
+        background:   'rgba(167,139,250,0.08)',
+        border:       '1px solid rgba(167,139,250,0.25)',
         borderRadius: 8,
         padding:      '8px 16px',
-        color:        '#c084fc',
+        color:        'var(--accent-soft)',
         fontSize:     13,
         fontWeight:   600,
         cursor:       loading || !schedule?.length ? 'not-allowed' : 'pointer',

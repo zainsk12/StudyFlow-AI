@@ -6,15 +6,15 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
   const isManual   = reason === 'manual';
 
   const getIcon = () => {
-    if (isExamOver) return <AlertTriangle size={24} color="#c084fc" />;
+    if (isExamOver) return <AlertTriangle size={24} color="var(--accent-soft)" />;
     if (isAllDone)  return <span style={{ fontSize: 24 }}>🎉</span>;
-    return <Trash2 size={24} color="#f87171" />;
+    return <Trash2 size={24} color="var(--red)" />;
   };
 
   const getIconBg = () => {
-    if (isExamOver) return { bg: 'rgba(192,132,252,0.1)', border: 'rgba(192,132,252,0.2)' };
-    if (isAllDone)  return { bg: 'rgba(52,211,153,0.1)',  border: 'rgba(52,211,153,0.2)'  };
-    return              { bg: 'rgba(248,113,113,0.1)',  border: 'rgba(248,113,113,0.2)'  };
+    if (isExamOver) return { bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.2)' };
+    if (isAllDone)  return { bg: 'rgba(45,212,191,0.1)',  border: 'rgba(45,212,191,0.2)'  };
+    return              { bg: 'rgba(251,113,133,0.1)',  border: 'rgba(251,113,133,0.2)'  };
   };
 
   const getTitle = () => {
@@ -26,20 +26,20 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
   const getMessage = () => {
     if (isExamOver) return (
       <>
-        Your exam date <span style={{ color: '#c084fc', fontWeight: 600 }}>{examDate}</span> has
+        Your exam date <span style={{ color: 'var(--accent-soft)', fontWeight: 600 }}>{examDate}</span> has
         passed. Would you like to clear all subjects and topics to start fresh for your next exam?
       </>
     );
     if (isAllDone) return (
       <>
-        You've completed <span style={{ color: '#34d399', fontWeight: 600 }}>100%</span> of your
+        You've completed <span style={{ color: 'var(--green)', fontWeight: 600 }}>100%</span> of your
         topics — great work! Would you like to clear everything and start planning your next exam?
       </>
     );
     return (
       <>
         You currently have{' '}
-        <span style={{ color: '#9333ea', fontWeight: 600 }}>{pct}% progress</span> on your study
+        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{pct}% progress</span> on your study
         plan. Are you sure you want to clear all subjects, topics, and your schedule?
         {pct > 0 && (
           <><br /><br />
@@ -52,9 +52,9 @@ export default function ClearDataModal({ reason, examDate, pct, onConfirm, onDis
   };
 
   const getBtnColor = () => {
-    if (isExamOver) return 'linear-gradient(135deg,#c084fc,#9333ea)';
-    if (isAllDone)  return 'linear-gradient(135deg,#34d399,#10b981)';
-    return 'linear-gradient(135deg,#f87171,#ef4444)';
+    if (isExamOver) return 'linear-gradient(135deg,var(--accent-soft),var(--accent))';
+    if (isAllDone)  return 'linear-gradient(135deg,var(--green),var(--green-dark))';
+    return 'linear-gradient(135deg,var(--red),var(--red))';
   };
 
   const { bg, border } = getIconBg();

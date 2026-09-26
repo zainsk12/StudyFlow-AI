@@ -29,7 +29,7 @@ function InlineInput({
         padding: '3px 6px', borderRadius: 6,
         transition: 'border-color 0.15s, background 0.15s',
       }}
-      onFocus={e => { e.target.style.background = 'rgba(147,51,234,0.06)'; e.target.style.borderColor = 'rgba(147,51,234,0.4)'; }}
+      onFocus={e => { e.target.style.background = 'rgba(99,102,241,0.06)'; e.target.style.borderColor = 'rgba(99,102,241,0.4)'; }}
       onBlur={e  => { e.target.style.background = 'transparent';            e.target.style.borderColor = 'transparent'; }}
     />
   );
@@ -64,7 +64,7 @@ function ConfirmRegenDialog({ onConfirm, onCancel }) {
         borderRadius: 14, padding: '28px 28px 24px', maxWidth: 400, width: '100%',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <AlertTriangle size={20} color="#9333ea" />
+          <AlertTriangle size={20} color="var(--accent)" />
           <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-bright)' }}>Overwrite schedule?</div>
         </div>
         <div style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.65, marginBottom: 24 }}>
@@ -84,7 +84,7 @@ function ConfirmRegenDialog({ onConfirm, onCancel }) {
           <button
             onClick={onConfirm}
             style={{
-              background: 'linear-gradient(135deg,#9333ea,#7e22ce)',
+              background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))',
               border: 'none', borderRadius: 8, padding: '8px 20px',
               color: 'var(--bg-base)', fontWeight: 700, cursor: 'pointer', fontSize: 13,
             }}
@@ -197,7 +197,7 @@ export default function SetupTab({
           <div>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 6 }}>
               Daily Study Hours —{' '}
-              <span style={{ color: '#9333ea', fontWeight: 600 }}>{dailyHours}h/day</span>
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{dailyHours}h/day</span>
             </div>
             <input type="range" min={1} max={12} step={0.5} value={dailyHours}
               onChange={e => setDailyHours(+e.target.value)}
@@ -217,16 +217,16 @@ export default function SetupTab({
             <SyllabusImport onImport={handleImportSubjects} />
             <button onClick={addSubject} style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.25)',
-              borderRadius: 8, padding: '6px 14px', color: '#9333ea', cursor: 'pointer', fontSize: 12, fontWeight: 500,
+              background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)',
+              borderRadius: 8, padding: '6px 14px', color: 'var(--accent)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
             }}>
               <Plus size={13} /> Add Subject
             </button>
             {subjects.length > 0 && (
               <button onClick={onClearAll} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)',
-                borderRadius: 8, padding: '6px 14px', color: '#f87171', cursor: 'pointer', fontSize: 12, fontWeight: 500,
+                background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.2)',
+                borderRadius: 8, padding: '6px 14px', color: 'var(--red)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
                 <Trash2 size={13} /> Clear All
               </button>
@@ -315,25 +315,25 @@ export default function SetupTab({
       {/* ── Overflow warning ─────────────────────────────────────────── */}
       {hasOverflow && (
         <div style={{
-          background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.25)',
-          borderLeft: '3px solid #f87171', borderRadius: 10, padding: '14px 18px',
+          background: 'rgba(251,113,133,0.06)', border: '1px solid rgba(251,113,133,0.25)',
+          borderLeft: '3px solid var(--red)', borderRadius: 10, padding: '14px 18px',
           display: 'flex', alignItems: 'flex-start', gap: 12,
         }}>
-          <AlertTriangle size={17} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
+          <AlertTriangle size={17} color="var(--red)" style={{ flexShrink: 0, marginTop: 1 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#f87171', marginBottom: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--red)', marginBottom: 4 }}>
               ~{estTopicsOver} topic{estTopicsOver !== 1 ? 's' : ''} won't fit before your exam
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.6 }}>
               Your current plan has{' '}
-              <span style={{ color: '#9333ea', fontWeight: 600 }}>{stats.daysLeft} days</span> ×{' '}
-              <span style={{ color: '#9333ea', fontWeight: 600 }}>{dailyHours}h/day</span> ={' '}
-              <span style={{ color: '#9333ea', fontWeight: 600 }}>{stats.availableHours}h</span> available,
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{stats.daysLeft} days</span> ×{' '}
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{dailyHours}h/day</span> ={' '}
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{stats.availableHours}h</span> available,
               but needs{' '}
-              <span style={{ color: '#f87171', fontWeight: 600 }}>{stats.totalHours}h</span> total.
+              <span style={{ color: 'var(--red)', fontWeight: 600 }}>{stats.totalHours}h</span> total.
               {stats.requiredDailyHours !== null && (
                 <> Increase to at least{' '}
-                  <span style={{ color: '#34d399', fontWeight: 700 }}>{stats.requiredDailyHours}h/day</span> to fit everything.</>
+                  <span style={{ color: 'var(--green)', fontWeight: 700 }}>{stats.requiredDailyHours}h/day</span> to fit everything.</>
               )}
             </div>
           </div>
@@ -342,16 +342,16 @@ export default function SetupTab({
 
       {/* ── Summary + Generate ──────────────────────────────────────── */}
       <div ref={generateCardRef}>
-        <Card style={{ background: 'linear-gradient(135deg,var(--bg-card),#192035)', borderColor: 'var(--border-card)' }}>
+        <Card style={{ background: 'linear-gradient(135deg,var(--bg-card),#0f153d)', borderColor: 'var(--border-card)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <div>
               <div style={{ fontSize: 12, color: 'var(--text-dimmer)', marginBottom: 8 }}>Plan Summary</div>
               <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
                 {[
-                  { label: 'subjects',    value: subjects.length,        color: '#9333ea' },
-                  { label: 'topics',      value: stats.totalTopics,      color: '#c084fc' },
-                  { label: 'total hours', value: `${stats.totalHours}h`, color: '#34d399' },
-                  { label: 'days left',   value: stats.daysLeft,         color: '#f87171' },
+                  { label: 'subjects',    value: subjects.length,        color: 'var(--accent)' },
+                  { label: 'topics',      value: stats.totalTopics,      color: 'var(--accent-soft)' },
+                  { label: 'total hours', value: `${stats.totalHours}h`, color: 'var(--green)' },
+                  { label: 'days left',   value: stats.daysLeft,         color: 'var(--red)' },
                 ].map(i => (
                   <span key={i.label} style={{ fontSize: 13 }}>
                     <span style={{ color: i.color, fontWeight: 700 }}>{i.value}</span>
@@ -361,7 +361,7 @@ export default function SetupTab({
               </div>
 
               {hasOverflow && (
-                <div style={{ marginTop: 10, fontSize: 12, color: '#f87171', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ marginTop: 10, fontSize: 12, color: 'var(--red)', display: 'flex', alignItems: 'center', gap: 5 }}>
                   <AlertTriangle size={12} />
                   ~{estTopicsOver} topic{estTopicsOver !== 1 ? 's' : ''} won't fit — fix before generating
                 </div>
@@ -375,7 +375,7 @@ export default function SetupTab({
                     onClick={onOpenFeasibility}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 8,
-                      background: 'linear-gradient(135deg,#9333ea,#7e22ce)',
+                      background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))',
                       border: 'none', borderRadius: 10, padding: '11px 22px',
                       color: 'var(--bg-base)', fontWeight: 700, cursor: 'pointer',
                       fontSize: 14,
@@ -397,7 +397,7 @@ export default function SetupTab({
                     className="gen-btn"
                     onClick={handleGenerateClick}
                     style={{
-                      background: 'linear-gradient(135deg,#9333ea,#7e22ce)',
+                      background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))',
                       border: 'none', borderRadius: 10, padding: '11px 22px',
                       color: 'var(--bg-base)',
                       fontWeight: 700, cursor: 'pointer',

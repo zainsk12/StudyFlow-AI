@@ -160,7 +160,7 @@ export default function LoginPage({ onSwitch }) {
 
         {/* Logo — always visible */}
         <div style={s.logoRow}>
-          <div style={s.logoIcon}><GraduationCap size={24} color="#0d1117" /></div>
+          <div style={s.logoIcon}><GraduationCap size={24} color="#080b28" /></div>
           <div>
             <div style={s.logoTitle}>StudyFlow AI</div>
             <div style={s.logoSub}>Intelligent Study Planner</div>
@@ -203,7 +203,7 @@ export default function LoginPage({ onSwitch }) {
             {/* Forgot password link */}
             <div style={{ textAlign: 'right', marginTop: 6, marginBottom: 18 }}>
               <span
-                style={{ fontSize: 12, color: '#c084fc', cursor: 'pointer', fontWeight: 500 }}
+                style={{ fontSize: 12, color: 'var(--accent-soft)', cursor: 'pointer', fontWeight: 500 }}
                 onClick={() => { setFpEmail(form.email); setScreen('forgot_email'); setFpError(''); }}
               >
                 Forgot password?
@@ -281,7 +281,7 @@ export default function LoginPage({ onSwitch }) {
             <p style={{ textAlign: 'center', marginTop: 18, fontSize: 12, color: 'var(--text-dimmer)' }}>
               Didn't receive it?{' '}
               <span
-                style={{ color: fpResendCool ? 'var(--text-dimmest)' : '#c084fc', cursor: fpResendCool ? 'not-allowed' : 'pointer', fontWeight: 500 }}
+                style={{ color: fpResendCool ? 'var(--text-dimmest)' : 'var(--accent-soft)', cursor: fpResendCool ? 'not-allowed' : 'pointer', fontWeight: 500 }}
                 onClick={() => { if (!fpResendCool) { setScreen('forgot_email'); setFpOtp(''); setFpError(''); } }}
               >
                 {fpResendCool ? 'Resend available in 60s' : 'Resend code'}
@@ -318,7 +318,7 @@ export default function LoginPage({ onSwitch }) {
             {resetHint && (
               <div style={{
                 fontSize: 11, marginBottom: 16, paddingLeft: 2, marginTop: 6,
-                color: resetHint.ok ? '#34d399' : '#9333ea',
+                color: resetHint.ok ? 'var(--green)' : 'var(--accent)',
               }}>
                 {resetHint.text}
               </div>
@@ -354,11 +354,11 @@ export default function LoginPage({ onSwitch }) {
           <div style={{ textAlign: 'center', padding: '12px 0' }}>
             <div style={{
               width: 60, height: 60, borderRadius: '50%',
-              background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)',
+              background: 'rgba(45,212,191,0.1)', border: '1px solid rgba(45,212,191,0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 20px',
             }}>
-              <CheckCircle2 size={28} color="#34d399" />
+              <CheckCircle2 size={28} color="var(--green)" />
             </div>
             <h2 style={{ ...s.heading, marginBottom: 8 }}>Password reset!</h2>
             <p style={{ ...s.sub, marginBottom: 28 }}>Your password has been updated. You can now sign in with your new password.</p>
@@ -375,18 +375,18 @@ const s = {
   page:      { minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 },
   card:      { background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 16, padding: '40px 36px', width: '100%', maxWidth: 420 },
   logoRow:   { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 },
-  logoIcon:  { width: 44, height: 44, background: 'linear-gradient(135deg,#9333ea,#7e22ce)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  logoIcon:  { width: 44, height: 44, background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   logoTitle: { fontSize: 20, fontWeight: 700, color: 'var(--text-bright)', fontFamily: 'Georgia, serif' },
   logoSub:   { fontSize: 11, color: 'var(--text-dimmer)', marginTop: 2 },
   heading:   { fontSize: 24, fontWeight: 700, color: 'var(--text-bright)', marginBottom: 6 },
   sub:       { fontSize: 14, color: 'var(--text-dim)', marginBottom: 24 },
-  errorBox:  { background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 20 },
+  errorBox:  { background: 'rgba(251,113,133,0.1)', border: '1px solid rgba(251,113,133,0.3)', color: 'var(--red)', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 20 },
   label:     { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 },
   input:     { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border-card)', borderRadius: 8, padding: '11px 14px', color: 'var(--text-primary)', fontSize: 14, marginBottom: 18, display: 'block', boxSizing: 'border-box', outline: 'none' },
   inputWrap: { position: 'relative', marginBottom: 4 },
   eyeBtn:    { position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'var(--text-dimmer)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 2 },
-  btn:       { width: '100%', background: 'linear-gradient(135deg,#9333ea,#7e22ce)', color: '#0d1117', border: 'none', borderRadius: 8, padding: '13px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
+  btn:       { width: '100%', background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
   switchText:{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--text-dim)' },
-  link:      { color: '#9333ea', cursor: 'pointer', fontWeight: 600 },
+  link:      { color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 },
   backBtn:   { display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 13, padding: '0 0 20px', marginLeft: -4 },
 };

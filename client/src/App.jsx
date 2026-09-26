@@ -117,7 +117,7 @@ useEffect(() => {
   return (
     <div style={{
       fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif",
-      background: 'radial-gradient(ellipse at 50% -15%, rgba(147,51,234,0.14), transparent 58%), var(--bg-base)',
+      background: 'radial-gradient(ellipse at 50% -15%, rgba(99,102,241,0.14), transparent 58%), var(--bg-base)',
       minHeight: '100vh', color: 'var(--text-primary)',
     }}>
       {/*
@@ -153,7 +153,7 @@ useEffect(() => {
           </span>
           <button type="button" onClick={keepLocalPlan} style={{
             padding: '7px 10px', borderRadius: 8, cursor: 'pointer',
-            border: '1px solid rgba(147,51,234,0.5)', background: 'rgba(147,51,234,0.14)',
+            border: '1px solid rgba(99,102,241,0.5)', background: 'rgba(99,102,241,0.14)',
             color: 'var(--text-primary)',
           }}>Keep this device’s plan</button>
           <button type="button" onClick={loadRemotePlan} style={{
@@ -170,8 +170,8 @@ useEffect(() => {
         {streak > 0 && (
           <div style={{ textAlign: 'center', marginBottom: 12 }}>
             <span style={{
-              background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.2)',
-              borderRadius: 20, padding: '4px 14px', fontSize: 13, color: '#9333ea',
+              background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)',
+              borderRadius: 20, padding: '4px 14px', fontSize: 13, color: 'var(--accent)',
             }}>
               🔥 {streak}-day study streak
             </span>

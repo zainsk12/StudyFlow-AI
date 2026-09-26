@@ -14,7 +14,7 @@ export function SecLabel({ children, icon }) {
         marginBottom:  14,
       }}
     >
-      <span style={{ color: '#9333ea' }}>{icon}</span>
+      <span style={{ color: 'var(--accent)' }}>{icon}</span>
       {children}
     </div>
   );
@@ -40,7 +40,7 @@ export function Pill({ label, color, bg }) {
 }
 
 /* ── Progress Bar ────────────────────────────────────────── */
-export function ProgressBar({ pct, color = '#9333ea', height = 6 }) {
+export function ProgressBar({ pct, color = 'var(--accent)', height = 6 }) {
   return (
     <div style={{ height, background: 'var(--bg-deep)', borderRadius: height, overflow: 'hidden' }}>
       <div
@@ -87,11 +87,11 @@ export function EmptyState({ emoji, msg, action, onAction }) {
         <button
           onClick={onAction}
           style={{
-            background:   'rgba(147,51,234,0.1)',
-            border:       '1px solid rgba(147,51,234,0.3)',
+            background:   'rgba(99,102,241,0.1)',
+            border:       '1px solid rgba(99,102,241,0.3)',
             borderRadius: 8,
             padding:      '8px 18px',
-            color:        '#9333ea',
+            color:        'var(--accent)',
             cursor:       'pointer',
             fontSize:     13,
             fontFamily:   'inherit',

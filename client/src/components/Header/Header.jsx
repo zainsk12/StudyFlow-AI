@@ -8,11 +8,11 @@ import SettingsPanel     from './SettingsPanel';
 
 const LogoIcon = () => (
   <svg width="20" height="20" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <g stroke="#0d1117" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none">
-      <polygon points="32,13 55,24.5 32,36 9,24.5" fill="#0d1117" stroke="#0d1117"/>
-      <path d="M19 30 v10 c0 5 13 8 13 8 s13-3 13-8 V30" fill="#0d1117" stroke="none"/>
+    <g stroke="#080b28" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none">
+      <polygon points="32,13 55,24.5 32,36 9,24.5" fill="#080b28" stroke="#080b28"/>
+      <path d="M19 30 v10 c0 5 13 8 13 8 s13-3 13-8 V30" fill="#080b28" stroke="none"/>
       <line x1="55" y1="24.5" x2="55" y2="38"/>
-      <circle cx="55" cy="41" r="3" fill="#0d1117" stroke="none"/>
+      <circle cx="55" cy="41" r="3" fill="#080b28" stroke="none"/>
     </g>
   </svg>
 );
@@ -34,32 +34,32 @@ function LogoutModal({ onConfirm, onCancel }) {
       zIndex: 10000, padding: 20,
     }}>
       <div style={{
-        background: 'var(--modal-bg, #111827)', border: '1px solid var(--border-card, #252d42)',
+        background: 'var(--modal-bg, #10163f)', border: '1px solid var(--border-card, #2a3274)',
         borderRadius: 18, padding: '32px 28px',
         width: '100%', maxWidth: 360, textAlign: 'center',
       }}>
         <div style={{
           width: 52, height: 52, borderRadius: '50%',
-          background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.25)',
+          background: 'rgba(251,113,133,0.1)', border: '1px solid rgba(251,113,133,0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 20px',
         }}>
-          <LogOut size={22} color="#f87171" />
+          <LogOut size={22} color="var(--red)" />
         </div>
-        <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary, #f1f5f9)', marginBottom: 8 }}>Sign out?</h3>
-        <p style={{ fontSize: 13, color: 'var(--text-dim, #64748b)', marginBottom: 28, lineHeight: 1.6 }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary, #eef2ff)', marginBottom: 8 }}>Sign out?</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-dim, #9aa6d5)', marginBottom: 28, lineHeight: 1.6 }}>
           Your study data is saved and will be waiting when you come back.
         </p>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onCancel} style={{
             flex: 1, padding: '11px 0',
-            background: 'transparent', border: '1px solid var(--border-card, #252d42)',
-            borderRadius: 8, color: 'var(--text-muted, #94a3b8)', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+            background: 'transparent', border: '1px solid var(--border-card, #2a3274)',
+            borderRadius: 8, color: 'var(--text-muted, #c6cef3)', fontSize: 14, fontWeight: 500, cursor: 'pointer',
           }}>Cancel</button>
           <button onClick={onConfirm} style={{
             flex: 1, padding: '11px 0',
-            background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.3)',
-            borderRadius: 8, color: '#f87171', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            background: 'rgba(251,113,133,0.12)', border: '1px solid rgba(251,113,133,0.3)',
+            borderRadius: 8, color: 'var(--red)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
           }}>Sign out</button>
         </div>
       </div>
@@ -91,14 +91,14 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
         width: '100%', background: 'transparent', border: 'none',
         padding: '9px 14px', cursor: 'pointer', textAlign: 'left',
         display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8,
-        color: danger ? '#f87171' : 'var(--text-muted, #cbd5e1)',
+        color: danger ? 'var(--red)' : 'var(--text-muted, #c6cef3)',
         fontSize: 13, fontWeight: 500,
         transition: 'background 0.15s',
       }}
-      onMouseEnter={e => e.currentTarget.style.background = danger ? 'rgba(248,113,113,0.08)' : 'rgba(192,132,252,0.07)'}
+      onMouseEnter={e => e.currentTarget.style.background = danger ? 'rgba(251,113,133,0.08)' : 'rgba(167,139,250,0.07)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
-      <span style={{ color: danger ? '#f87171' : 'var(--text-dim, #64748b)' }}>{icon}</span>
+      <span style={{ color: danger ? 'var(--red)' : 'var(--text-dim, #9aa6d5)' }}>{icon}</span>
       {label}
     </button>
   );
@@ -112,13 +112,13 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
         style={{
           width: 36, height: 36, borderRadius: '50%',
           background: open
-            ? 'linear-gradient(135deg,#e879f9,#c084fc)'
-            : 'linear-gradient(135deg,#c084fc,#9333ea)',
-          border: `2px solid ${open ? '#c084fc' : 'transparent'}`,
+            ? 'linear-gradient(135deg,var(--accent-hover),var(--accent-soft))'
+            : 'linear-gradient(135deg,var(--accent-soft),var(--accent))',
+          border: `2px solid ${open ? 'var(--accent-soft)' : 'transparent'}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 14, fontWeight: 800, color: '#fff',
           cursor: 'pointer', flexShrink: 0,
-          boxShadow: open ? '0 0 0 3px rgba(192,132,252,0.25)' : 'none',
+          boxShadow: open ? '0 0 0 3px rgba(167,139,250,0.25)' : 'none',
           transition: 'all 0.2s',
         }}
       >
@@ -133,8 +133,8 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
           right:      20,
           zIndex:     9000,
           width:      220,
-          background: 'var(--bg-card, #1c2030)',
-          border:     '1px solid var(--border-card, #252d42)',
+          background: 'var(--bg-card, #111640)',
+          border:     '1px solid var(--border-card, #2a3274)',
           borderRadius: 16,
           boxShadow:  '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)',
           overflow:   'hidden',
@@ -142,23 +142,23 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
           {/* User info section */}
           <div style={{
             padding: '14px 16px',
-            borderBottom: '1px solid var(--border-mid, #1e293b)',
+            borderBottom: '1px solid var(--border-mid, #2a3274)',
             background: 'var(--section-bg, rgba(255,255,255,0.02))',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-                background: 'linear-gradient(135deg,#c084fc,#9333ea)',
+                background: 'linear-gradient(135deg,var(--accent-soft),var(--accent))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 15, fontWeight: 800, color: '#fff',
               }}>
                 {initial}
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary, #f1f5f9)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary, #eef2ff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user?.name}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-dim, #475569)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-dim, #9aa6d5)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user?.email}
                 </div>
               </div>
@@ -170,7 +170,7 @@ function UserMenu({ user, onOpenProfile, onOpenSettings, onLogout }) {
           <div style={{ padding: '8px' }}>
             {menuItem(<User size={14} />, 'My Profile', onOpenProfile)}
             {menuItem(<Settings size={14} />, 'Settings', onOpenSettings)}
-            <div style={{ height: 1, background: 'var(--border-mid, #1e293b)', margin: '6px 0' }} />
+            <div style={{ height: 1, background: 'var(--border-mid, #2a3274)', margin: '6px 0' }} />
             {menuItem(<LogOut size={14} />, 'Sign out', onLogout, true)}
           </div>
         </div>
@@ -191,17 +191,17 @@ export default function Header({
   const [showSettings, setShowSettings] = useState(false);
 
   const metrics = [
-    { label: 'Days Left', value: stats.daysLeft,                            color: '#f87171' },
-    { label: 'Progress',  value: `${stats.pct}%`,                           color: '#34d399' },
-    { label: 'Topics',    value: `${stats.doneTopics}/${stats.totalTopics}`, color: '#c084fc' },
-    { label: 'Hours',     value: `${stats.totalHours}h`,                    color: '#9333ea' },
+    { label: 'Days Left', value: stats.daysLeft,                            color: 'var(--red)' },
+    { label: 'Progress',  value: `${stats.pct}%`,                           color: 'var(--green)' },
+    { label: 'Topics',    value: `${stats.doneTopics}/${stats.totalTopics}`, color: 'var(--accent-soft)' },
+    { label: 'Hours',     value: `${stats.totalHours}h`,                    color: 'var(--accent)' },
   ];
 
   return (
     <>
       <div style={{
-        background: 'var(--bg-header, #13192a)',
-        borderBottom: '1px solid var(--border-mid, #1a2035)',
+        background: 'var(--bg-header, #0a0f30)',
+        borderBottom: '1px solid var(--border-mid, #20275f)',
       }}>
         <div className="sf-header-inner" style={{ maxWidth: 960, margin: '0 auto', padding: '18px 24px 0' }}>
 
@@ -211,17 +211,17 @@ export default function Header({
             {/* Logo */}
             <div className="sf-brand" style={{
               width: 38, height: 38,
-              background: 'linear-gradient(135deg,#9333ea,#7e22ce)',
+              background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))',
               borderRadius: 10, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <LogoIcon />
             </div>
             <div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #f1f5f9)', fontFamily: 'Georgia, serif', letterSpacing: '-0.01em', lineHeight: 1 }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #eef2ff)', fontFamily: 'Georgia, serif', letterSpacing: '-0.01em', lineHeight: 1 }}>
                 StudyFlow AI
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-dim, #475569)', marginTop: 1 }}>Intelligent Study Planner</div>
+              <div style={{ fontSize: 11, color: 'var(--text-dim, #9aa6d5)', marginTop: 1 }}>Intelligent Study Planner</div>
             </div>
 
             {/* Right cluster */}
@@ -231,14 +231,14 @@ export default function Header({
               {metrics.map(m => (
                 <div key={m.label} style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 17, fontWeight: 700, color: m.color, lineHeight: 1 }}>{m.value}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-dimmer, #475569)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-dimmer, #9aa6d5)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
                     {m.label}
                   </div>
                 </div>
               ))}
 
               {/* Divider */}
-              <div style={{ width: 1, height: 32, background: 'var(--border-mid, #1e293b)', flexShrink: 0 }} />
+              <div style={{ width: 1, height: 32, background: 'var(--border-mid, #2a3274)', flexShrink: 0 }} />
 
               {/* ── Avatar dropdown ── */}
               <UserMenu
@@ -262,7 +262,7 @@ export default function Header({
                   padding: '9px 18px',
                   background: 'transparent', border: 'none',
                   borderBottom: '2px solid transparent',
-                  color: tab === t.id ? '#9333ea' : 'var(--text-muted)',
+                  color: tab === t.id ? 'var(--accent)' : 'var(--text-muted)',
                   cursor: 'pointer', fontSize: 13, fontWeight: 500,
                   borderRadius: '8px 8px 0 0',
                 }}
@@ -304,8 +304,8 @@ export default function Header({
           backdropFilter: 'blur(4px)',
         }}>
           <div className="sf-settings-modal" style={{
-            background: 'var(--modal-bg, #111827)',
-            border: '1px solid var(--border-mid, #1e293b)',
+            background: 'var(--modal-bg, #10163f)',
+            border: '1px solid var(--border-mid, #2a3274)',
             borderRadius: 20, width: '100%', maxWidth: 720,
             height: '80vh', maxHeight: 600,
             display: 'flex', flexDirection: 'column',
@@ -315,24 +315,24 @@ export default function Header({
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '18px 22px',
-              borderBottom: '1px solid var(--border-mid, #1e293b)',
+              borderBottom: '1px solid var(--border-mid, #2a3274)',
               flexShrink: 0,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                  background: 'rgba(147,51,234,0.1)', border: '1px solid rgba(147,51,234,0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc',
+                  background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-soft)',
                 }}>
                   <Settings size={15} />
                 </div>
-                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary, #f1f5f9)' }}>Settings</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary, #eef2ff)' }}>Settings</span>
               </div>
               <button
                 onClick={() => setShowSettings(false)}
                 style={{
                   background: 'transparent', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-dim, #64748b)', padding: 4, borderRadius: 6,
+                  color: 'var(--text-dim, #9aa6d5)', padding: 4, borderRadius: 6,
                   display: 'flex', alignItems: 'center',
                 }}
               >

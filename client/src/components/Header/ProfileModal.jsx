@@ -62,8 +62,8 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
       backdropFilter: 'blur(4px)',
     }}>
       <div className="sf-profile-modal" style={{
-        background: 'var(--modal-bg, #111827)',
-        border: '1px solid var(--border-mid, #1e293b)',
+        background: 'var(--modal-bg, #10163f)',
+        border: '1px solid var(--border-mid, #2a3274)',
         borderRadius: 24, width: '100%', maxWidth: 480,
         maxHeight: '90vh', overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
@@ -74,26 +74,26 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '16px 20px',
-          borderBottom: '1px solid var(--border-mid, #1e293b)',
-          background: 'var(--section-bg, #13192a)',
+          borderBottom: '1px solid var(--border-mid, #2a3274)',
+          background: 'var(--section-bg, #0a0f30)',
           flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 32, height: 32, borderRadius: 10,
-              background: 'rgba(192,132,252,0.15)', border: '1px solid rgba(192,132,252,0.25)',
+              background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <User size={16} color="#c084fc" />
+              <User size={16} color="var(--accent-soft)" />
             </div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #f1f5f9)' }}>My Profile</div>
-              <div style={{ fontSize: 11, color: 'var(--text-dim, #64748b)', marginTop: 1 }}>Account & study overview</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #eef2ff)' }}>My Profile</div>
+              <div style={{ fontSize: 11, color: 'var(--text-dim, #9aa6d5)', marginTop: 1 }}>Account & study overview</div>
             </div>
           </div>
           <button onClick={onClose} style={{
             background: 'transparent', border: 'none',
-            color: 'var(--text-dim, #64748b)', cursor: 'pointer',
+            color: 'var(--text-dim, #9aa6d5)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', padding: 6, borderRadius: 8,
           }}>
             <X size={18} />
@@ -106,15 +106,15 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             padding: '32px 24px 24px',
-            background: 'linear-gradient(180deg, var(--section-bg, #13192a) 0%, var(--modal-bg, #111827) 100%)',
-            borderBottom: '1px solid var(--border-mid, #1e293b)',
+            background: 'linear-gradient(180deg, var(--section-bg, #0a0f30) 0%, var(--modal-bg, #10163f) 100%)',
+            borderBottom: '1px solid var(--border-mid, #2a3274)',
           }}>
             <div style={{
               width: 72, height: 72, borderRadius: '50%',
-              background: 'linear-gradient(135deg,#c084fc,#9333ea)',
+              background: 'linear-gradient(135deg,var(--accent-soft),var(--accent))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 28, fontWeight: 800, color: '#fff',
-              boxShadow: '0 8px 32px rgba(147,51,234,0.4)',
+              boxShadow: '0 8px 32px rgba(99,102,241,0.4)',
               marginBottom: 16, flexShrink: 0,
             }}>
               {initial}
@@ -131,36 +131,36 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
                     if (e.key === 'Escape') { setEditingName(false); setNameInput(user?.name ?? ''); }
                   }}
                   style={{
-                    flex: 1, background: 'var(--input-bg, #1c2030)', border: '1px solid #c084fc',
+                    flex: 1, background: 'var(--input-bg, #111640)', border: '1px solid var(--accent-soft)',
                     borderRadius: 8, padding: '8px 12px',
-                    color: 'var(--text-primary, #f1f5f9)', fontSize: 15, fontWeight: 600,
+                    color: 'var(--text-primary, #eef2ff)', fontSize: 15, fontWeight: 600,
                     textAlign: 'center', outline: 'none',
                   }}
                 />
                 <button onClick={handleSaveName} disabled={nameSaving} style={{
-                  background: 'rgba(192,132,252,0.15)', border: '1px solid rgba(192,132,252,0.3)',
+                  background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)',
                   borderRadius: 8, padding: '8px 10px',
-                  color: '#c084fc', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  color: 'var(--accent-soft)', cursor: 'pointer', display: 'flex', alignItems: 'center',
                 }}>
                   {nameSaving ? <Loader size={14} className="spin" /> : <Check size={14} />}
                 </button>
                 <button onClick={() => { setEditingName(false); setNameInput(user?.name ?? ''); setNameError(''); }} style={{
-                  background: 'transparent', border: '1px solid var(--border-card, #252d42)',
+                  background: 'transparent', border: '1px solid var(--border-card, #2a3274)',
                   borderRadius: 8, padding: '8px 10px',
-                  color: 'var(--text-dim, #64748b)', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  color: 'var(--text-dim, #9aa6d5)', cursor: 'pointer', display: 'flex', alignItems: 'center',
                 }}>
                   <X size={14} />
                 </button>
               </div>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #f1f5f9)' }}>{user?.name}</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary, #eef2ff)' }}>{user?.name}</div>
                 <button
                   onClick={() => { setEditingName(true); setNameInput(user?.name ?? ''); setNameError(''); }}
                   title="Edit name"
                   style={{
                     background: 'transparent', border: 'none',
-                    color: 'var(--text-dimmest, #334155)', cursor: 'pointer',
+                    color: 'var(--text-dimmest, #58649a)', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', padding: 3,
                   }}
                 >
@@ -169,13 +169,13 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
               </div>
             )}
 
-            {nameError   && <div style={{ fontSize: 12, color: '#f87171', marginTop: 6 }}>{nameError}</div>}
-            {nameSuccess && <div style={{ fontSize: 12, color: '#34d399', marginTop: 6 }}>✓ Name updated!</div>}
+            {nameError   && <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 6 }}>{nameError}</div>}
+            {nameSuccess && <div style={{ fontSize: 12, color: 'var(--green)', marginTop: 6 }}>✓ Name updated!</div>}
           </div>
 
           {/* Account info */}
-          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-mid, #1e293b)' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim, #475569)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-mid, #2a3274)' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim, #9aa6d5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
               Account Details
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -186,18 +186,18 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
                 <div key={row.label} style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 14px', borderRadius: 10,
-                  background: 'var(--bg-card, #1c2030)', border: '1px solid var(--border-mid, #1e293b)',
+                  background: 'var(--bg-card, #111640)', border: '1px solid var(--border-mid, #2a3274)',
                 }}>
                   <div style={{
                     width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                    background: 'rgba(192,132,252,0.08)', border: '1px solid rgba(192,132,252,0.15)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc',
+                    background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-soft)',
                   }}>
                     {row.icon}
                   </div>
                   <div>
-                    <div style={{ fontSize: 10, color: 'var(--text-dim, #475569)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{row.label}</div>
-                    <div style={{ fontSize: 13, color: 'var(--text-primary, #e2e8f0)', fontWeight: 500, marginTop: 1 }}>{row.value}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-dim, #9aa6d5)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{row.label}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-primary, #eef2ff)', fontWeight: 500, marginTop: 1 }}>{row.value}</div>
                   </div>
                 </div>
               ))}
@@ -205,25 +205,25 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
           </div>
 
           {/* Study stats */}
-          <div style={{ padding: '20px 24px', borderBottom: subjects?.length > 0 ? '1px solid var(--border-mid, #1e293b)' : 'none' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim, #475569)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+          <div style={{ padding: '20px 24px', borderBottom: subjects?.length > 0 ? '1px solid var(--border-mid, #2a3274)' : 'none' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim, #9aa6d5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
               Study Overview
             </div>
             <div className="sf-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {[
-                { icon: <Target size={16} />,     label: 'Days Left',   value: daysLeft,                      color: '#f87171' },
-                { icon: <TrendingUp size={16} />, label: 'Completion',  value: `${pct}%`,                     color: '#34d399' },
-                { icon: <BookOpen size={16} />,   label: 'Topics Done', value: `${doneTopics}/${totalTopics}`, color: '#c084fc' },
-                { icon: <Clock size={16} />,      label: 'Daily Hours', value: `${dailyHours}h/day`,           color: '#9333ea' },
+                { icon: <Target size={16} />,     label: 'Days Left',   value: daysLeft,                      color: 'var(--red)' },
+                { icon: <TrendingUp size={16} />, label: 'Completion',  value: `${pct}%`,                     color: 'var(--green)' },
+                { icon: <BookOpen size={16} />,   label: 'Topics Done', value: `${doneTopics}/${totalTopics}`, color: 'var(--accent-soft)' },
+                { icon: <Clock size={16} />,      label: 'Daily Hours', value: `${dailyHours}h/day`,           color: 'var(--accent)' },
               ].map(s => (
                 <div key={s.label} style={{
                   padding: '14px 16px', borderRadius: 12,
-                  background: 'var(--bg-card, #1c2030)', border: '1px solid var(--border-mid, #1e293b)',
+                  background: 'var(--bg-card, #111640)', border: '1px solid var(--border-mid, #2a3274)',
                   display: 'flex', flexDirection: 'column', gap: 4,
                 }}>
                   <div style={{ color: s.color }}>{s.icon}</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-dim, #475569)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-dim, #9aa6d5)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -231,13 +231,13 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
             {totalTopics > 0 && (
               <div style={{ marginTop: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, color: 'var(--text-dim, #475569)' }}>Overall progress</span>
-                  <span style={{ fontSize: 11, color: '#34d399', fontWeight: 600 }}>{pct}%</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim, #9aa6d5)' }}>Overall progress</span>
+                  <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 600 }}>{pct}%</span>
                 </div>
-                <div style={{ height: 6, background: 'var(--border-mid, #1e293b)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: 6, background: 'var(--border-mid, #2a3274)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{
                     height: '100%', width: `${pct}%`,
-                    background: 'linear-gradient(90deg,#34d399,#10b981)',
+                    background: 'linear-gradient(90deg,var(--green),var(--green-dark))',
                     borderRadius: 3, transition: 'width 0.5s ease',
                   }} />
                 </div>
@@ -248,7 +248,7 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
           {/* Subjects list */}
           {subjects?.length > 0 && (
             <div style={{ padding: '20px 24px 28px' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim, #475569)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim, #9aa6d5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
                 Subjects · {subjects.length}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -260,20 +260,20 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
                     <div key={s.id} style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '10px 14px', borderRadius: 10,
-                      background: 'var(--bg-card, #1c2030)', border: '1px solid var(--border-mid, #1e293b)',
+                      background: 'var(--bg-card, #111640)', border: '1px solid var(--border-mid, #2a3274)',
                     }}>
                       <div style={{ width: 3, height: 36, borderRadius: 2, background: s.color, flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #e2e8f0)', marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #eef2ff)', marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {s.name}
                         </div>
-                        <div style={{ height: 4, background: 'var(--border-mid, #1e293b)', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ height: 4, background: 'var(--border-mid, #2a3274)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${subPct}%`, background: s.color, borderRadius: 2 }} />
                         </div>
                       </div>
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: s.color }}>{subPct}%</div>
-                        <div style={{ fontSize: 10, color: 'var(--text-dim, #475569)' }}>{done}/{total}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-dim, #9aa6d5)' }}>{done}/{total}</div>
                       </div>
                     </div>
                   );

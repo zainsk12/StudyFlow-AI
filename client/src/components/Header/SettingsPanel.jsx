@@ -40,8 +40,8 @@ const Row = ({ icon, label, children, last }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{
         width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-        background: 'rgba(192,132,252,0.08)', border: '1px solid rgba(192,132,252,0.12)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc',
+        background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.12)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-soft)',
       }}>
         {icon}
       </div>
@@ -56,7 +56,7 @@ const Toggle = ({ value, onChange }) => (
     onClick={() => onChange(!value)}
     style={{
       width: 40, height: 22, borderRadius: 11,
-      background: value ? '#9333ea' : 'var(--border-card)',
+      background: value ? 'var(--accent)' : 'var(--border-card)',
       border: 'none', cursor: 'pointer', position: 'relative',
       transition: 'background 0.2s', flexShrink: 0,
     }}
@@ -72,7 +72,7 @@ const Toggle = ({ value, onChange }) => (
 );
 
 const StatusMsg = ({ msg, ok }) => msg ? (
-  <div style={{ fontSize: 12, marginTop: 8, color: ok ? '#34d399' : '#f87171' }}>{msg}</div>
+  <div style={{ fontSize: 12, marginTop: 8, color: ok ? 'var(--green)' : 'var(--red)' }}>{msg}</div>
 ) : null;
 
 const inputStyle = {
@@ -84,13 +84,13 @@ const inputStyle = {
 const btnPrimary = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   padding: '9px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-  fontSize: 13, fontWeight: 600, background: '#9333ea', color: '#fff',
+  fontSize: 13, fontWeight: 600, background: 'var(--accent)', color: '#fff',
 };
 
 const btnDanger = {
   ...btnPrimary,
-  background: 'rgba(248,113,113,0.1)', color: '#f87171',
-  border: '1px solid rgba(248,113,113,0.2)',
+  background: 'rgba(251,113,133,0.1)', color: 'var(--red)',
+  border: '1px solid rgba(251,113,133,0.2)',
 };
 
 // ── Section: Appearance ───────────────────────────────────────────────────
@@ -112,9 +112,9 @@ function AppearanceSection() {
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               gap: 6, padding: '12px 8px', borderRadius: 10,
-              border: theme === o.id ? '1.5px solid #9333ea' : '1px solid var(--border-mid)',
-              background: theme === o.id ? 'rgba(147,51,234,0.1)' : 'var(--bg-card)',
-              color: theme === o.id ? '#c084fc' : 'var(--text-dim)',
+              border: theme === o.id ? '1.5px solid var(--accent)' : '1px solid var(--border-mid)',
+              background: theme === o.id ? 'rgba(99,102,241,0.1)' : 'var(--bg-card)',
+              color: theme === o.id ? 'var(--accent-soft)' : 'var(--text-dim)',
               cursor: 'pointer', fontSize: 12, fontWeight: 600,
               transition: 'all 0.15s',
             }}
@@ -122,7 +122,7 @@ function AppearanceSection() {
             {o.icon}
             {o.label}
             {theme === o.id && (
-              <Check size={10} style={{ color: '#c084fc' }} />
+              <Check size={10} style={{ color: 'var(--accent-soft)' }} />
             )}
           </button>
         ))}
@@ -275,8 +275,8 @@ function AccountSection() {
               <>
                 <div style={{
                   padding: '10px 12px', borderRadius: 8,
-                  background: 'rgba(147,51,234,0.06)', border: '1px solid rgba(147,51,234,0.2)',
-                  fontSize: 12, color: '#c084fc',
+                  background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)',
+                  fontSize: 12, color: 'var(--accent-soft)',
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
                   <Lock size={13} /> Enter the 6-digit code sent to your email
@@ -291,7 +291,7 @@ function AccountSection() {
                   style={{
                     ...inputStyle,
                     letterSpacing: '0.3em', fontSize: 18, fontWeight: 700,
-                    textAlign: 'center', color: '#c084fc',
+                    textAlign: 'center', color: 'var(--accent-soft)',
                   }}
                 />
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -316,14 +316,14 @@ function AccountSection() {
             {pwdNeedsRelogin && (
               <div style={{
                 marginTop: 4, padding: '12px 14px', borderRadius: 10,
-                background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.25)',
+                background: 'rgba(45,212,191,0.07)', border: '1px solid rgba(45,212,191,0.25)',
                 display: 'flex', flexDirection: 'column', gap: 8,
               }}>
-                <div style={{ fontSize: 12, color: '#34d399', fontWeight: 600 }}>✓ Password updated successfully</div>
+                <div style={{ fontSize: 12, color: 'var(--green)', fontWeight: 600 }}>✓ Password updated successfully</div>
                 <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>For security, please sign in again with your new password.</div>
                 <button onClick={() => logout()} style={{
-                  ...btnPrimary, background: 'rgba(52,211,153,0.15)',
-                  color: '#34d399', border: '1px solid rgba(52,211,153,0.3)',
+                  ...btnPrimary, background: 'rgba(45,212,191,0.15)',
+                  color: 'var(--green)', border: '1px solid rgba(45,212,191,0.3)',
                   fontSize: 12, padding: '7px 12px',
                 }}>
                   Sign in again
@@ -390,9 +390,9 @@ function PreferencesSection({ settings, onChange }) {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Clock size={13} color="#c084fc" /> Study Reminder Time
+                <Clock size={13} color="var(--accent-soft)" /> Study Reminder Time
               </label>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#c084fc' }}>{settings.reminderTime}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-soft)' }}>{settings.reminderTime}</span>
             </div>
             <input
               type="time"
@@ -405,15 +405,15 @@ function PreferencesSection({ settings, onChange }) {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <BookOpen size={13} color="#c084fc" /> Default Study Hours / Day
+                <BookOpen size={13} color="var(--accent-soft)" /> Default Study Hours / Day
               </label>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#c084fc' }}>{settings.defaultHours}h</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-soft)' }}>{settings.defaultHours}h</span>
             </div>
             <input
               type="range" min={1} max={12} step={0.5}
               value={settings.defaultHours}
               onChange={e => onChange({ ...settings, defaultHours: Number(e.target.value) })}
-              style={{ width: '100%', accentColor: '#9333ea' }}
+              style={{ width: '100%', accentColor: 'var(--accent)' }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
               <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>1h</span>
@@ -462,8 +462,8 @@ export default function SettingsPanel() {
   const navItemStyle = (id) => ({
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '10px 14px', cursor: 'pointer', borderRadius: 8,
-    background: active === id ? 'rgba(147,51,234,0.1)' : 'transparent',
-    color: active === id ? '#c084fc' : 'var(--text-muted)',
+    background: active === id ? 'rgba(99,102,241,0.1)' : 'transparent',
+    color: active === id ? 'var(--accent-soft)' : 'var(--text-muted)',
     fontSize: 13, fontWeight: active === id ? 600 : 400,
     border: 'none', width: '100%', textAlign: 'left',
     transition: 'all 0.12s',
@@ -494,9 +494,9 @@ export default function SettingsPanel() {
         {saved && (
           <div style={{
             position: 'sticky', top: 0, zIndex: 10,
-            background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)',
+            background: 'rgba(45,212,191,0.1)', border: '1px solid rgba(45,212,191,0.25)',
             borderRadius: 8, padding: '6px 12px', marginBottom: 14,
-            fontSize: 12, color: '#34d399', display: 'flex', alignItems: 'center', gap: 6,
+            fontSize: 12, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 6,
           }}>
             <Check size={12} /> Settings saved
           </div>

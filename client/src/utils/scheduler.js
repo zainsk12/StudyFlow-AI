@@ -183,7 +183,7 @@ export function computeStats(subjects, examDate, dailyHours) {
           .filter(t => t.status !== 'done')
           .reduce((a, t) => a + (DIFF_HRS[t.difficulty] ?? 1), 0)
       ),
-      color: s.color || '#9333ea',
+      color: s.color || '#6366f1',
     }))
     .filter(e => e.value > 0);
 
@@ -199,7 +199,7 @@ export function computeStats(subjects, examDate, dailyHours) {
       name:    s.name || 'Unnamed',
       Done:    done,
       Pending: pending,
-      color:   s.color || '#9333ea',
+      color:   s.color || '#6366f1',
     };
   });
 

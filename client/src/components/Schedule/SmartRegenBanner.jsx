@@ -45,13 +45,13 @@ export default function SmartRegenBanner({
   if (regenDone) {
     return (
       <div style={{
-        background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.2)',
+        background: 'rgba(45,212,191,0.07)', border: '1px solid rgba(45,212,191,0.2)',
         borderRadius: 12, padding: '14px 18px', marginBottom: 18,
         display: 'flex', alignItems: 'flex-start', gap: 12,
       }}>
-        <CheckCircle2 size={18} color="#34d399" style={{ flexShrink: 0, marginTop: 1 }} />
+        <CheckCircle2 size={18} color="var(--green)" style={{ flexShrink: 0, marginTop: 1 }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#34d399', marginBottom: 4 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--green)', marginBottom: 4 }}>
             Schedule Regenerated ✓
           </div>
           {aiMessage && (
@@ -70,20 +70,20 @@ export default function SmartRegenBanner({
 
   return (
     <div style={{
-      background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.2)',
+      background: 'rgba(251,113,133,0.06)', border: '1px solid rgba(251,113,133,0.2)',
       borderRadius: 12, padding: '14px 18px', marginBottom: 18,
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <AlertTriangle size={18} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
+        <AlertTriangle size={18} color="var(--red)" style={{ flexShrink: 0, marginTop: 1 }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#f87171', marginBottom: 4 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--red)', marginBottom: 4 }}>
             You're behind schedule
           </div>
           <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 12, lineHeight: 1.5 }}>
-            <span style={{ color: '#f87171', fontWeight: 600 }}>{behindCount} topic{behindCount > 1 ? 's' : ''}</span> should
+            <span style={{ color: 'var(--red)', fontWeight: 600 }}>{behindCount} topic{behindCount > 1 ? 's' : ''}</span> should
             have been completed by now but {behindCount > 1 ? 'are' : 'is'} still pending.
             AI can rebuild your plan to fit everything into the remaining{' '}
-            <span style={{ color: '#9333ea', fontWeight: 600 }}>{daysLeft} day{daysLeft !== 1 ? 's' : ''}</span>.
+            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{daysLeft} day{daysLeft !== 1 ? 's' : ''}</span>.
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button
@@ -91,7 +91,7 @@ export default function SmartRegenBanner({
               disabled={loading}
               style={{
                 display: 'flex', alignItems: 'center', gap: 7,
-                background: loading ? 'var(--border-mid)' : 'linear-gradient(135deg,#f87171,#ef4444)',
+                background: loading ? 'var(--border-mid)' : 'linear-gradient(135deg,var(--red),var(--red))',
                 border: 'none', borderRadius: 8, padding: '8px 16px',
                 color: loading ? 'var(--text-dimmer)' : '#fff',
                 fontSize: 13, fontWeight: 600,

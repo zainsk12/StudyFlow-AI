@@ -38,13 +38,13 @@ export default class ErrorBoundary extends Component {
         padding: 24, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif",
       }}>
         <div style={{
-          background: 'var(--bg-card)', border: '1px solid rgba(248,113,113,0.25)',
+          background: 'var(--bg-card)', border: '1px solid rgba(251,113,133,0.25)',
           borderRadius: 16, padding: '40px 36px', maxWidth: 440, width: '100%',
           textAlign: 'center',
         }}>
           <div style={{
             width: 56, height: 56, borderRadius: 14, margin: '0 auto 20px',
-            background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)',
+            background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 26,
           }}>⚠️</div>
@@ -72,8 +72,8 @@ export default class ErrorBoundary extends Component {
           <button
             onClick={this.handleReload}
             style={{
-              width: '100%', background: 'linear-gradient(135deg,#9333ea,#7e22ce)',
-              color: '#0d1117', border: 'none', borderRadius: 8,
+              width: '100%', background: 'linear-gradient(135deg,var(--accent),var(--accent-dark))',
+              color: '#080b28', border: 'none', borderRadius: 8,
               padding: '12px', fontSize: 14, fontWeight: 700, cursor: 'pointer',
             }}
           >

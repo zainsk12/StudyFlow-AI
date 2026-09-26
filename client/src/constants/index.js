@@ -1,12 +1,12 @@
 export const APP_NAME = 'StudyFlow AI';
 
 export const COLORS = [
-  '#9333ea', '#c084fc', '#34d399', '#f87171',
-  '#60a5fa', '#d8b4fe', '#e879f9', '#38bdf8',
+  '#6366f1', '#8b5cf6', '#2dd4bf', '#fb7185',
+  '#38bdf8', '#818cf8', '#14b8a6', '#a78bfa',
 ];
 
 export const DIFF_HRS   = { easy: 1, medium: 1.5, hard: 2.5 };
-export const DIFF_CLR   = { easy: '#34d399', medium: '#c026d3', hard: '#f87171' };
+export const DIFF_CLR   = { easy: '#0f766e', medium: '#6d5ce8', hard: '#be123c' };
 export const DIFF_LBL   = { easy: 'Easy',    medium: 'Med',     hard: 'Hard'    };
 export const DIFF_ORDER = { hard: 0, medium: 1, easy: 2 };
 

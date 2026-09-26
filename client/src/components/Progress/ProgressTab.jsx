@@ -58,18 +58,18 @@ function UnmarkAllModal({ onConfirm, onCancel }) {
       }}>
         <div style={{
           width: 48, height: 48, borderRadius: 12,
-          background: 'rgba(248,113,113,0.1)',
-          border: '1px solid rgba(248,113,113,0.25)',
+          background: 'rgba(251,113,133,0.1)',
+          border: '1px solid rgba(251,113,133,0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 16px',
         }}>
-          <AlertTriangle size={22} color="#f87171" />
+          <AlertTriangle size={22} color="var(--red)" />
         </div>
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-bright)' }}>Unmark All Progress?</div>
         </div>
         <div style={{ fontSize: 13, color: 'var(--text-dim)', textAlign: 'center', lineHeight: 1.6, marginBottom: 24 }}>
-          This will reset <span style={{ color: '#f87171', fontWeight: 600 }}>all completed topics</span> back
+          This will reset <span style={{ color: 'var(--red)', fontWeight: 600 }}>all completed topics</span> back
           to pending. Your schedule and subjects remain intact.
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -80,9 +80,9 @@ function UnmarkAllModal({ onConfirm, onCancel }) {
           }}>Cancel</button>
           <button onClick={onConfirm} style={{
             flex: 1, padding: '10px 0', borderRadius: 9, cursor: 'pointer',
-            background: 'rgba(248,113,113,0.1)',
-            border: '1px solid rgba(248,113,113,0.3)',
-            color: '#f87171', fontSize: 13, fontWeight: 600,
+            background: 'rgba(251,113,133,0.1)',
+            border: '1px solid rgba(251,113,133,0.3)',
+            color: 'var(--red)', fontSize: 13, fontWeight: 600,
           }}>Yes, Reset All</button>
         </div>
       </div>
@@ -95,9 +95,9 @@ function UnscheduledBanner({ count, onRegenerate }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <div style={{
-      background: 'rgba(147,51,234,0.06)',
-      border: '1px solid rgba(147,51,234,0.2)',
-      borderLeft: '3px solid #9333ea',
+      background: 'rgba(99,102,241,0.06)',
+      border: '1px solid rgba(99,102,241,0.2)',
+      borderLeft: '3px solid var(--accent)',
       borderRadius: 10, overflow: 'hidden',
     }}>
       <div
@@ -107,9 +107,9 @@ function UnscheduledBanner({ count, onRegenerate }) {
           padding: '12px 16px', cursor: 'pointer',
         }}
       >
-        <AlertTriangle size={16} color="#9333ea" style={{ flexShrink: 0 }} />
+        <AlertTriangle size={16} color="var(--accent)" style={{ flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#9333ea', marginBottom: 2 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)', marginBottom: 2 }}>
             {count} topic{count > 1 ? 's' : ''} not in your current schedule
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
@@ -120,10 +120,10 @@ function UnscheduledBanner({ count, onRegenerate }) {
           onClick={e => { e.stopPropagation(); onRegenerate(); }}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(147,51,234,0.12)',
-            border: '1px solid rgba(147,51,234,0.3)',
+            background: 'rgba(99,102,241,0.12)',
+            border: '1px solid rgba(99,102,241,0.3)',
             borderRadius: 7, padding: '6px 12px',
-            color: '#9333ea', cursor: 'pointer',
+            color: 'var(--accent)', cursor: 'pointer',
             fontSize: 12, fontWeight: 600, flexShrink: 0,
           }}
         >
@@ -199,11 +199,11 @@ const DayCard = memo(function DayCard({
   };
 
   const borderColor = allDone
-    ? '#34d399'
+    ? 'var(--green)'
     : isToday
-    ? '#9333ea'
+    ? 'var(--accent)'
     : isPast && doneCount > 0 && doneCount < total
-    ? '#f87171'
+    ? 'var(--red)'
     : 'var(--border-card)';
 
   return (
@@ -219,13 +219,13 @@ const DayCard = memo(function DayCard({
         {/* Day badge */}
         <div style={{
           width: 36, height: 36, borderRadius: 8, flexShrink: 0,
-          background: allDone ? 'rgba(52,211,153,0.12)' : isToday ? 'rgba(147,51,234,0.12)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${allDone ? 'rgba(52,211,153,0.25)' : isToday ? 'rgba(147,51,234,0.25)' : 'var(--border-card)'}`,
+          background: allDone ? 'rgba(45,212,191,0.12)' : isToday ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${allDone ? 'rgba(45,212,191,0.25)' : isToday ? 'rgba(99,102,241,0.25)' : 'var(--border-card)'}`,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.25s ease',
         }}>
           <div style={{ fontSize: 10, color: 'var(--text-dimmer)', lineHeight: 1 }}>Day</div>
-          <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1, marginTop: 1, color: allDone ? '#34d399' : isToday ? '#9333ea' : 'var(--text-muted)', transition: 'color 0.25s ease' }}>
+          <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1, marginTop: 1, color: allDone ? 'var(--green)' : isToday ? 'var(--accent)' : 'var(--text-muted)', transition: 'color 0.25s ease' }}>
             {dayNumber}
           </div>
         </div>
@@ -235,20 +235,20 @@ const DayCard = memo(function DayCard({
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-bright)' }}>{dateStr}</span>
             {isToday && !allDone && (
-              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(147,51,234,0.15)', color: '#9333ea', padding: '1px 7px', borderRadius: 4 }}>TODAY</span>
+              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(99,102,241,0.15)', color: 'var(--accent)', padding: '1px 7px', borderRadius: 4 }}>TODAY</span>
             )}
             {isPast && !allDone && doneCount > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(248,113,113,0.12)', color: '#f87171', padding: '1px 7px', borderRadius: 4 }}>INCOMPLETE</span>
+              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(251,113,133,0.12)', color: 'var(--red)', padding: '1px 7px', borderRadius: 4 }}>INCOMPLETE</span>
             )}
             {allDone && (
-              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(52,211,153,0.12)', color: '#34d399', padding: '1px 7px', borderRadius: 4 }}>DONE ✓</span>
+              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(45,212,191,0.12)', color: 'var(--green)', padding: '1px 7px', borderRadius: 4 }}>DONE ✓</span>
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ flex: 1, background: 'var(--bg-deep)', borderRadius: 4, height: 4, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 4, width: `${pct}%`,
-                background: allDone ? '#34d399' : isToday ? '#9333ea' : '#c084fc',
+                background: allDone ? 'var(--green)' : isToday ? 'var(--accent)' : 'var(--accent-soft)',
                 transition: 'width 0.35s ease, background 0.25s ease',
               }} />
             </div>
@@ -262,10 +262,10 @@ const DayCard = memo(function DayCard({
         <button
           onClick={handleMarkDay}
           style={{
-            background: allDone ? 'rgba(248,113,113,0.08)' : 'rgba(52,211,153,0.08)',
-            border: `1px solid ${allDone ? 'rgba(248,113,113,0.2)' : 'rgba(52,211,153,0.2)'}`,
+            background: allDone ? 'rgba(251,113,133,0.08)' : 'rgba(45,212,191,0.08)',
+            border: `1px solid ${allDone ? 'rgba(251,113,133,0.2)' : 'rgba(45,212,191,0.2)'}`,
             borderRadius: 7, padding: '5px 10px',
-            color: allDone ? '#f87171' : '#34d399',
+            color: allDone ? 'var(--red)' : 'var(--green)',
             cursor: 'pointer', fontSize: 11, fontWeight: 600,
             whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.2s ease',
           }}
@@ -304,14 +304,14 @@ const DayCard = memo(function DayCard({
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '9px 10px', borderRadius: 8, cursor: 'pointer',
                     background: flashId === s.topicId
-                      ? 'rgba(52,211,153,0.15)'
-                      : done ? 'rgba(52,211,153,0.05)' : 'rgba(255,255,255,0.01)',
-                    border: `1px solid ${done ? 'rgba(52,211,153,0.1)' : 'transparent'}`,
+                      ? 'rgba(45,212,191,0.15)'
+                      : done ? 'rgba(45,212,191,0.05)' : 'rgba(255,255,255,0.01)',
+                    border: `1px solid ${done ? 'rgba(45,212,191,0.1)' : 'transparent'}`,
                     transition: 'background 0.15s',
                   }}
                 >
                   <div style={{ flexShrink: 0, transition: 'transform 0.18s ease', transform: done ? 'scale(1.1)' : 'scale(1)' }}>
-                    {done ? <CheckCircle2 size={15} color="#34d399" /> : <Circle size={15} color="var(--text-dimmest)" />}
+                    {done ? <CheckCircle2 size={15} color="var(--green)" /> : <Circle size={15} color="var(--text-dimmest)" />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
@@ -336,8 +336,8 @@ const DayCard = memo(function DayCard({
           {allDone && (
             <div style={{
               marginTop: 10, padding: '8px 12px',
-              background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)',
-              borderRadius: 8, fontSize: 12, color: '#34d399', textAlign: 'center',
+              background: 'rgba(45,212,191,0.06)', border: '1px solid rgba(45,212,191,0.15)',
+              borderRadius: 8, fontSize: 12, color: 'var(--green)', textAlign: 'center',
             }}>
               🎉 Day {dayNumber} complete! Next day is now open below.
             </div>
@@ -435,9 +435,9 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 padding: '5px 11px', borderRadius: 7, cursor: 'pointer',
-                background: 'rgba(248,113,113,0.07)',
-                border: '1px solid rgba(248,113,113,0.2)',
-                color: '#f87171', fontSize: 11, fontWeight: 600, flexShrink: 0,
+                background: 'rgba(251,113,133,0.07)',
+                border: '1px solid rgba(251,113,133,0.2)',
+                color: 'var(--red)', fontSize: 11, fontWeight: 600, flexShrink: 0,
               }}
             >
               <Trash2 size={11} /> Unmark All
@@ -446,7 +446,7 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}>
           <span style={{ color: 'var(--text-dim)' }}>{stats.doneTopics} of {stats.totalTopics} topics done</span>
-          <span style={{ color: '#9333ea', fontWeight: 700 }}>{stats.pct}%</span>
+          <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{stats.pct}%</span>
         </div>
         <ProgressBar pct={stats.pct} height={10} />
         <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-dimmer)' }}>
@@ -474,9 +474,9 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
               fontSize: 12, fontWeight: 600,
-              background: view === 'schedule' ? 'rgba(147,51,234,0.1)' : 'transparent',
-              border: `1px solid ${view === 'schedule' ? 'rgba(147,51,234,0.3)' : 'var(--border-card)'}`,
-              color: view === 'schedule' ? '#9333ea' : 'var(--text-dimmer)',
+              background: view === 'schedule' ? 'rgba(99,102,241,0.1)' : 'transparent',
+              border: `1px solid ${view === 'schedule' ? 'rgba(99,102,241,0.3)' : 'var(--border-card)'}`,
+              color: view === 'schedule' ? 'var(--accent)' : 'var(--text-dimmer)',
             }}
           >
             <Calendar size={13} /> By Schedule
@@ -487,9 +487,9 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
               fontSize: 12, fontWeight: 600,
-              background: view === 'subject' ? 'rgba(192,132,252,0.1)' : 'transparent',
-              border: `1px solid ${view === 'subject' ? 'rgba(192,132,252,0.3)' : 'var(--border-card)'}`,
-              color: view === 'subject' ? '#c084fc' : 'var(--text-dimmer)',
+              background: view === 'subject' ? 'rgba(167,139,250,0.1)' : 'transparent',
+              border: `1px solid ${view === 'subject' ? 'rgba(167,139,250,0.3)' : 'var(--border-card)'}`,
+              color: view === 'subject' ? 'var(--accent-soft)' : 'var(--text-dimmer)',
             }}
           >
             <BookOpen size={13} /> By Subject
@@ -541,12 +541,12 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
                       style={{
                         display: 'flex', alignItems: 'center', gap: 10,
                         padding: '8px 10px', borderRadius: 7, cursor: 'pointer',
-                        background: done ? 'rgba(52,211,153,0.04)' : 'transparent',
+                        background: done ? 'rgba(45,212,191,0.04)' : 'transparent',
                         transition: 'background 0.15s',
                       }}
                     >
                       {done
-                        ? <CheckCircle2 size={15} color="#34d399" style={{ flexShrink: 0 }} />
+                        ? <CheckCircle2 size={15} color="var(--green)" style={{ flexShrink: 0 }} />
                         : <Circle       size={15} color="var(--text-dimmest)" style={{ flexShrink: 0 }} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
@@ -603,7 +603,7 @@ export default function ProgressTab({ subjects, stats, toggleTopic, schedule, on
                   style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 6, cursor: 'pointer' }}
                 >
                   {t.status === 'done'
-                    ? <CheckCircle2 size={15} color="#34d399" style={{ flexShrink: 0 }} />
+                    ? <CheckCircle2 size={15} color="var(--green)" style={{ flexShrink: 0 }} />
                     : <Circle       size={15} color="var(--text-dimmest)" style={{ flexShrink: 0 }} />}
                   <span style={{
                     flex: 1, fontSize: 13,
