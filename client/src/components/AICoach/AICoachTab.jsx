@@ -69,7 +69,7 @@ export default function AICoachTab({ subjects, stats, examDate, dailyHours, mess
   const canSend = !!input.trim() && !isLoading;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '72vh', gap: 12 }}>
+    <div className="sf-ai-coach" style={{ display: 'flex', flexDirection: 'column', height: '72vh', gap: 12 }}>
       {/* Chat history */}
       <Card style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: 20 }}>
         <div ref={chatHistoryRef} className="sf-ai-chat-history">

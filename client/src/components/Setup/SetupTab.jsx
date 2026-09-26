@@ -211,7 +211,7 @@ export default function SetupTab({
 
       {/* ── Subjects & Topics ───────────────────────────────────────── */}
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div className="sf-setup-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <SecLabel icon={<Plus size={13} />}>Subjects &amp; Topics</SecLabel>
           <div className="sf-row-wrap" style={{ display: 'flex', gap: 8 }}>
             <SyllabusImport onImport={handleImportSubjects} />
@@ -252,7 +252,7 @@ export default function SetupTab({
                 background: 'var(--bg-card)', border: '1px solid var(--border-card)',
                 borderLeft: `3px solid ${s.color}`, borderRadius: 10, padding: '14px 16px',
               }}>
-                <div className="parent-row" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div className="parent-row sf-subject-heading" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <InlineInput value={s.name} onChange={val => updateSubject(s.id, 'name', val)}
                     placeholder="Subject name…" autoFocus={isNewSubject} fontSize={14} fontWeight={600} color="var(--text-bright)" />
                   <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
@@ -285,7 +285,7 @@ export default function SetupTab({
                   {s.topics.map(t => {
                     const isNewTopic = t.id === lastAddedTopicId;
                     return (
-                      <div key={t.id} className="parent-row hover-row"
+                      <div key={t.id} className="parent-row hover-row sf-topic-row"
                         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 6px', borderRadius: 6 }}>
                         <InlineInput value={t.name} onChange={val => updateTopic(s.id, t.id, 'name', val)}
                           placeholder="Topic name…" autoFocus={isNewTopic} fontSize={13} fontWeight={400} color="var(--text-soft)" />

@@ -209,7 +209,7 @@ export default function Header({
           <div className="sf-header-row" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
 
             {/* Logo */}
-            <div style={{
+            <div className="sf-brand" style={{
               width: 38, height: 38,
               background: 'linear-gradient(135deg,#9333ea,#7e22ce)',
               borderRadius: 10, flexShrink: 0,
@@ -296,14 +296,14 @@ export default function Header({
 
       {/* Settings modal */}
       {showSettings && (
-        <div style={{
+        <div className="sf-settings-backdrop" style={{
           position: 'fixed', inset: 0,
           background: 'rgba(0,0,0,0.75)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 9999, padding: 20,
           backdropFilter: 'blur(4px)',
         }}>
-          <div style={{
+          <div className="sf-settings-modal" style={{
             background: 'var(--modal-bg, #111827)',
             border: '1px solid var(--border-mid, #1e293b)',
             borderRadius: 20, width: '100%', maxWidth: 720,

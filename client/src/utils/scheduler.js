@@ -47,8 +47,9 @@ function daysUntil(dateStr) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Internal core builder
 // ─────────────────────────────────────────────────────────────────────────────
-function buildScheduleFrom(subjects, startDate, examDate, dailyHours, skipTopicIds = new Set()) {
+function buildScheduleFrom(subjects, startDate, examDate, dailyHours, skipTopicIds = new Set(), blockedDays = []) {
   const totalDays = Math.max(1, calendarDaysBetween(startDate, examDate));
+  const blockedByDate = new Map(blockedDays.map(day => [day.date, day]));
 
   const queue = subjects
     .flatMap(s =>
@@ -69,9 +70,21 @@ function buildScheduleFrom(subjects, startDate, examDate, dailyHours, skipTopicI
   const days = [];
   let qi = 0;
 
-  for (let d = 0; d < totalDays && qi < queue.length; d++) {
+  for (let d = 0; d < totalDays; d++) {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + d);
+    const dateStr = localDateStr(date);
+    const blockedDay = blockedByDate.get(dateStr);
+    if (blockedDay?.isUnavailable || blockedDay?.isRestDay) {
+      days.push({
+        date: dateStr,
+        sessions: [],
+        ...(blockedDay.isUnavailable && { isUnavailable: true }),
+        ...(blockedDay.isRestDay && { isRestDay: true }),
+      });
+      continue;
+    }
+    if (qi >= queue.length) continue;
 
     let remaining = dailyHours;
     const sessions = [];
@@ -108,18 +121,18 @@ function buildScheduleFrom(subjects, startDate, examDate, dailyHours, skipTopicI
 // Exported: buildSchedule
 // Builds a full schedule from today (first-time generate).
 // ─────────────────────────────────────────────────────────────────────────────
-export function buildSchedule(subjects, examDate, dailyHours) {
+export function buildSchedule(subjects, examDate, dailyHours, blockedDays = []) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const exam = localMidnight(examDate);
-  return buildScheduleFrom(subjects, today, exam, dailyHours);
+  return buildScheduleFrom(subjects, today, exam, dailyHours, new Set(), blockedDays);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Exported: buildScheduleFromToday
 // Re-generates from today, skipping done topics (SmartRegen).
 // ─────────────────────────────────────────────────────────────────────────────
-export function buildScheduleFromToday(subjects, examDate, dailyHours) {
+export function buildScheduleFromToday(subjects, examDate, dailyHours, blockedDays = []) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const exam = localMidnight(examDate);
@@ -130,7 +143,7 @@ export function buildScheduleFromToday(subjects, examDate, dailyHours) {
     )
   );
 
-  return buildScheduleFrom(subjects, today, exam, dailyHours, doneIds);
+  return buildScheduleFrom(subjects, today, exam, dailyHours, doneIds, blockedDays);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

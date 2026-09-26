@@ -54,14 +54,14 @@ export default function ProfileModal({ onClose, stats, subjects, examDate, daily
   const daysLeft    = stats?.daysLeft    ?? 0;
 
   return (
-    <div style={{
+    <div className="sf-profile-backdrop" style={{
       position: 'fixed', inset: 0,
       background: 'rgba(0,0,0,0.75)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 9999, padding: 20,
       backdropFilter: 'blur(4px)',
     }}>
-      <div style={{
+      <div className="sf-profile-modal" style={{
         background: 'var(--modal-bg, #111827)',
         border: '1px solid var(--border-mid, #1e293b)',
         borderRadius: 24, width: '100%', maxWidth: 480,

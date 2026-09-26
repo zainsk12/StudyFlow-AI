@@ -45,6 +45,7 @@ export default function App() {
     lastAddedSubjectId, lastAddedTopicId,
     setExamDate, setDailyHours, setDayIdx,
     generatePlan, regeneratePlan, toggleTopic,
+    moveTopicToDate, reorderTopicsOnDay, setDayStatus,
     addSubject, removeSubject, updateSubject,
     addTopic,   removeTopic,   updateTopic,
     importSubjects, clearAll, unmarkAll,
@@ -205,6 +206,9 @@ useEffect(() => {
             doneTopics={stats.doneTopics}
             totalTopics={stats.totalTopics}
             onRegenerate={regeneratePlan}
+            moveTopicToDate={moveTopicToDate}
+            reorderTopicsOnDay={reorderTopicsOnDay}
+            setDayStatus={setDayStatus}
             subjects={subjects} examDate={examDate}
             dailyHours={dailyHours} stats={stats}
           />

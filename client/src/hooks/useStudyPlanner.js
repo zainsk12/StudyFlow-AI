@@ -17,6 +17,13 @@ function yesterdayStr() {
   d.setDate(d.getDate() - 1);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+
+function shiftDate(dateStr, days) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 const loadStreak = (uid) => {
   try { return JSON.parse(localStorage.getItem(`sf_streak_${uid}`)) || { count: 0, lastDate: null }; }
   catch { return { count: 0, lastDate: null }; }
@@ -630,8 +637,108 @@ export function useStudyPlanner(userId) {
     });
   }, [schedule.length]);
 
+  const moveTopicToDate = useCallback((topicId, sourceDate, targetDate) => {
+    if (!topicId || !targetDate || targetDate < localTodayStr() || targetDate > examDate) {
+      return { ok: false, message: 'Choose a valid date between today and your exam.' };
+    }
+    const source = schedule.find(day => day.date === sourceDate);
+    const sourceSessions = (source?.sessions ?? [])
+      .filter(session => session.topicId === topicId)
+      .map(session => ({ ...session }));
+    if (!sourceSessions.length) return { ok: false, message: 'That topic is no longer on the schedule.' };
+    const target = schedule.find(day => day.date === targetDate);
+    if (target?.isUnavailable || target?.isRestDay) {
+      return { ok: false, message: 'Choose an available study day.' };
+    }
+    const movedHours = sourceSessions.reduce((total, session) => total + session.hours, 0);
+    const targetHours = (target?.sessions ?? []).filter(session => session.topicId !== topicId)
+      .reduce((total, session) => total + session.hours, 0);
+    if (sourceDate === targetDate) return { ok: true };
+    if (targetHours + movedHours > dailyHours + 0.001) {
+      return { ok: false, message: `This day has room for ${(Math.max(0, dailyHours - targetHours)).toFixed(1)}h, but the topic needs ${movedHours.toFixed(1)}h.` };
+    }
+
+    const selectedDate = schedule[dayIdx]?.date;
+    const next = schedule.map(day => ({
+      ...day,
+      sessions: day.date === sourceDate
+        ? day.sessions.filter(session => session.topicId !== topicId)
+        : [...day.sessions],
+    })).filter(day => day.sessions.length || day.isUnavailable || day.isRestDay);
+    const targetIndex = next.findIndex(day => day.date === targetDate);
+    if (targetIndex >= 0) next[targetIndex] = { ...next[targetIndex], sessions: [...next[targetIndex].sessions, ...sourceSessions] };
+    else next.push({ date: targetDate, sessions: sourceSessions });
+    next.sort((a, b) => a.date.localeCompare(b.date));
+    setSchedule(next);
+    const selectedIndex = next.findIndex(day => day.date === selectedDate);
+    setDayIdx(selectedIndex >= 0 ? selectedIndex : next.findIndex(day => day.date === targetDate));
+    return { ok: true };
+  }, [schedule, dayIdx, dailyHours, examDate]);
+
+  const reorderTopicsOnDay = useCallback((date, topicId, direction) => {
+    const day = schedule.find(item => item.date === date);
+    if (!day || !topicId) return;
+    const groups = [];
+    const byTopic = new Map();
+    day.sessions.forEach((session, index) => {
+      const key = session.topicId ?? `session-${index}`;
+      if (!byTopic.has(key)) {
+        const group = { key, topicId: session.topicId, sessions: [] };
+        byTopic.set(key, group);
+        groups.push(group);
+      }
+      byTopic.get(key).sessions.push(session);
+    });
+    const index = groups.findIndex(group => group.topicId === topicId);
+    const targetIndex = index + direction;
+    if (index < 0 || targetIndex < 0 || targetIndex >= groups.length) return;
+    [groups[index], groups[targetIndex]] = [groups[targetIndex], groups[index]];
+    const reordered = groups.flatMap(group => group.sessions);
+    setSchedule(schedule.map(item => item.date === date ? { ...item, sessions: reordered } : item));
+  }, [schedule]);
+
+  const setDayStatus = useCallback((date, status) => {
+    if (!date || date < localTodayStr() || date > examDate) {
+      return { ok: false, message: 'Choose a date between today and your exam.' };
+    }
+    const current = schedule.find(day => day.date === date) ?? { date, sessions: [] };
+    const marking = status !== null;
+    const removedSessions = marking ? current.sessions : [];
+    const next = new Map(schedule.map(day => [day.date, { ...day, sessions: [...day.sessions] }]));
+    const updatedDay = { ...current, sessions: marking ? [] : current.sessions };
+    delete updatedDay.isUnavailable;
+    delete updatedDay.isRestDay;
+    if (status) updatedDay[status] = true;
+    if (updatedDay.sessions.length || updatedDay.isUnavailable || updatedDay.isRestDay) next.set(date, updatedDay);
+    else next.delete(date);
+
+    for (const session of removedSessions) {
+      let remaining = session.hours;
+      for (let candidate = shiftDate(date, 1); candidate <= examDate && remaining > 0.001; candidate = shiftDate(candidate, 1)) {
+        const target = next.get(candidate) ?? { date: candidate, sessions: [] };
+        if (target.isUnavailable || target.isRestDay) continue;
+        const used = target.sessions.reduce((total, item) => total + item.hours, 0);
+        const room = Math.max(0, dailyHours - used);
+        const hours = Math.round(Math.min(room, remaining) * 10) / 10;
+        if (hours <= 0) continue;
+        target.sessions.push({ ...session, hours });
+        next.set(candidate, target);
+        remaining = Math.round((remaining - hours) * 10) / 10;
+      }
+      if (remaining > 0.001) {
+        return { ok: false, message: 'There is not enough remaining study time before your exam to move these sessions. Nothing was changed.' };
+      }
+    }
+
+    const updated = [...next.values()].sort((a, b) => a.date.localeCompare(b.date));
+    setSchedule(updated);
+    setDayIdx(Math.max(0, updated.findIndex(day => day.date === date)));
+    return { ok: true };
+  }, [schedule, dailyHours, examDate]);
+
   const generatePlan = () => {
-    const { days, overflowCount: oc } = buildSchedule(subjects, examDate, dailyHours);
+    const blockedDays = schedule.filter(day => day.isUnavailable || day.isRestDay);
+    const { days, overflowCount: oc } = buildSchedule(subjects, examDate, dailyHours, blockedDays);
     setSchedule(days);
     setOverflowCount(oc);
     // Clamp to new schedule length (may be smaller than current dayIdx)
@@ -640,7 +747,8 @@ export function useStudyPlanner(userId) {
   };
 
   const regeneratePlan = () => {
-    const { days, overflowCount: oc } = buildScheduleFromToday(subjects, examDate, dailyHours);
+    const blockedDays = schedule.filter(day => day.isUnavailable || day.isRestDay);
+    const { days, overflowCount: oc } = buildScheduleFromToday(subjects, examDate, dailyHours, blockedDays);
     setSchedule(days);
     setOverflowCount(oc);
     // Clamp to new schedule length (may be smaller than current dayIdx)
@@ -812,6 +920,7 @@ export function useStudyPlanner(userId) {
     lastAddedSubjectId, lastAddedTopicId,
     setExamDate, setDailyHours, setDayIdx: setSafeDayIdx,
     generatePlan, regeneratePlan, toggleTopic,
+    moveTopicToDate, reorderTopicsOnDay, setDayStatus,
     addSubject, removeSubject, updateSubject,
     addTopic,   removeTopic,   updateTopic,
     importSubjects,

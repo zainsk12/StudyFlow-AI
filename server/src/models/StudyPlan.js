@@ -17,6 +17,8 @@ const DaySchema = new mongoose.Schema(
   {
     date:     { type: String, required: true },   // ISO "YYYY-MM-DD"
     sessions: { type: [SessionSchema], default: [] },
+    isUnavailable: { type: Boolean, default: false },
+    isRestDay:     { type: Boolean, default: false },
   },
   { _id: false }
 );

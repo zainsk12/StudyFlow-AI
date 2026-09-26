@@ -1,6 +1,6 @@
 // client/src/components/Schedule/ScheduleTab.jsx
-import { useRef, useEffect } from 'react';
-import { Clock, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { useRef, useEffect, useState, useMemo } from 'react';
+import { Clock, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, Coffee, CalendarOff, ArrowRightLeft } from 'lucide-react';
 import Card from '../common/Card';
 import { EmptyState, Pill } from '../common/index.jsx';
 import { DIFF_CLR, DIFF_LBL } from '../../constants';
@@ -15,6 +15,7 @@ function DayPill({ day, index, active, onClick }) {
     <button
       className="day-pill"
       onClick={() => onClick(index)}
+      title={day.isUnavailable ? 'Unavailable day' : day.isRestDay ? 'Rest day' : undefined}
       style={{
         minWidth: 60, padding: '9px 6px',
         background:   active ? 'rgba(147,51,234,0.1)' : 'var(--bg-card)',
@@ -39,7 +40,7 @@ function DayPill({ day, index, active, onClick }) {
         fontSize: 10, marginTop: 2, fontWeight: 600,
         color: active ? '#9333ea' : 'var(--text-dimmest)',
       }}>
-        {totalH.toFixed(1)}h
+        {day.isUnavailable ? 'OFF' : day.isRestDay ? 'REST' : `${totalH.toFixed(1)}h`}
       </div>
     </button>
   );
@@ -48,7 +49,7 @@ function DayPill({ day, index, active, onClick }) {
 export default function ScheduleTab({
   schedule, dayIdx, setDayIdx, onGoSetup,
   behindCount, daysLeft, doneTopics, totalTopics,
-  onRegenerate,
+  onRegenerate, moveTopicToDate, reorderTopicsOnDay, setDayStatus,
   subjects, examDate, dailyHours, stats,
 }) {
   if (!schedule.length) {
@@ -67,18 +68,11 @@ export default function ScheduleTab({
   const todayIdx = schedule.findIndex(d => d.date === todayStr);
   const stripRef = useRef(null);
 
-  // Gate ref: tracks whether we've already auto-jumped for the current schedule
-  // instance. Reset whenever schedule identity changes (e.g. after a regen)
-  // so the jump fires correctly on the new schedule without a stale closure.
+  // Only auto-jump once after the schedule becomes available. Manual edits
+  // should keep the day the user is working on selected.
   const didAutoJump = useRef(false);
 
-  useEffect(() => {
-    didAutoJump.current = false;
-  }, [schedule]);
-
-  // Auto-jump to today on initial load and after schedule regen.
-  // todayIdx and setDayIdx are listed as deps — no stale closure.
-  // The didAutoJump gate ensures this runs at most once per schedule version.
+  // Auto-jump to today on initial load.
   useEffect(() => {
     if (!didAutoJump.current && todayIdx >= 0) {
       setDayIdx(todayIdx);
@@ -98,7 +92,35 @@ export default function ScheduleTab({
     setDayIdx(todayIdx);
   };
 
-  const today = schedule[dayIdx];
+  const today = schedule[dayIdx] ?? schedule[0];
+  const [moveTopicId, setMoveTopicId] = useState('');
+  const [moveDate, setMoveDate] = useState('');
+  const [availabilityDate, setAvailabilityDate] = useState('');
+  const [editMessage, setEditMessage] = useState('');
+  const topicGroups = useMemo(() => {
+    const groups = [];
+    const byTopic = new Map();
+    today.sessions.forEach((session, index) => {
+      const key = session.topicId ?? `session-${index}`;
+      if (!byTopic.has(key)) {
+        const group = { topicId: session.topicId, topicName: session.topicName, subjectName: session.subjectName, color: session.color, difficulty: session.difficulty, sessions: [] };
+        byTopic.set(key, group);
+        groups.push(group);
+      }
+      byTopic.get(key).sessions.push(session);
+    });
+    return groups;
+  }, [today.sessions]);
+  const topicGroupKey = topicGroups.map(group => group.topicId).join('|');
+  useEffect(() => {
+    const topicIds = topicGroupKey ? topicGroupKey.split('|') : [];
+    if (!moveTopicId || !topicIds.includes(moveTopicId)) {
+      setMoveTopicId(topicIds[0] ?? '');
+    }
+  }, [moveTopicId, topicGroupKey]);
+  useEffect(() => {
+    setAvailabilityDate(today.date);
+  }, [today.date]);
   const total = today.sessions.reduce((a, s) => a + s.hours, 0);
   const date  = new Date(today.date + 'T00:00:00');
 
@@ -160,7 +182,7 @@ export default function ScheduleTab({
 
       {/* Day detail card */}
       <Card>
-        <div style={{
+        <div className="sf-schedule-heading" style={{
           display: 'flex', alignItems: 'flex-start',
           justifyContent: 'space-between', marginBottom: 18, gap: 12,
         }}>
@@ -204,16 +226,51 @@ export default function ScheduleTab({
           </div>
         </div>
 
+        {/* Schedule editing controls */}
+        <div className="sf-schedule-controls">
+          <div className="sf-schedule-control-group">
+            <label htmlFor="sf-move-topic">Move this day’s topic</label>
+            <select id="sf-move-topic" value={moveTopicId} onChange={event => setMoveTopicId(event.target.value)}>
+              {topicGroups.map(group => <option key={group.topicId} value={group.topicId}>{group.topicName}</option>)}
+            </select>
+            <input aria-label="Move topic to date" type="date" value={moveDate} min={todayStr} max={examDate} onChange={event => setMoveDate(event.target.value)} />
+            <button type="button" disabled={!moveTopicId || !moveDate} onClick={() => {
+              const result = moveTopicToDate(moveTopicId, today.date, moveDate);
+              setEditMessage(result.ok ? 'Topic session moved.' : result.message);
+            }}><ArrowRightLeft size={14} /> Move</button>
+          </div>
+          <div className="sf-schedule-control-group">
+            <label htmlFor="sf-day-off">Set a day off</label>
+            <input id="sf-day-off" type="date" value={availabilityDate} min={todayStr} max={examDate} onChange={event => setAvailabilityDate(event.target.value)} />
+            <button type="button" onClick={() => {
+              const result = setDayStatus(availabilityDate, 'isUnavailable');
+              setEditMessage(result.ok ? 'Day marked unavailable; its sessions were moved to later days.' : result.message);
+            }}><CalendarOff size={14} /> Unavailable</button>
+            <button type="button" onClick={() => {
+              const result = setDayStatus(availabilityDate, 'isRestDay');
+              setEditMessage(result.ok ? 'Rest day set; its sessions were moved to later days.' : result.message);
+            }}><Coffee size={14} /> Rest day</button>
+            {(today.isUnavailable || today.isRestDay) && availabilityDate === today.date && (
+              <button type="button" onClick={() => {
+                const result = setDayStatus(availabilityDate, null);
+                setEditMessage(result.ok ? 'This day is available for study again.' : result.message);
+              }}>Restore day</button>
+            )}
+          </div>
+          {editMessage && <div className="sf-schedule-edit-message" role="status">{editMessage}</div>}
+        </div>
+
         {/* Session list */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {today.sessions.map((s, i) => (
+          {topicGroups.map((group, i) => (
             <div
-              key={i}
+              key={group.topicId ?? i}
+              className="sf-schedule-session"
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '13px 15px',
                 background: 'var(--bg-deep)', borderRadius: 9,
-                borderLeft: `3px solid ${s.color}`,
+                borderLeft: `3px solid ${group.color}`,
                 transition: 'background 0.15s ease',
               }}
             >
@@ -223,21 +280,30 @@ export default function ScheduleTab({
                   fontSize: 14, fontWeight: 500, color: 'var(--text-primary)',
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                 }}>
-                  {s.topicName}
+                  {group.topicName}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-dimmer)', marginTop: 3 }}>{s.subjectName}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-dimmer)', marginTop: 3 }}>{group.subjectName}</div>
               </div>
-              {s.difficulty && (
-                <Pill label={DIFF_LBL[s.difficulty]} color={DIFF_CLR[s.difficulty]} />
+              {group.difficulty && (
+                <Pill label={DIFF_LBL[group.difficulty]} color={DIFF_CLR[group.difficulty]} />
               )}
               <span style={{
                 fontSize: 14, fontWeight: 700, color: '#9333ea',
                 minWidth: 32, textAlign: 'right', flexShrink: 0,
               }}>
-                {s.hours}h
+                {group.sessions.reduce((sum, session) => sum + session.hours, 0)}h
               </span>
+              <div className="sf-topic-order-controls" aria-label={`Reorder ${group.topicName}`}>
+                <button type="button" title="Move topic up" aria-label={`Move ${group.topicName} up`} disabled={i === 0} onClick={() => reorderTopicsOnDay(today.date, group.topicId, -1)}><ChevronUp size={14} /></button>
+                <button type="button" title="Move topic down" aria-label={`Move ${group.topicName} down`} disabled={i === topicGroups.length - 1} onClick={() => reorderTopicsOnDay(today.date, group.topicId, 1)}><ChevronDown size={14} /></button>
+              </div>
             </div>
           ))}
+          {!today.sessions.length && (
+            <div className="sf-schedule-empty-day">
+              {today.isUnavailable ? 'You marked this day unavailable.' : today.isRestDay ? 'This is a planned rest day.' : 'No topics are scheduled for this day.'}
+            </div>
+          )}
         </div>
 
         {/* Tip banner */}

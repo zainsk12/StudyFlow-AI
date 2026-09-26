@@ -60,6 +60,9 @@ function isValidSchedule(schedule) {
   for (const day of schedule) {
     if (!day || typeof day !== 'object' || Array.isArray(day)) return false;
     if (typeof day.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(day.date)) return false;
+    if (day.isUnavailable !== undefined && typeof day.isUnavailable !== 'boolean') return false;
+    if (day.isRestDay !== undefined && typeof day.isRestDay !== 'boolean') return false;
+    if (day.isUnavailable && day.isRestDay) return false;
     const date = new Date(`${day.date}T00:00:00.000Z`);
     if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== day.date) return false;
     if (!Array.isArray(day.sessions)) return false;
